@@ -1,0 +1,378 @@
+[
+  {
+    "num": 1,
+    "text": "E-waste photo capture/upload"
+  },
+  {
+    "num": 2,
+    "text": "Material categorization"
+  },
+  {
+    "num": 3,
+    "text": "Digital lot creation"
+  },
+  {
+    "num": 4,
+    "text": "Support for required 8 categories"
+  },
+  {
+    "num": 5,
+    "text": "Approximate weight entry"
+  },
+  {
+    "num": 6,
+    "text": "Instant value estimation"
+  },
+  {
+    "num": 7,
+    "text": "Price discovery"
+  },
+  {
+    "num": 8,
+    "text": "Historical price dataset"
+  },
+  {
+    "num": 9,
+    "text": "Material category / subcategory pricing"
+  },
+  {
+    "num": 10,
+    "text": "Location-wise pricing"
+  },
+  {
+    "num": 11,
+    "text": "Date-wise pricing"
+  },
+  {
+    "num": 12,
+    "text": "Buying price"
+  },
+  {
+    "num": 13,
+    "text": "Unit of measurement"
+  },
+  {
+    "num": 14,
+    "text": "Approximate market range"
+  },
+  {
+    "num": 15,
+    "text": "Recycler offer"
+  },
+  {
+    "num": 16,
+    "text": "Price trends"
+  },
+  {
+    "num": 17,
+    "text": "Material / transaction dataset"
+  },
+  {
+    "num": 18,
+    "text": "Lot / reference ID"
+  },
+  {
+    "num": 19,
+    "text": "Material description"
+  },
+  {
+    "num": 20,
+    "text": "Photo storage / reference"
+  },
+  {
+    "num": 21,
+    "text": "Weight (Approx & Actual)"
+  },
+  {
+    "num": 22,
+    "text": "Estimated value"
+  },
+  {
+    "num": 23,
+    "text": "Recycler quote"
+  },
+  {
+    "num": 24,
+    "text": "Final sale value"
+  },
+  {
+    "num": 25,
+    "text": "Collection date/time"
+  },
+  {
+    "num": 26,
+    "text": "Collection location"
+  },
+  {
+    "num": 27,
+    "text": "Recycler information"
+  },
+  {
+    "num": 28,
+    "text": "Transaction status"
+  },
+  {
+    "num": 29,
+    "text": "Authorized recycler dataset"
+  },
+  {
+    "num": 30,
+    "text": "Recycler name"
+  },
+  {
+    "num": 31,
+    "text": "Facility location"
+  },
+  {
+    "num": 32,
+    "text": "Accepted materials"
+  },
+  {
+    "num": 33,
+    "text": "Authorization / registration status"
+  },
+  {
+    "num": 34,
+    "text": "Contact information"
+  },
+  {
+    "num": 35,
+    "text": "Recycler offered rates"
+  },
+  {
+    "num": 36,
+    "text": "Pickup availability"
+  },
+  {
+    "num": 37,
+    "text": "Service area"
+  },
+  {
+    "num": 38,
+    "text": "Recycler matching / ranking"
+  },
+  {
+    "num": 39,
+    "text": "AI/ML material classification"
+  },
+  {
+    "num": 40,
+    "text": "AI/ML valuation"
+  },
+  {
+    "num": 41,
+    "text": "AI/ML recycler matching"
+  },
+  {
+    "num": 42,
+    "text": "Abnormal transaction value detection"
+  },
+  {
+    "num": 43,
+    "text": "Current buying-rate price board"
+  },
+  {
+    "num": 44,
+    "text": "Spoken prices (Voice / TTS)"
+  },
+  {
+    "num": 45,
+    "text": "Basic price trends"
+  },
+  {
+    "num": 46,
+    "text": "Nearby authorized recycler matching"
+  },
+  {
+    "num": 47,
+    "text": "Location-based matching"
+  },
+  {
+    "num": 48,
+    "text": "Material-based matching"
+  },
+  {
+    "num": 49,
+    "text": "Rate-based matching"
+  },
+  {
+    "num": 50,
+    "text": "Pickup-based matching"
+  },
+  {
+    "num": 51,
+    "text": "Authorization-based matching"
+  },
+  {
+    "num": 52,
+    "text": "Digital / verifiable handover record"
+  },
+  {
+    "num": 53,
+    "text": "Handover photos"
+  },
+  {
+    "num": 54,
+    "text": "Handover weight"
+  },
+  {
+    "num": 55,
+    "text": "Handover timestamp"
+  },
+  {
+    "num": 56,
+    "text": "Handover GPS / location"
+  },
+  {
+    "num": 57,
+    "text": "Unique handover reference"
+  },
+  {
+    "num": 58,
+    "text": "Recycler confirmation"
+  },
+  {
+    "num": 59,
+    "text": "Earnings ledger"
+  },
+  {
+    "num": 60,
+    "text": "Transaction history"
+  },
+  {
+    "num": 61,
+    "text": "Payment records"
+  },
+  {
+    "num": 62,
+    "text": "Pending dues"
+  },
+  {
+    "num": 63,
+    "text": "Pictorial safety guidance"
+  },
+  {
+    "num": 64,
+    "text": "Audio safety guidance"
+  },
+  {
+    "num": 65,
+    "text": "Unsafe burning guidance"
+  },
+  {
+    "num": 66,
+    "text": "Unsafe opening / disassembly guidance"
+  },
+  {
+    "num": 67,
+    "text": "Battery safety"
+  },
+  {
+    "num": 68,
+    "text": "CRT safety"
+  },
+  {
+    "num": 69,
+    "text": "Marathi language (मराठी)"
+  },
+  {
+    "num": 70,
+    "text": "Hindi language (हिंदी)"
+  },
+  {
+    "num": 71,
+    "text": "Low-literacy / pictorial interface"
+  },
+  {
+    "num": 72,
+    "text": "Offline-first architecture"
+  },
+  {
+    "num": 73,
+    "text": "Core activities working offline"
+  },
+  {
+    "num": 74,
+    "text": "Offline data synchronization"
+  },
+  {
+    "num": 75,
+    "text": "Small / low-memory Android suitability"
+  },
+  {
+    "num": 76,
+    "text": "Material Dataset"
+  },
+  {
+    "num": 77,
+    "text": "Price Dataset"
+  },
+  {
+    "num": 78,
+    "text": "Recycler Dataset"
+  },
+  {
+    "num": 79,
+    "text": "Transaction Dataset"
+  },
+  {
+    "num": 80,
+    "text": "Traceability Dataset"
+  },
+  {
+    "num": 81,
+    "text": "Collector Dataset with minimal personal data"
+  },
+  {
+    "num": 82,
+    "text": "AI/ML training dataset"
+  },
+  {
+    "num": 83,
+    "text": "Dataset generation"
+  },
+  {
+    "num": 84,
+    "text": "Dataset storage"
+  },
+  {
+    "num": 85,
+    "text": "Dataset validation"
+  },
+  {
+    "num": 86,
+    "text": "Dataset updating"
+  },
+  {
+    "num": 87,
+    "text": "Dataset actual usage by application"
+  },
+  {
+    "num": 88,
+    "text": "Working Collector mobile application"
+  },
+  {
+    "num": 89,
+    "text": "Recycler-side interface"
+  },
+  {
+    "num": 90,
+    "text": "Structured datasets"
+  },
+  {
+    "num": 91,
+    "text": "Field research with at least 2 working scrap collectors / aggregators"
+  },
+  {
+    "num": 92,
+    "text": "Live usability demonstration capability"
+  },
+  {
+    "num": 93,
+    "text": "Unit economics: Current vs Formal comparison"
+  },
+  {
+    "num": 94,
+    "text": "Platform sustainability / economic attractiveness"
+  }
+]
