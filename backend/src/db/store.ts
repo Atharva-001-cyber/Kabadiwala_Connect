@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { supabase, isSupabaseConfigured } from './supabase';
 import {
   User,
   CollectorProfile,
@@ -590,7 +591,157 @@ class DatabaseStore {
         console.error('❌ Failed to save database to disk:', fallbackErr);
       }
     }
+
+    if (isSupabaseConfigured() && supabase) {
+      this.syncLatestToSupabase();
+    }
   }
+
+  private syncTimeout: NodeJS.Timeout | null = null;
+
+  public syncLatestToSupabase() {
+    if (!isSupabaseConfigured() || !supabase) return;
+    const client = supabase;
+    if (this.syncTimeout) clearTimeout(this.syncTimeout);
+    this.syncTimeout = setTimeout(async () => {
+      try {
+        // Upsert most recent lots (front and back slices to capture both unshift and push)
+        const recentLotsRaw = [...this.data.lots.slice(0, 25), ...this.data.lots.slice(-25)];
+        const recentLots = Array.from(new Map(recentLotsRaw.map(l => [l.id, l])).values()).map(l => ({
+          id: l.id,
+          collector_id: l.collectorId,
+          collector_name: l.collectorName,
+          collector_phone: l.collectorPhone,
+          material_category: l.materialCategory,
+          sub_category: l.subCategory,
+          description: l.description,
+          image_url: l.imageUrl,
+          image_urls: l.imageUrls || [],
+          approx_weight: l.approxWeight,
+          actual_weight: l.actualWeight,
+          condition: l.condition,
+          source_type: l.sourceType,
+          location_district: l.locationDistrict,
+          location_state: l.locationState,
+          estimated_value_min: l.estimatedValueMin,
+          estimated_value_max: l.estimatedValueMax,
+          estimated_value_avg: l.estimatedValueAvg,
+          quoted_price: l.quotedPrice,
+          final_sale_value: l.finalSaleValue,
+          selected_recycler_id: l.selectedRecyclerId,
+          selected_offer_id: l.selectedOfferId,
+          handover_otp: l.handoverOtp,
+          status: l.status,
+          data_source: l.dataSource || 'LIVE',
+          created_at: l.createdAt,
+          updated_at: l.updatedAt || l.createdAt
+        }));
+        if (recentLots.length > 0) {
+          await client.from('lots').upsert(recentLots);
+        }
+
+        // Upsert most recent offers
+        const recentOffersRaw = [...this.data.offers.slice(0, 25), ...this.data.offers.slice(-25)];
+        const recentOffers = Array.from(new Map(recentOffersRaw.map(o => [o.id, o])).values()).map((o: any) => ({
+          id: o.id,
+          lot_id: o.lotId,
+          recycler_id: o.recyclerId,
+          recycler_name: o.recyclerName,
+          material_category: o.materialCategory || '',
+          offered_rate_per_kg: o.offeredRatePerKg,
+          quoted_total_price: o.totalOfferedPrice || o.quotedTotalPrice || 0,
+          pickup_offered: o.pickupOffered ?? true,
+          pickup_charge_deduction: o.pickupChargeDeduction || 0,
+          net_collector_payout: o.netCollectorPayout || o.totalOfferedPrice || o.quotedTotalPrice || 0,
+          estimated_pickup_date: o.estimatedPickupDate || '',
+          status: o.status,
+          expires_at: o.expiresAt || null,
+          created_at: o.createdAt
+        }));
+        if (recentOffers.length > 0) {
+          await client.from('offers').upsert(recentOffers);
+        }
+
+        // Upsert most recent 20 pickups
+        const recentPickups = this.data.pickups.slice(-20).map((p: any) => ({
+          id: p.id,
+          lot_id: p.lotId,
+          offer_id: p.offerId || null,
+          collector_id: p.collectorId,
+          recycler_id: p.recyclerId,
+          scheduled_date: p.scheduledDate,
+          scheduled_time_slot: p.timeSlot || p.scheduledTimeSlot || '10:00 - 13:00',
+          driver_name: p.driverName || 'Designated Pickup Agent',
+          driver_phone: p.driverContact || p.driverPhone || '9876543210',
+          vehicle_number: p.vehicleNumber || 'UP-32-EW-2026',
+          pickup_status: p.status || p.pickupStatus || 'CONFIRMED',
+          pickup_address: p.pickupAddress || 'Collector Registered Address',
+          collector_phone: p.collectorPhone || '9876543210',
+          created_at: p.createdAt,
+          updated_at: p.updatedAt || p.createdAt
+        }));
+        if (recentPickups.length > 0) {
+          await client.from('pickups').upsert(recentPickups);
+        }
+
+        // Upsert most recent 20 handovers
+        const recentHandovers = this.data.handovers.slice(-20).map((h: any) => ({
+          id: h.id,
+          lot_id: h.lotId,
+          pickup_id: h.pickupId || null,
+          collector_id: h.collectorId,
+          recycler_id: h.recyclerId,
+          recycler_name: h.recyclerName || '',
+          approx_weight: h.approxWeight ?? h.initialEstimatedWeight ?? h.actualWeight ?? 0,
+          initial_estimated_weight: h.initialEstimatedWeight ?? h.approxWeight ?? h.actualWeight ?? 0,
+          actual_weight: h.actualWeight,
+          weight_difference: h.weightDifference || 0,
+          weight_diff_percentage: h.weightDiffPercentage || 0,
+          proof_image_url: h.proofImageUrl || '',
+          handover_otp: h.handoverOtp,
+          gps_location: h.gpsLocation || {},
+          location_source: h.locationSource || 'DEVICE_GPS',
+          device_accuracy_meters: h.deviceAccuracyMeters || 5.0,
+          verified_by_recycler_name: h.verifiedByRecyclerName,
+          payment_method: h.paymentMethod || 'OFFLINE_CASH',
+          payment_record_type: h.paymentRecordType || 'OFFLINE_CASH',
+          external_gateway_status: h.externalGatewayStatus || 'SUCCESS',
+          final_payment_amount: h.finalPaymentAmount || 0,
+          timestamp: h.timestamp
+        }));
+        if (recentHandovers.length > 0) {
+          await client.from('handovers').upsert(recentHandovers);
+        }
+
+        // Upsert most recent 20 payments
+        const recentPayments = this.data.payments.slice(-20).map(p => ({
+          id: p.id,
+          lot_id: p.lotId,
+          collector_id: p.collectorId,
+          recycler_id: p.recyclerId,
+          recycler_name: p.recyclerName,
+          material_category: p.materialCategory,
+          weight: p.weight,
+          rate_per_kg: p.ratePerKg,
+          amount: p.amount,
+          payment_method: p.paymentMethod || 'OFFLINE_CASH',
+          record_type: p.recordType || 'OFFLINE_CASH',
+          payout_status: p.payoutStatus || 'COMPLETED',
+          external_gateway_status: p.externalGatewayStatus || 'SUCCESS',
+          status: p.status || 'COMPLETED',
+          transaction_ref: p.transactionRef || '',
+          data_source: p.dataSource || 'LIVE',
+          timestamp: p.timestamp
+        }));
+        if (recentPayments.length > 0) {
+          await client.from('payments').upsert(recentPayments);
+        }
+      } catch (err) {
+        console.warn('⚠️ [SUPABASE SYNC] Notice during real-time sync:', (err as any)?.message);
+      }
+    }, 400);
+  }
+
 
   public get users() { return this.data.users; }
   public get collectors() { return this.data.collectors; }

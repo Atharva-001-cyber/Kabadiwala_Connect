@@ -5,6 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import apiRouter from './routes/api.router';
 import { db } from './db/store';
+import { isSupabaseConfigured } from './db/supabase';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.get('/health', (req, res) => {
   res.json({
     status: 'online',
+    database: isSupabaseConfigured() ? 'SUPABASE_CLOUD_CONNECTED' : 'LOCAL_JSON_FALLBACK',
     project: 'Kabadiwala Connect (SIH 2026 #229)',
     timestamp: new Date().toISOString(),
     stats: {
