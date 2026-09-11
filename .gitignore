@@ -1,4 +1,10 @@
+# Dependencies & Build Output
 node_modules/
 dist/
 .tmp/
 *.log
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
