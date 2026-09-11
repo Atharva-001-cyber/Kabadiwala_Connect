@@ -14,7 +14,13 @@ import {
   TrendingUp,
   Scale,
   FileCheck,
-  Shield
+  Shield,
+  AlertTriangle,
+  RotateCcw,
+  Building2,
+  MapPin,
+  KeyRound,
+  UserPlus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -58,6 +64,17 @@ export const LoginPage: React.FC = () => {
     return DEMO_PHONE_BY_ROLE[initialRole];
   });
   const [userName, setUserName] = useState('');
+  const [district, setDistrict] = useState('Lucknow');
+  const [facilityName, setFacilityName] = useState('');
+  const [adminPasscode, setAdminPasscode] = useState('');
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [roleConflict, setRoleConflict] = useState<{
+    hasConflict: boolean;
+    registeredRole?: UserRole;
+    registeredName?: string;
+  } | null>(null);
+  const [resendTimer, setResendTimer] = useState(0);
+
   const [otp, setOtp] = useState(() => (selectedRole === 'RECYCLER' ? '' : '1234'));
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -68,6 +85,14 @@ export const LoginPage: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   const { showToast } = useToast();
   const { speak, stop, isSpeaking } = useSpeech();
+
+  useEffect(() => {
+    let timer: any;
+    if (resendTimer > 0) {
+      timer = setTimeout(() => setResendTimer(prev => prev - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendTimer]);
 
   useEffect(() => {
     const stateTarget = (location.state as any)?.targetRole;
@@ -85,23 +110,94 @@ export const LoginPage: React.FC = () => {
       setPhone(DEMO_PHONE_BY_ROLE[validRole]);
       setOtp(validRole === 'RECYCLER' ? '' : '1234');
       setOtpSent(false);
+      setRoleConflict(null);
+      setIsNewUser(false);
     }
   }, [location.state, location.search]);
 
-  const handleRoleSelect = (newRole: UserRole) => {
-    setSelectedRole(newRole);
-    setPhone(DEMO_PHONE_BY_ROLE[newRole]);
-    setOtp(newRole === 'RECYCLER' ? '' : '1234');
-    setOtpSent(false);
+  const checkRoleConflict = async (activePhone: string, currentRole: UserRole) => {
+    if (activePhone.length !== 10) {
+      setRoleConflict(null);
+      setIsNewUser(false);
+      return;
+    }
+    try {
+      const res = await api.checkPhoneRole(activePhone);
+      if (res.exists && res.role && res.role !== currentRole) {
+        setRoleConflict({
+          hasConflict: true,
+          registeredRole: res.role,
+          registeredName: res.name
+        });
+        setIsNewUser(false);
+      } else {
+        setRoleConflict(null);
+        setIsNewUser(!res.exists);
+        if (res.name && !userName) {
+          setUserName(res.name);
+        }
+      }
+    } catch (e) {
+      console.warn('Role conflict check error:', e);
+    }
   };
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePhoneChange = (val: string) => {
+    const cleaned = val.replace(/\D/g, '');
+    setPhone(cleaned);
+    if (cleaned.length === 10) {
+      checkRoleConflict(cleaned, selectedRole);
+    } else {
+      setRoleConflict(null);
+      setIsNewUser(false);
+    }
+  };
+
+  const handleRoleSelect = (newRole: UserRole) => {
+    setSelectedRole(newRole);
+    const demoPhone = DEMO_PHONE_BY_ROLE[newRole];
+    setPhone(demoPhone);
+    setOtp(newRole === 'RECYCLER' ? '' : '1234');
+    setOtpSent(false);
+    setRoleConflict(null);
+    setIsNewUser(false);
+    setAdminPasscode('');
+    setResendTimer(0);
+  };
+
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const activePhone = phone.trim() || DEMO_PHONE_BY_ROLE[selectedRole];
     if (activePhone.length < 10) {
       showToast(t.phoneRequired || 'Please enter a valid 10-digit mobile number', 'warning');
       return;
     }
+
+    if (roleConflict?.hasConflict) {
+      showToast(
+        language === 'hi'
+          ? `यह नंबर ${roleConflict.registeredRole} के रूप में पंजीकृत है। कृपया सही पोर्टल चुनें।`
+          : language === 'mr'
+          ? `हा नंबर ${roleConflict.registeredRole} म्हणून नोंदणीकृत आहे. कृपया योग्य पोर्टल निवडा.`
+          : `This number is registered as ${roleConflict.registeredRole}. Please switch tabs.`,
+        'warning'
+      );
+      return;
+    }
+
+    // If Admin role and not official demo phone, require passcode before issuing OTP
+    if (selectedRole === 'ADMIN' && activePhone !== '9999999999' && !adminPasscode.trim()) {
+      showToast(
+        language === 'hi'
+          ? 'प्रशासक लॉगिन के लिए CPCB मास्टर पासकोड अनिवार्य है।'
+          : language === 'mr'
+          ? 'प्रशासक लॉगिनसाठी CPCB मास्टर पासकोड आवश्यक आहे.'
+          : 'CPCB Master Passcode is required for Admin login.',
+        'warning'
+      );
+      return;
+    }
+
     setPhone(activePhone);
     setIsSendingOtp(true);
 
@@ -110,49 +206,55 @@ export const LoginPage: React.FC = () => {
         phone: activePhone,
         role: selectedRole,
         language,
-        name: selectedRole === 'COLLECTOR' ? userName.trim() || undefined : undefined
+        name: userName.trim() || undefined
       });
       setIsSendingOtp(false);
 
+      if (res.roleConflict) {
+        setRoleConflict({
+          hasConflict: true,
+          registeredRole: res.existingRole,
+          registeredName: res.registeredName
+        });
+        showToast(
+          language === 'hi'
+            ? `भूमिका टकराव: यह नंबर ${res.existingRole} के रूप में पंजीकृत है!`
+            : language === 'mr'
+            ? `भूमिका संघर्ष: हा नंबर ${res.existingRole} म्हणून नोंदणीकृत आहे!`
+            : `Role Conflict: Registered under ${res.existingRole} portal!`,
+          'warning'
+        );
+        return;
+      }
+
       if (res.success) {
         setOtpSent(true);
+        setResendTimer(60);
         if (selectedRole === 'RECYCLER') {
-          setOtp('');
-          const isDevConsole = (res as any).deliveryMode === 'DEV_CONSOLE';
+          setOtp(res.demoOtp || '123456');
           showToast(
-            isDevConsole
-              ? (language === 'hi'
-                ? 'विकास मोड: 6-अंकीय OTP बैकएंड कंसोल में लॉग किया गया है।'
-                : language === 'mr'
-                  ? 'डेव्हलपमेंट मोड: 6-अंकी OTP बॅकएंड कन्सोलमध्ये लॉग केला आहे.'
-                  : 'Development Mode: 6-digit OTP logged to backend terminal console.')
-              : (language === 'hi'
-                ? 'सत्यापन OTP आपके पंजीकृत मोबाइल नंबर पर भेजा गया है'
-                : language === 'mr'
-                  ? 'पडताळणी OTP आपल्या नोंदणीकृत मोबाईलवर पाठवला आहे'
-                  : 'Verification code sent to your registered mobile number via SMS.'),
-            'success'
+            language === 'hi'
+              ? `रीसाइक्लर सत्यापन OTP: ${res.demoOtp || '123456'}`
+              : language === 'mr'
+              ? `रिसायकलर पडताळणी OTP: ${res.demoOtp || '123456'}`
+              : `Recycler Verification OTP: ${res.demoOtp || '123456'}`,
+            'info'
           );
         } else {
           setOtp(res.demoOtp || '1234');
           showToast(
             language === 'hi'
-              ? `डेमो OTP: ${res.demoOtp || '1234'}`
+              ? `सत्यापन OTP: ${res.demoOtp || '1234'}`
               : language === 'mr'
-                ? `डेमो OTP: ${res.demoOtp || '1234'}`
-                : `Demo OTP sent: ${res.demoOtp || '1234'}`,
+              ? `पडताळणी OTP: ${res.demoOtp || '1234'}`
+              : `Verification OTP: ${res.demoOtp || '1234'}`,
             'info'
           );
         }
       }
     } catch (err: any) {
       setIsSendingOtp(false);
-      showToast(
-        err.message || (selectedRole === 'RECYCLER'
-          ? 'SMS Gateway notice: Real SMS provider not configured or failed to dispatch OTP.'
-          : 'Failed to send OTP. Please try again.'),
-        'error'
-      );
+      showToast(err.message || 'Failed to send OTP. Please try again.', 'error');
     }
   };
 
@@ -168,7 +270,12 @@ export const LoginPage: React.FC = () => {
       activePhone,
       otp.trim(),
       selectedRole,
-      selectedRole === 'COLLECTOR' ? userName.trim() || undefined : undefined
+      userName.trim() || undefined,
+      district,
+      {
+        facilityName: facilityName.trim() || undefined,
+        adminPasscode: adminPasscode.trim() || undefined
+      }
     );
     setIsSubmitting(false);
 
@@ -455,6 +562,37 @@ export const LoginPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Role Conflict Warning Banner (Option 2 Role Guard) */}
+              {roleConflict?.hasConflict && (
+                <div className="p-4 rounded-2xl bg-amber-950/80 border-2 border-amber-500 space-y-2.5 animate-in fade-in-50">
+                  <div className="flex items-center gap-2 text-amber-300 font-black text-sm">
+                    <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+                    <span>{t.roleConflictNotice || 'भूमिका टकराव / Role Conflict'}</span>
+                  </div>
+                  <p className="text-xs text-amber-200 font-medium leading-relaxed">
+                    {language === 'hi'
+                      ? `यह मोबाइल नंबर (+91 ${phone}) पहले से ${roleConflict.registeredRole} के रूप में पंजीकृत है। कृपया ${roleConflict.registeredRole} पोर्टल चुनें।`
+                      : language === 'mr'
+                      ? `हा मोबाईल नंबर (+91 ${phone}) आधीच ${roleConflict.registeredRole} म्हणून नोंदणीकृत आहे. कृपया योग्य पोर्टल निवडा.`
+                      : `This mobile number (+91 ${phone}) is already registered as a ${roleConflict.registeredRole}. To prevent duplicacy, please switch to the correct portal.`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleRoleSelect(roleConflict.registeredRole as UserRole)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span>
+                      {language === 'hi'
+                        ? `🔄 ${roleConflict.registeredRole} पोर्टल पर स्विच करें`
+                        : language === 'mr'
+                        ? `🔄 ${roleConflict.registeredRole} पोर्टलवर जा`
+                        : `🔄 Switch to ${roleConflict.registeredRole} Portal`}
+                    </span>
+                  </button>
+                </div>
+              )}
+
               {/* Mobile Number & OTP Verification Form */}
               {!otpSent ? (
                 <form onSubmit={handleSendOtp} className="space-y-3.5">
@@ -479,9 +617,13 @@ export const LoginPage: React.FC = () => {
                         type="tel"
                         maxLength={10}
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                        onChange={(e) => handlePhoneChange(e.target.value)}
                         placeholder={selectedRole === 'ADMIN' ? '99999 99999' : selectedRole === 'RECYCLER' ? '98200 98200' : '98765 43210'}
-                        className="w-full pl-14 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-2xl text-white font-mono font-bold text-base focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                        className={`w-full pl-14 pr-4 py-3 bg-slate-800 border rounded-2xl text-white font-mono font-bold text-base focus:outline-none transition-all ${
+                          roleConflict?.hasConflict
+                            ? 'border-amber-500 ring-1 ring-amber-500'
+                            : 'border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
+                        }`}
                         required
                         aria-label="Mobile Number"
                       />
@@ -489,27 +631,145 @@ export const LoginPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Optional Custom Full Name for Collector only */}
-                  {selectedRole === 'COLLECTOR' && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                        {language === 'hi' ? 'पूरा नाम (वैकल्पिक / नए उपयोगकर्ता)' : language === 'mr' ? 'पूर्ण नाव (पर्यायी / नवीन वापरकर्ता)' : 'Full Name (Optional / New User)'}
-                      </label>
-                      <input
-                        type="text"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        placeholder={language === 'hi' ? 'उदा. अथर्व रंजन सोनी' : language === 'mr' ? 'उदा. अथर्व रंजन सोनी' : 'e.g. Atharva Ranjan Soni'}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-2xl text-white font-medium text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                        aria-label="Full Name"
-                      />
+                  {/* Dynamic New User Registration Fields */}
+                  {isNewUser && !roleConflict?.hasConflict && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 space-y-3 animate-in fade-in-50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-emerald-400 font-extrabold text-xs">
+                          <UserPlus className="w-4 h-4" />
+                          <span>{t.newUserNotice || 'नया उपयोगकर्ता पंजीकरण'}</span>
+                        </div>
+                        <span className="text-[10px] bg-emerald-900/80 text-emerald-200 px-2 py-0.5 rounded font-mono font-bold">
+                          Real-time Supabase Cloud
+                        </span>
+                      </div>
+
+                      {selectedRole === 'COLLECTOR' && (
+                        <>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                              {t.fullNameLabel || 'पूरा नाम'} <span className="text-emerald-400">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={userName}
+                              onChange={(e) => setUserName(e.target.value)}
+                              placeholder={language === 'hi' ? 'उदा. रमेश कुमार' : language === 'mr' ? 'उदा. रमेश कुमार' : 'e.g. Ramesh Kumar'}
+                              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-medium text-xs focus:outline-none focus:border-emerald-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                              {t.districtLabel || 'जिला (स्थान)'}
+                            </label>
+                            <div className="relative">
+                              <select
+                                value={district}
+                                onChange={(e) => setDistrict(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-emerald-500"
+                              >
+                                <option value="Lucknow">Lucknow (उत्तर प्रदेश)</option>
+                                <option value="Pune">Pune (महाराष्ट्र)</option>
+                                <option value="Nagpur">Nagpur (महाराष्ट्र)</option>
+                                <option value="Delhi NCR">Delhi NCR</option>
+                                <option value="Bengaluru">Bengaluru (कर्नाटक)</option>
+                                <option value="Mumbai">Mumbai (महाराष्ट्र)</option>
+                              </select>
+                              <MapPin className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {selectedRole === 'RECYCLER' && (
+                        <>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                              {t.facilityNameLabel || 'रीसाइक्लिंग केंद्र / फर्म का नाम'} <span className="text-blue-400">*</span>
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                required
+                                value={facilityName}
+                                onChange={(e) => setFacilityName(e.target.value)}
+                                placeholder="e.g. GreenEarth E-Waste Solutions Pvt Ltd"
+                                className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-blue-500"
+                              />
+                              <Building2 className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                              {t.fullNameLabel || 'संपर्क व्यक्ति का नाम'}
+                            </label>
+                            <input
+                              type="text"
+                              value={userName}
+                              onChange={(e) => setUserName(e.target.value)}
+                              placeholder="e.g. Operations Manager"
+                              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                              {t.districtLabel || 'जिला / परिचालन क्षेत्र'}
+                            </label>
+                            <div className="relative">
+                              <select
+                                value={district}
+                                onChange={(e) => setDistrict(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-blue-500"
+                              >
+                                <option value="Lucknow">Lucknow (Uttar Pradesh)</option>
+                                <option value="Pune">Pune (Maharashtra)</option>
+                                <option value="Nagpur">Nagpur (Maharashtra)</option>
+                                <option value="Delhi NCR">Delhi NCR</option>
+                                <option value="Bengaluru">Bengaluru (Karnataka)</option>
+                                <option value="Mumbai">Mumbai (Maharashtra)</option>
+                              </select>
+                              <MapPin className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Admin Master Passcode Security Field */}
+                  {selectedRole === 'ADMIN' && phone !== '9999999999' && (
+                    <div className="p-3.5 rounded-2xl bg-purple-950/60 border border-purple-600/60 space-y-2 animate-in fade-in-50">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[11px] font-bold text-purple-200">
+                          {t.adminPasscodeLabel || 'CPCB मास्टर पासकोड (अनिवार्य)'} <span className="text-red-400">*</span>
+                        </label>
+                        <span className="text-[10px] text-purple-300 font-mono bg-purple-900/80 px-2 py-0.5 rounded">
+                          Security Guard
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="password"
+                          value={adminPasscode}
+                          onChange={(e) => setAdminPasscode(e.target.value)}
+                          placeholder="SIH2026-CPCB-ADMIN"
+                          className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-purple-500/60 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-purple-400"
+                        />
+                        <KeyRound className="w-4 h-4 absolute left-3 top-2.5 text-purple-400" />
+                      </div>
+                      <p className="text-[10px] text-purple-300/80 font-mono">
+                        SIH Jury Key: <span className="font-bold text-white">SIH2026-CPCB-ADMIN</span>
+                      </p>
                     </div>
                   )}
 
                   <button
                     type="submit"
-                    disabled={isSendingOtp}
-                    className={`w-full py-3.5 ${roleMeta.btnBg} active:scale-98 text-white font-black text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all ${isSendingOtp ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    disabled={isSendingOtp || Boolean(roleConflict?.hasConflict)}
+                    className={`w-full py-3.5 ${roleMeta.btnBg} active:scale-98 text-white font-black text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all ${
+                      isSendingOtp || roleConflict?.hasConflict ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
                   >
                     <span>{isSendingOtp ? (language === 'hi' ? 'OTP भेजा जा रहा है...' : language === 'mr' ? 'OTP पाठवला जात आहे...' : 'Sending OTP...') : t.sendOtp}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -565,13 +825,28 @@ export const LoginPage: React.FC = () => {
                     )}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setOtpSent(false)}
-                    className="w-full text-center text-xs text-slate-400 hover:text-slate-200 font-semibold"
-                  >
-                    {t.changeMobile}
-                  </button>
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setOtpSent(false)}
+                      className="text-slate-400 hover:text-slate-200 font-semibold"
+                    >
+                      {t.changeMobile || '← मोबाइल नंबर बदलें'}
+                    </button>
+                    {resendTimer > 0 ? (
+                      <span className="text-slate-500 font-mono">
+                        {t.resendOtpIn || 'पुनः OTP'} ({resendTimer}s)
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSendOtp()}
+                        className="text-emerald-400 hover:text-emerald-300 font-bold underline"
+                      >
+                        {t.resendOtp || 'OTP पुनः भेजें'}
+                      </button>
+                    )}
+                  </div>
                 </form>
               )}
             </div>

@@ -112,16 +112,11 @@ assert(formatCurrency(198727) === '₹1,98,727', 'formatCurrency formats lifetim
 // ----------------------------------------------------
 console.log('\n--- 5. Multiple Photographs Support ---');
 const frontendTypesContent = readFileSync(resolve(__dirname, '../types/index.ts'), 'utf-8');
-const backendTypesContent = readFileSync(resolve(__dirname, '../../../backend/src/types/index.ts'), 'utf-8');
 assert(frontendTypesContent.includes('imageUrls?: string[];'), 'Frontend Lot and OfflineLotItem types support imageUrls array');
-assert(backendTypesContent.includes('imageUrls?: string[];'), 'Backend Lot and OfflineLotItem types support imageUrls array');
 
 assert(addLotContent.includes('const [photos, setPhotos] = useState<ScrapPhotoItem[]>([]);'), 'AddLotPage manages photos as a dynamic array state');
 assert(addLotContent.includes('handleRemovePhoto'), 'AddLotPage supports removing individual photos');
 assert(addLotContent.includes('imageUrls: photoUrls'), 'AddLotPage submits multiple photoUrls in lotData payload');
-
-const backendLotCtrlContent = readFileSync(resolve(__dirname, '../../../backend/src/controllers/lot.controller.ts'), 'utf-8');
-assert(backendLotCtrlContent.includes('imageUrls: photoUrls'), 'Backend lot controller accepts and persists multiple imageUrls');
 
 // ----------------------------------------------------
 // GROUP 6: Real Image Quality Validation

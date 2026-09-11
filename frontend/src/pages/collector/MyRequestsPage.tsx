@@ -37,17 +37,31 @@ export const MyRequestsPage: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.getLots();
+      let collectorId = '';
+      try {
+        const cp = localStorage.getItem('collectorProfile');
+        if (cp) collectorId = JSON.parse(cp)?.id;
+      } catch {}
+
+      let res = await api.getLots(collectorId ? { collectorId, limit: '50' } : { limit: '50' });
+      if (res.success && res.lots.length === 0 && collectorId) {
+        res = await api.getLots({ limit: '50' });
+      }
+
       if (res.success) {
         setLots(res.lots);
-        const offersAcc: Record<string, Offer[]> = {};
-        for (const lot of res.lots) {
-          const detailRes = await api.getLotById(lot.id);
-          if (detailRes.success) {
-            offersAcc[lot.id] = detailRes.offers;
-          }
+        const lotIds = res.lots.map(l => l.id);
+        if (lotIds.length > 0 && (api as any).getOffersForLots) {
+          const offersRes = await (api as any).getOffersForLots(lotIds);
+          const offersAcc: Record<string, Offer[]> = {};
+          (offersRes.offers || []).forEach((o: Offer) => {
+            if (!offersAcc[o.lotId]) offersAcc[o.lotId] = [];
+            offersAcc[o.lotId].push(o);
+          });
+          setOffersMap(offersAcc);
+        } else {
+          setOffersMap({});
         }
-        setOffersMap(offersAcc);
       }
     } catch (err) {
       console.warn('Failed to load requests:', err);

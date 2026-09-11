@@ -22,8 +22,8 @@ export const PickupManagementPage: React.FC = () => {
   const fetchData = async () => {
     try {
       const [lotsRes, pickupsRes] = await Promise.all([
-        api.getLots(),
-        api.getPickups()
+        api.getLots({ limit: '40' }),
+        api.getPickups({ limit: '30' })
       ]);
       if (lotsRes.success) {
         setLots(lotsRes.lots);

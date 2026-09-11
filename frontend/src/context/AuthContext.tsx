@@ -15,7 +15,14 @@ interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   isLoading: boolean;
-  loginWithOtp: (phone: string, otp: string, role?: UserRole, name?: string, district?: string) => Promise<LoginResult>;
+  loginWithOtp: (
+    phone: string,
+    otp: string,
+    role?: UserRole,
+    name?: string,
+    district?: string,
+    extra?: { facilityName?: string; adminPasscode?: string }
+  ) => Promise<LoginResult>;
   switchDemoRole: (role: UserRole) => Promise<LoginResult>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -58,10 +65,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser();
   }, [refreshUser]);
 
-  const loginWithOtp = async (phone: string, otp: string, selectedRole?: UserRole, name?: string, district?: string): Promise<LoginResult> => {
+  const loginWithOtp = async (
+    phone: string,
+    otp: string,
+    selectedRole?: UserRole,
+    name?: string,
+    district?: string,
+    extra?: { facilityName?: string; adminPasscode?: string }
+  ): Promise<LoginResult> => {
     try {
       setIsLoading(true);
-      const res = await api.verifyOtp({ phone, otp, selectedRole, name, district });
+      const res = await api.verifyOtp({
+        phone,
+        otp,
+        selectedRole,
+        name,
+        district,
+        facilityName: extra?.facilityName,
+        adminPasscode: extra?.adminPasscode
+      });
       if (res.success && res.token) {
         setAuthToken(res.token);
         setUser(res.user);

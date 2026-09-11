@@ -26,7 +26,7 @@ export const IncomingRequestsPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots();
+      const res = await api.getLots({ limit: '40' });
       if (res.success) {
         setLots(res.lots);
       }

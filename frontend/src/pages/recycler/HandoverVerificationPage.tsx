@@ -67,7 +67,7 @@ export const HandoverVerificationPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots();
+      const res = await api.getLots({ limit: '40' });
       if (res.success) {
         // Filter lots in ACCEPTED or PICKUP_SCHEDULED status ready for physical handover
         const pending = res.lots.filter((l: Lot) => l.status === 'ACCEPTED' || l.status === 'PICKUP_SCHEDULED');

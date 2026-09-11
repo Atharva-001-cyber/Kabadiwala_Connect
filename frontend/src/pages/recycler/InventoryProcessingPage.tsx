@@ -17,7 +17,7 @@ export const InventoryProcessingPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots();
+      const res = await api.getLots({ limit: '40' });
       if (res.success) {
         setLots(res.lots);
         const processingEligible = res.lots.filter(l => l.status === 'RECEIVED' || l.status === 'PROCESSING');

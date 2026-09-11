@@ -20,8 +20,8 @@ export const RecyclerDashboard: React.FC = () => {
       setLoading(true);
       try {
         const [lotsRes, pickupsRes] = await Promise.all([
-          api.getLots(),
-          api.getPickups()
+          api.getLots({ limit: '40' }),
+          api.getPickups({ limit: '30' })
         ]);
         if (lotsRes.success) setLots(lotsRes.lots);
         if (pickupsRes.success) setPickups(pickupsRes.pickups);

@@ -54,9 +54,11 @@ export const CollectorDashboard: React.FC = () => {
       try {
         setLoading(true);
         const district = collectorProfile?.district || 'Lucknow';
+        const colId = collectorProfile?.id;
+        const lotsQuery = colId ? api.getLots({ collectorId: colId, limit: '30' }) : api.getLots({ limit: '30' });
         const [lotsRes, ledgerRes, pricesRes] = await Promise.all([
-          api.getLots(),
-          api.getCollectorLedger(),
+          lotsQuery,
+          api.getCollectorLedger(colId),
           api.getPriceBoard(district)
         ]);
         if (lotsRes.success) setLots(lotsRes.lots);

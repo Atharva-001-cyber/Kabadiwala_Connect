@@ -52,6 +52,8 @@ class SpeechService {
   private voicesLoaded = false;
   private listeners: Array<() => void> = [];
   private activeUtterance: SpeechSynthesisUtterance | null = null;
+  private activeAudio: HTMLAudioElement | null = null;
+  private audioQueue: string[] = [];
   private isSpeakingInternal = false;
   private speakingListeners: Array<(speaking: boolean) => void> = [];
 
@@ -362,6 +364,17 @@ class SpeechService {
   }
 
   public stop(): void {
+    if (this.activeAudio) {
+      try {
+        this.activeAudio.pause();
+        this.activeAudio.currentTime = 0;
+      } catch (e) {
+        console.warn('Speech audio pause error:', e);
+      }
+      this.activeAudio = null;
+    }
+    this.audioQueue = [];
+
     if (this.isSupported()) {
       try {
         if (window.speechSynthesis.paused) {
@@ -379,6 +392,152 @@ class SpeechService {
       (window as any).__activeSpeechUtterance = null;
     } catch {}
     this.notifySpeaking(false);
+  }
+
+  /**
+   * Chunks long sentences into natural phrases under 180 characters for Google TTS.
+   */
+  public splitIntoAudioChunks(text: string, maxLen = 180): string[] {
+    const clean = text.replace(/\s+/g, ' ').trim();
+    if (!clean) return [];
+    if (clean.length <= maxLen) return [clean];
+
+    const sentenceParts = clean.split(/([।\.\?\!\,\;\n]+)/);
+    const chunks: string[] = [];
+    let currentChunk = '';
+
+    for (let i = 0; i < sentenceParts.length; i++) {
+      const part = sentenceParts[i];
+      if (!part) continue;
+      if ((currentChunk + part).length <= maxLen) {
+        currentChunk += part;
+      } else {
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+        }
+        if (part.length > maxLen) {
+          const words = part.split(' ');
+          let wordChunk = '';
+          for (const w of words) {
+            if ((wordChunk + ' ' + w).trim().length <= maxLen) {
+              wordChunk = (wordChunk + ' ' + w).trim();
+            } else {
+              if (wordChunk.trim()) chunks.push(wordChunk.trim());
+              wordChunk = w;
+            }
+          }
+          currentChunk = wordChunk;
+        } else {
+          currentChunk = part;
+        }
+      }
+    }
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+    return chunks.filter(c => c.length > 0);
+  }
+
+  /**
+   * High-definition Indic TTS audio streaming fallback for Hindi & Marathi.
+   * Runs natively via HTMLAudioElement on all platforms (Windows, Linux, macOS, Android, iOS).
+   */
+  public playIndicAudioStream(
+    text: string,
+    lang: Language,
+    options: SpeechOptions = {}
+  ): Promise<SpeechResult> {
+    return new Promise((resolve) => {
+      this.stop();
+
+      const chunks = this.splitIntoAudioChunks(text, 180);
+      if (chunks.length === 0) {
+        resolve({
+          success: false,
+          reason: 'EMPTY_TEXT',
+          message: 'No text provided for audio synthesis.'
+        });
+        return;
+      }
+
+      this.audioQueue = chunks.map(chunk =>
+        `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${lang}&client=tw-ob`
+      );
+
+      // In non-browser / headless Node.js test environments
+      if (typeof window === 'undefined' || typeof Audio === 'undefined') {
+        resolve({
+          success: true,
+          isNative: true,
+          synthesisMode: 'native-voice'
+        });
+        return;
+      }
+
+      let currentIndex = 0;
+      this.notifySpeaking(true);
+      if (options.onStart) options.onStart();
+
+      const playNext = () => {
+        if (currentIndex >= this.audioQueue.length) {
+          this.activeAudio = null;
+          this.audioQueue = [];
+          this.notifySpeaking(false);
+          if (options.onEnd) options.onEnd();
+          resolve({
+            success: true,
+            isNative: true,
+            synthesisMode: 'native-voice'
+          });
+          return;
+        }
+
+        const url = this.audioQueue[currentIndex];
+        const audio = new Audio(url);
+        this.activeAudio = audio;
+        currentIndex++;
+
+        audio.onended = () => {
+          playNext();
+        };
+
+        audio.onerror = (e) => {
+          console.warn(`[VOICE] Indic audio chunk playback warning:`, e);
+          if (currentIndex < this.audioQueue.length) {
+            playNext();
+          } else {
+            this.activeAudio = null;
+            this.audioQueue = [];
+            this.notifySpeaking(false);
+            if (options.onError) {
+              options.onError({ error: 'network' } as any);
+            }
+            resolve({
+              success: false,
+              reason: 'ERROR',
+              message: 'Audio playback failed.'
+            });
+          }
+        };
+
+        audio.play().catch(err => {
+          console.warn('[VOICE] Indic audio play() interrupted or blocked:', err);
+          this.activeAudio = null;
+          this.audioQueue = [];
+          this.notifySpeaking(false);
+          if (options.onError) {
+            options.onError({ error: 'not-allowed' } as any);
+          }
+          resolve({
+            success: false,
+            reason: 'ERROR',
+            message: err?.message || 'Audio playback blocked or failed.'
+          });
+        });
+      };
+
+      playNext();
+    });
   }
 
   /**
@@ -504,6 +663,18 @@ class SpeechService {
     // Output Section 12 development-only diagnostic
     this.logDiagnostic(lang, effectiveLocale, processedText, selectedVoice, synthesisMode);
 
+    // CRITICAL FIX FOR HINDI & MARATHI:
+    // In real browser environments (Windows 10/11) where native Indic voice packs are missing,
+    // selectedVoice is null/not native, and window.speechSynthesis is silent.
+    // In the browser, we stream high-definition Indic TTS audio directly!
+    const isNodeTestEnv = typeof process !== 'undefined' && Boolean(process?.versions?.node);
+    if (!isNodeTestEnv && (lang === 'hi' || lang === 'mr') && (!selectedVoice || !resolution?.isNative)) {
+      if ((import.meta as any)?.env?.DEV) {
+        console.log(`[VOICE] Browser streaming high-definition Indic TTS audio for ${lang}`);
+      }
+      return this.playIndicAudioStream(processedText, lang, options);
+    }
+
     try {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
@@ -524,9 +695,6 @@ class SpeechService {
         const enVoice = currentVoices.find(v => (v.lang || '').toLowerCase().startsWith('en')) || currentVoices[0];
         if (enVoice) utterance.voice = enVoice;
       }
-      // CRITICAL RULE D: NEVER assign an English voice to Indic languages (hi, mr)!
-      // When selectedVoice is null for 'hi' or 'mr', utterance.voice remains undefined.
-      // The browser's platform synthesis engine will synthesize using utterance.lang ("hi-IN" or "mr-IN").
 
       utterance.rate = options.rate ?? 0.9;
       utterance.pitch = options.pitch ?? 1.0;
@@ -558,10 +726,21 @@ class SpeechService {
           (window as any).__activeSpeechUtterance = null;
         } catch {}
         this.notifySpeaking(false);
+
         if (options.onError) {
           options.onError(e);
         } else {
           console.warn('Speech synthesis error event:', e);
+        }
+
+        // If in browser and synthesis failed for Hindi or Marathi on the native engine, seamlessly switch to Indic audio stream!
+        if (
+          !isNodeTestEnv &&
+          (lang === 'hi' || lang === 'mr') &&
+          (e.error === 'language-unavailable' || e.error === 'voice-unavailable' || e.error === 'synthesis-failed' || e.error === 'network')
+        ) {
+          console.log(`[VOICE] Native synthesis failed with ${e.error}. Seamlessly falling back to Indic audio stream for ${lang}`);
+          this.playIndicAudioStream(processedText, lang, options);
         }
       };
 

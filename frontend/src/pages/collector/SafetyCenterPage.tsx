@@ -19,11 +19,15 @@ import { api } from '../../services/api';
 export const SafetyCenterPage: React.FC = () => {
   const { language, t } = useLanguage();
   const [guides, setGuides] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    api.getSafetyGuides().then(res => {
-      if (res.success) setGuides(res.guides);
-    });
+    api.getSafetyGuides()
+      .then(res => {
+        if (res.success && res.guides) setGuides(res.guides);
+      })
+      .catch(err => console.warn('Safety guides fetch error:', err))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -65,6 +69,13 @@ export const SafetyCenterPage: React.FC = () => {
         </div>
       </div>
 
+      {loading && (
+        <div className="text-center py-12 text-slate-400 text-xs font-bold flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+          <span>{language === 'hi' ? 'सुरक्षा गाइड लोड हो रही है...' : language === 'mr' ? 'सुरक्षा नियम लोड होत आहेत...' : 'Loading safety guides...'}</span>
+        </div>
+      )}
+
       {/* Safety Guideline Cards */}
       <div className="space-y-6">
         {guides.map((guide) => {
@@ -94,7 +105,7 @@ export const SafetyCenterPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-black text-base sm:text-lg text-white">
-                      {guide.title[language] || guide.title.hi}
+                      {guide.title?.[language] || guide.title?.hi || (typeof guide.title === 'string' ? guide.title : 'सुरक्षा निर्देश')}
                     </h3>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       {language === 'hi' ? 'श्रेणी:' : language === 'mr' ? 'प्रकार:' : 'Category:'} {guide.category}
@@ -102,59 +113,67 @@ export const SafetyCenterPage: React.FC = () => {
                   </div>
                 </div>
 
-                <AudioButton
-                  text={guide.audioText[language] || guide.audioText.hi}
-                  label={language === 'hi' ? 'निर्देश सुनें' : language === 'mr' ? 'सूचना ऐका' : 'Listen'}
-                  size="sm"
-                />
+                {guide.audioText && (
+                  <AudioButton
+                    text={guide.audioText[language] || guide.audioText.hi || guide.audioText.en || ''}
+                    label={language === 'hi' ? 'निर्देश सुनें' : language === 'mr' ? 'सूचना ऐका' : 'Listen'}
+                    size="sm"
+                  />
+                )}
               </div>
 
               {/* High-Contrast Hazard Box */}
-              <div className="bg-red-950/60 border border-red-800/70 rounded-2xl p-4 text-xs space-y-1.5 shadow-inner">
-                <div className="flex items-center gap-2 text-red-300 font-black text-sm">
-                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-                  <span>{language === 'hi' ? 'गंभीर स्वास्थ्य खतरे:' : language === 'mr' ? 'गंभीर आरोग्याचे धोके:' : 'Severe Health Hazards:'}</span>
+              {guide.hazards && (
+                <div className="bg-red-950/60 border border-red-800/70 rounded-2xl p-4 text-xs space-y-1.5 shadow-inner">
+                  <div className="flex items-center gap-2 text-red-300 font-black text-sm">
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{language === 'hi' ? 'गंभीर स्वास्थ्य खतरे:' : language === 'mr' ? 'गंभीर आरोग्याचे धोके:' : 'Severe Health Hazards:'}</span>
+                  </div>
+                  <ul className="list-disc list-inside text-red-200/90 pl-1 space-y-1 text-xs">
+                    {(guide.hazards[language] || guide.hazards.hi || guide.hazards.en || []).map((h: string, idx: number) => (
+                      <li key={idx} className="font-medium">{h}</li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="list-disc list-inside text-red-200/90 pl-1 space-y-1 text-xs">
-                  {(guide.hazards[language] || guide.hazards.hi).map((h: string, idx: number) => (
-                    <li key={idx} className="font-medium">{h}</li>
-                  ))}
-                </ul>
-              </div>
+              )}
 
               {/* Visual DOs and DONTs Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                 {/* DOs */}
-                <div className="bg-emerald-950/40 border border-emerald-700/60 rounded-2xl p-4 space-y-2.5">
-                  <span className="text-xs font-black text-emerald-300 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>{language === 'hi' ? 'क्या करें (सुरक्षित नियम):' : language === 'mr' ? 'काय करावे (सुरक्षित नियम):' : 'Mandatory Safe DOs:'}</span>
-                  </span>
-                  <ul className="space-y-2 text-xs text-emerald-200">
-                    {(guide.dos[language] || guide.dos.hi).map((d: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-emerald-400 font-bold text-sm">✓</span>
-                        <span className="font-medium leading-relaxed">{d}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {guide.dos && (
+                  <div className="bg-emerald-950/40 border border-emerald-700/60 rounded-2xl p-4 space-y-2.5">
+                    <span className="text-xs font-black text-emerald-300 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>{language === 'hi' ? 'क्या करें (सुरक्षित नियम):' : language === 'mr' ? 'काय करावे (सुरक्षित नियम):' : 'Mandatory Safe DOs:'}</span>
+                    </span>
+                    <ul className="space-y-2 text-xs text-emerald-200">
+                      {(guide.dos[language] || guide.dos.hi || guide.dos.en || []).map((d: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-emerald-400 font-bold text-sm">✓</span>
+                          <span className="font-medium leading-relaxed">{d}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 {/* DONTs */}
-                <div className="bg-red-950/40 border border-red-700/60 rounded-2xl p-4 space-y-2.5">
-                  <span className="text-xs font-black text-red-300 flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-red-400" />
-                    <span>{language === 'hi' ? 'क्या न करें (सख्त मनाही):' : language === 'mr' ? 'काय करू नये (सक्त मनाई):' : 'Strict Prohibitions (DONTs):'}</span>
-                  </span>
-                  <ul className="space-y-2 text-xs text-red-200">
-                    {(guide.donts[language] || guide.donts.hi).map((d: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-red-400 font-bold text-sm">✗</span>
-                        <span className="font-medium leading-relaxed">{d}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {guide.donts && (
+                  <div className="bg-red-950/40 border border-red-700/60 rounded-2xl p-4 space-y-2.5">
+                    <span className="text-xs font-black text-red-300 flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-red-400" />
+                      <span>{language === 'hi' ? 'क्या न करें (सख्त मनाही):' : language === 'mr' ? 'काय करू नये (सक्त मनाई):' : 'Strict Prohibitions (DONTs):'}</span>
+                    </span>
+                    <ul className="space-y-2 text-xs text-red-200">
+                      {(guide.donts[language] || guide.donts.hi || guide.donts.en || []).map((d: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-red-400 font-bold text-sm">✗</span>
+                          <span className="font-medium leading-relaxed">{d}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           );

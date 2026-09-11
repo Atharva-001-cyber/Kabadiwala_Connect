@@ -65,7 +65,7 @@ export const TrackingPage: React.FC = () => {
   };
 
   useEffect(() => {
-    api.getLots().then(res => {
+    api.getLots({ limit: '25' }).then(res => {
       if (res.success && res.lots) {
         setAllLots(res.lots);
         if (!paramLotId) {
