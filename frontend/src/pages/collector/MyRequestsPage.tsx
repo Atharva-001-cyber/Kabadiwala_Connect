@@ -188,7 +188,10 @@ export const MyRequestsPage: React.FC = () => {
               ACCEPTED: { label: language === 'hi' ? 'ऑफर स्वीकृत' : language === 'mr' ? 'ऑफर स्वीकृत' : 'Offer Accepted', color: 'bg-blue-950 text-blue-300 border-blue-800' },
               PICKUP_SCHEDULED: { label: language === 'hi' ? 'पिकअप शेड्यूल है' : language === 'mr' ? 'पिकअप नियोजित' : 'Pickup Scheduled', color: 'bg-purple-950 text-purple-300 border-purple-800' },
               RECEIVED: { label: language === 'hi' ? 'हैंडओवर संपन्न / पेमेंट पूरा' : language === 'mr' ? 'हँडओव्हर पूर्ण / पेमेंट पूर्ण' : 'Handover & Settled', color: 'bg-teal-950 text-teal-300 border-teal-800' },
+              RECYCLER_RECEIVED: { label: language === 'hi' ? 'वेयरहाउस में प्राप्त' : language === 'mr' ? 'वेअरहाऊसमध्ये प्राप्त' : 'Warehouse Received', color: 'bg-teal-950 text-teal-300 border-teal-800' },
+              SORTED: { label: language === 'hi' ? 'छंटाई व घटक विघटन' : language === 'mr' ? 'वर्गीकरण व घटक विभाजन' : 'Sorted & Depopulated', color: 'bg-cyan-950 text-cyan-300 border-cyan-800' },
               PROCESSING: { label: language === 'hi' ? 'फैक्ट्री में सुरक्षित प्रोसेसिंग' : language === 'mr' ? 'कारखान्यात सुरक्षित प्रक्रिया' : 'Under Processing', color: 'bg-indigo-950 text-indigo-300 border-indigo-800' },
+              RECOVERED: { label: language === 'hi' ? 'दुर्लभ धातुएं पुनर्प्राप्त' : language === 'mr' ? 'दुर्मिळ धातू पुनर्प्राप्त' : 'Metals Recovered', color: 'bg-emerald-950 text-emerald-300 border-emerald-800' },
               RECYCLED: { label: language === 'hi' ? '100% औपचारिक रीसायकल' : language === 'mr' ? '१००% अधिकृत रीसायकल' : '100% Formally Recycled', color: 'bg-emerald-950 text-emerald-300 border-emerald-800' }
             };
 

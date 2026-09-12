@@ -1395,13 +1395,21 @@ export const api = {
     const lastTrace = await supabase.from('traceability_logs').select('event_hash').eq('lot_id', data.lotId).order('timestamp', { ascending: false }).limit(1).maybeSingle();
     const prevHash = lastTrace.data?.event_hash || '0'.repeat(64);
 
+    const stageTitles: Record<string, string> = {
+      RECYCLER_RECEIVED: 'Warehouse Received & Segregated',
+      SORTED: 'Sorting & Mechanical Depopulation',
+      PROCESSING: 'Hydrometallurgical Smelting & Extraction',
+      RECOVERED: 'Critical Rare Earth & Noble Metals Recovered',
+      RECYCLED: '100% Formally Recycled (CPCB Form-6 Ready)'
+    };
+
     const logId = `tl_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     const newLog = {
       id: logId,
       lot_id: data.lotId,
       stage: data.stage,
-      title: data.title || `Stage: ${data.stage}`,
-      description: data.description || 'Facility processing status advanced.',
+      title: data.title || stageTitles[data.stage] || `Stage: ${data.stage}`,
+      description: data.recoveredDetails || data.description || 'Facility processing status advanced.',
       facility_location: data.facilityLocation || 'Authorized Recycling Plant, Lucknow',
       actor_role: data.actorRole || 'RECYCLER',
       actor_name: data.actorName || 'Process Manager',

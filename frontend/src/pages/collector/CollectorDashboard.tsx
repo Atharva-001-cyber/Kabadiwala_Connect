@@ -707,7 +707,10 @@ export const CollectorDashboard: React.FC = () => {
                 ACCEPTED: 'bg-blue-950 text-blue-300 border-blue-800',
                 PICKUP_SCHEDULED: 'bg-purple-950 text-purple-300 border-purple-800',
                 RECEIVED: 'bg-teal-950 text-teal-300 border-teal-800',
+                RECYCLER_RECEIVED: 'bg-teal-950 text-teal-300 border-teal-800',
+                SORTED: 'bg-cyan-950 text-cyan-300 border-cyan-800',
                 PROCESSING: 'bg-indigo-950 text-indigo-300 border-indigo-800',
+                RECOVERED: 'bg-emerald-950 text-emerald-300 border-emerald-800',
                 RECYCLED: 'bg-emerald-950 text-emerald-300 border-emerald-800'
               };
 

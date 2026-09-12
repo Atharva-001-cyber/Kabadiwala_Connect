@@ -104,8 +104,8 @@ export const TrackingPage: React.FC = () => {
   const getStageIndex = (status: string) => {
     if (status === 'CREATED' || status === 'OFFER_RECEIVED' || status === 'ACCEPTED') return 0;
     if (status === 'PICKUP_SCHEDULED' || status === 'PICKED_UP') return 1;
-    if (status === 'RECEIVED') return 2;
-    if (status === 'PROCESSING') return 3;
+    if (status === 'RECEIVED' || status === 'RECYCLER_RECEIVED') return 2;
+    if (status === 'SORTED' || status === 'PROCESSING' || status === 'RECOVERED') return 3;
     if (status === 'RECYCLED') return 4;
     return 0;
   };

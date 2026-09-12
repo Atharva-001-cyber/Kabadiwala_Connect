@@ -68,6 +68,7 @@ export const statusLabels: Record<string, { hi: string; mr: string; en: string }
   PICKUP_SCHEDULED: { hi: 'पिकअप निर्धारित', mr: 'पिकअप नियोजित', en: 'Pickup Scheduled' },
   PICKED_UP: { hi: 'पिकअप संपन्न', mr: 'पिकअप पूर्ण', en: 'Picked Up' },
   RECEIVED: { hi: 'फैक्ट्री पहुंचा', mr: 'कारखान्यात प्राप्त', en: 'Received' },
+  RECYCLER_RECEIVED: { hi: 'वेयरहाउस में प्राप्त', mr: 'वेअरहाऊसमध्ये प्राप्त', en: 'Warehouse Received' },
   SORTED: { hi: 'वर्गीकृत', mr: 'वर्गीकृत', en: 'Sorted' },
   PROCESSING: { hi: 'प्रोसेसिंग जारी', mr: 'प्रक्रिया सुरू', en: 'In Processing' },
   RECOVERED: { hi: 'धातु पुनर्प्राप्त', mr: 'धातू पुनर्प्राप्त', en: 'Metals Recovered' },

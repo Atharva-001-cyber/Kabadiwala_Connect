@@ -36,7 +36,7 @@ export const RecyclerDashboard: React.FC = () => {
 
   const newRequests = lots.filter(l => l.status === 'CREATED' || l.status === 'OFFER_RECEIVED');
   const pendingPickups = lots.filter(l => l.status === 'ACCEPTED' || l.status === 'PICKUP_SCHEDULED');
-  const processingLots = lots.filter(l => l.status === 'RECEIVED' || l.status === 'PROCESSING');
+  const processingLots = lots.filter(l => ['RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED'].includes(l.status));
   const completedLots = lots.filter(l => l.status === 'RECYCLED');
   const totalRecycledKg = completedLots.reduce((sum, l) => sum + (l.approxWeight || 0), 0);
 

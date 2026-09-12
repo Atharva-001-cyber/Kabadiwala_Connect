@@ -15,14 +15,53 @@ export const InventoryProcessingPage: React.FC = () => {
   const [recoveredDetails, setRecoveredDetails] = useState<string>('Recovered: 8.5kg Refined Copper, 1.8kg Aluminium, 2.5kg Plastic Fractions');
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  const FACILITY_STATUSES = ['RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED', 'RECYCLED'];
+
+  const getStageDefaultNote = (stage: string): string => {
+    switch (stage) {
+      case 'RECYCLER_RECEIVED':
+        return 'Warehouse intake scale verified; lot segregated and logged into facility ledger.';
+      case 'SORTED':
+        return 'Surface-mount depopulation, component desoldering, and manual segregation completed.';
+      case 'PROCESSING':
+        return 'Hydrometallurgical acid leaching and electrolyte separation active.';
+      case 'RECOVERED':
+        return 'Recovered: 8.5kg Refined Copper, 1.8kg Aluminium, 2.5kg Plastic Fractions, 3.4g Gold';
+      case 'RECYCLED':
+        return '100% Formally Recycled. Hazardous residues neutralized. CPCB Form-6 Certificate ready.';
+      default:
+        return 'Facility processing status advanced.';
+    }
+  };
+
+  const getNextDefaultStage = (currentStatus?: string): string => {
+    switch (currentStatus) {
+      case 'RECEIVED':
+      case 'RECYCLER_RECEIVED':
+        return 'SORTED';
+      case 'SORTED':
+        return 'PROCESSING';
+      case 'PROCESSING':
+        return 'RECOVERED';
+      case 'RECOVERED':
+      case 'RECYCLED':
+        return 'RECYCLED';
+      default:
+        return 'SORTED';
+    }
+  };
+
   const fetchLots = async () => {
     try {
       const res = await api.getLots({ limit: '40' });
       if (res.success) {
         setLots(res.lots);
-        const processingEligible = res.lots.filter(l => l.status === 'RECEIVED' || l.status === 'PROCESSING');
+        const processingEligible = res.lots.filter(l => FACILITY_STATUSES.includes(l.status));
         if (processingEligible.length > 0 && !selectedLotId) {
           setSelectedLotId(processingEligible[0].id);
+          const initialTarget = getNextDefaultStage(processingEligible[0].status);
+          setTargetStage(initialTarget);
+          setRecoveredDetails(getStageDefaultNote(initialTarget));
         }
       }
     } catch (e) {
@@ -34,7 +73,7 @@ export const InventoryProcessingPage: React.FC = () => {
     fetchLots();
   }, []);
 
-  const eligibleLots = lots.filter(l => l.status === 'RECEIVED' || l.status === 'PROCESSING');
+  const eligibleLots = lots.filter(l => FACILITY_STATUSES.includes(l.status));
   const currentLot = eligibleLots.find(l => l.id === selectedLotId) || eligibleLots[0];
 
   // Compute inventory category weights
@@ -50,40 +89,35 @@ export const InventoryProcessingPage: React.FC = () => {
   };
 
   lots.forEach(l => {
-    if (l.status === 'RECEIVED' || l.status === 'PROCESSING' || l.status === 'RECYCLED') {
+    if (FACILITY_STATUSES.includes(l.status)) {
       inventoryWeights[l.materialCategory] = (inventoryWeights[l.materialCategory] || 0) + l.approxWeight;
     }
   });
 
-  const getValidStagesForLot = (lot?: Lot): { value: string; label: string }[] => {
-    const allStages = [
+  const getValidStagesForLot = (_lot?: Lot): { value: string; label: string }[] => {
+    return [
       { value: 'RECYCLER_RECEIVED', label: t.stageWarehouseReceived },
       { value: 'SORTED', label: t.stageSorting },
       { value: 'PROCESSING', label: t.stageProcessing },
       { value: 'RECOVERED', label: t.stageRecovered },
       { value: 'RECYCLED', label: t.stageRecycled }
     ];
-
-    if (!lot) return allStages;
-    if (lot.status === 'RECEIVED') {
-      return allStages.filter(s => ['SORTED', 'PROCESSING'].includes(s.value));
-    }
-    if (lot.status === 'PROCESSING') {
-      return allStages.filter(s => ['SORTED', 'PROCESSING', 'RECOVERED', 'RECYCLED'].includes(s.value));
-    }
-    if (lot.status === 'RECYCLED') {
-      return allStages.filter(s => s.value === 'RECYCLED');
-    }
-    return allStages;
   };
 
   const validStages = getValidStagesForLot(currentLot);
 
   useEffect(() => {
-    if (validStages.length > 0 && !validStages.some(s => s.value === targetStage)) {
-      setTargetStage(validStages[0].value);
+    if (currentLot) {
+      const nextStage = getNextDefaultStage(currentLot.status);
+      setTargetStage(nextStage);
+      setRecoveredDetails(getStageDefaultNote(nextStage));
     }
-  }, [selectedLotId, validStages, targetStage]);
+  }, [selectedLotId]);
+
+  const handleStageChange = (newStage: string) => {
+    setTargetStage(newStage);
+    setRecoveredDetails(getStageDefaultNote(newStage));
+  };
 
   const handleUpdateStage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,7 +223,7 @@ export const InventoryProcessingPage: React.FC = () => {
               <label className="block font-bold text-slate-300 mb-1.5">{t.nextStagePrompt}</label>
               <select
                 value={targetStage}
-                onChange={(e) => setTargetStage(e.target.value)}
+                onChange={(e) => handleStageChange(e.target.value)}
                 className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-500"
               >
                 {validStages.map(s => (

@@ -21,7 +21,10 @@ export type LotStatus =
   | 'PICKUP_SCHEDULED'
   | 'PICKED_UP'
   | 'RECEIVED'
+  | 'RECYCLER_RECEIVED'
+  | 'SORTED'
   | 'PROCESSING'
+  | 'RECOVERED'
   | 'RECYCLED';
 
 export type OfferStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
