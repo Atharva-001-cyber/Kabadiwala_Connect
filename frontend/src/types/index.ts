@@ -33,7 +33,7 @@ export type RecyclerAuthStatus = 'AUTHORIZED' | 'PENDING_VERIFICATION' | 'EXPIRE
 export type AnomalyType = 'PRICE_OUTLIER' | 'WEIGHT_MISMATCH' | 'REPEATED_SUSPICIOUS' | 'UNVERIFIED_RECYCLER';
 export type AnomalySeverity = 'LOW' | 'MEDIUM' | 'HIGH';
 export type AnomalyStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
-export type DisputeStatus = 'UNDER_REVIEW' | 'RESOLVED' | 'REJECTED' | 'ESCALATED';
+export type DisputeStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'REJECTED' | 'ESCALATED';
 export type PaymentMethod = 'CASH' | 'UPI' | 'BANK_TRANSFER';
 export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED';
 
@@ -64,6 +64,7 @@ export interface CollectorProfile {
   phone: string;
   district: string;
   state: string;
+  address?: string;
   totalEarnings: number;
   totalWeightCollected: number;
   lotsCount: number;
@@ -71,6 +72,8 @@ export interface CollectorProfile {
   upiId?: string;
   kycStatus?: KycStatus;
   kycMaskedId?: string;
+  cpcbRegistrationNo?: string;
+  badge?: string;
   createdAt: string;
   dataSource?: DataSource;
 }
@@ -104,8 +107,43 @@ export interface RecyclerProfile {
   estimatedDistanceKm?: number;
   rankingExplanation?: RecyclerRankingExplanation;
   pickupVsSelfDelivery?: PickupVsDeliveryEconomics;
+  verificationRecord?: RecyclerVerificationRecord;
   createdAt: string;
   dataSource?: DataSource;
+}
+
+export type VerificationBadgeType = 
+  | 'CPCB_VERIFIED'        // 🟢 Genuinely matched with official CPCB Gazette Master Registry
+  | 'PENDING_VERIFICATION' // 🟡 Registered on platform, official gazette audit pending
+  | 'UNVERIFIED'           // 🔴 Self-claimed registration, could not be verified
+  | 'SUSPENDED'            // 🔴 Officially suspended by CPCB
+  | 'DEMO';                // ⚪ Explicit demo simulation record
+
+export interface RecyclerVerificationRecord {
+  status: VerificationBadgeType;
+  isCpcbRegistryMatch: boolean;
+  cpcbRegistrationNo?: string;
+  verificationSource: 'CPCB_GAZETTE_REGISTRY' | 'STATE_PCB_PORTAL' | 'PENDING_DOCUMENT_AUDIT' | 'DEMO_SIMULATION';
+  verifiedAt?: string;
+  verifiedBy?: string;
+  registryDetails?: {
+    cpcbFacilityName: string;
+    state: string;
+    district: string;
+    authorizedCapacityMTA: number;
+    validUntil: string;
+    categoriesAuthorized: MaterialCategory[];
+  };
+  evidenceBadgeText: {
+    hi: string;
+    mr: string;
+    en: string;
+  };
+  evidenceSubtitle: {
+    hi: string;
+    mr: string;
+    en: string;
+  };
 }
 
 export interface RecyclerRankingExplanation {
@@ -327,11 +365,14 @@ export interface MLTrainingSample {
 export interface AnomalyFlag {
   id: string;
   lotId: string;
+  entityType?: 'LOT' | 'PRICE' | 'RECYCLER';
+  entityId?: string;
   collectorId: string;
   recyclerId?: string;
   anomalyType: AnomalyType;
   severity: AnomalySeverity;
   description: string;
+  flaggedBy?: string;
   detectedRate?: number;
   expectedRate?: number;
   weightDiffPercent?: number;
@@ -340,6 +381,8 @@ export interface AnomalyFlag {
   sampleStdDev?: number;
   status: AnomalyStatus;
   createdAt: string;
+  resolvedAt?: string | null;
+  resolutionNotes?: string | null;
 }
 
 export interface Dispute {
@@ -348,13 +391,21 @@ export interface Dispute {
   raisedByUserId: string;
   raisedByRole: UserRole;
   raisedByName: string;
+  collectorName?: string;
+  collectorPhone?: string;
+  recyclerId?: string;
+  recyclerName?: string;
+  recyclerContact?: string;
+  recyclerPhone?: string;
+  recyclerLocation?: string;
   reason: string;
   details: string;
   status: DisputeStatus;
   adminNotes?: string;
   resolution?: string;
+  resolutionNotes?: string;
   createdAt: string;
-  resolvedAt?: string;
+  resolvedAt?: string | null;
 }
 
 export interface PaymentLedgerEntry {

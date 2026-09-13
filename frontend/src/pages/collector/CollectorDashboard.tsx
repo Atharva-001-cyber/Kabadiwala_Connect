@@ -31,6 +31,7 @@ import { useSync } from '../../context/SyncContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { AudioButton } from '../../components/common/AudioButton';
 import { api } from '../../services/api';
+import { onPlatformSync } from '../../services/realtime';
 import { Lot, PriceRecord } from '../../types';
 import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatLocationString } from '../../i18n/translations';
 import { formatWeight } from '../../utils/formatters';
@@ -50,9 +51,9 @@ export const CollectorDashboard: React.FC = () => {
   const collectorDisplayName = formatUserDisplayName(rawCollectorName, 'COLLECTOR', language);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (silent = false) => {
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         const district = collectorProfile?.district || 'Lucknow';
         const colId = collectorProfile?.id;
         const lotsQuery = colId ? api.getLots({ collectorId: colId, limit: '30' }) : api.getLots({ limit: '30' });
@@ -71,6 +72,20 @@ export const CollectorDashboard: React.FC = () => {
       }
     };
     fetchData();
+
+    // Real-time synchronization when bids/lots change
+    const unsubscribeSync = onPlatformSync(() => {
+      fetchData(true);
+    });
+
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 8000);
+
+    return () => {
+      unsubscribeSync();
+      clearInterval(interval);
+    };
   }, [collectorProfile]);
 
   const totalCollectedWeight = lots.reduce((sum, l) => sum + (l.approxWeight || 0), 0);

@@ -41,6 +41,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onToggleMobile
     if (p === '/collector' || p === '/recycler' || p === '/admin') return t.navDashboard;
     if (p.includes('/add')) return t.navAddLot;
     if (p.includes('/prices')) return t.navPrices;
+    if (p.includes('/admin/recyclers')) return t.navRecyclerVerify;
     if (p.includes('/recyclers') || p.includes('/find')) return t.navRecyclers;
     if (p.includes('/requests')) return role === 'COLLECTOR' ? t.navRequests : t.navIncomingRequests;
     if (p.includes('/pickups')) return t.navPickups;

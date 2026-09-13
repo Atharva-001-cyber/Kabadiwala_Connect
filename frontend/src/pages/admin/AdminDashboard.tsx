@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Shield, 
@@ -14,35 +14,60 @@ import {
   CheckCircle2, 
   TrendingUp,
   Layers,
-  Key
+  Key,
+  Cpu,
+  BatteryCharging,
+  Tv,
+  Monitor,
+  Cable,
+  Zap,
+  Magnet,
+  RefreshCw
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { getCategoryLabel } from '../../i18n/translations';
 import { api } from '../../services/api';
+
+const CATEGORY_ICONS: Record<string, React.FC<{ className?: string }>> = {
+  PCB: Cpu,
+  BATTERY: BatteryCharging,
+  CRT: Tv,
+  LCD: Monitor,
+  CABLE: Cable,
+  MOTOR: Zap,
+  MAGNET: Magnet,
+  MIXED_PLASTIC: Layers
+};
 
 export const AdminDashboard: React.FC = () => {
   const { language, t } = useLanguage();
   const [kpis, setKpis] = useState<any>(null);
   const [materialBreakdown, setMaterialBreakdown] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchKPIs = useCallback(async (isSilent: boolean = false) => {
+    if (!isSilent) setIsRefreshing(true);
+    try {
+      const res = await api.getAdminKPIs();
+      if (res.success) {
+        setKpis(res.kpis);
+        setMaterialBreakdown(res.materialBreakdown || {});
+      }
+    } catch (err) {
+      console.warn('Admin KPI fetch error:', err);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchKPIs = async () => {
-      setLoading(true);
-      try {
-        const res = await api.getAdminKPIs();
-        if (res.success) {
-          setKpis(res.kpis);
-          setMaterialBreakdown(res.materialBreakdown || {});
-        }
-      } catch (err) {
-        console.warn('Admin KPI fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchKPIs();
-  }, []);
+    fetchKPIs(false);
+    // Live polling every 15 seconds to keep admin national telemetry synchronized with field operations
+    const interval = setInterval(() => fetchKPIs(true), 15000);
+    return () => clearInterval(interval);
+  }, [fetchKPIs]);
 
   return (
     <div className="space-y-6 pb-20 max-w-6xl mx-auto">
@@ -66,12 +91,23 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 text-xs font-black border border-emerald-800">
-              {language === 'hi' ? '🟢 ईपीआर ऑडिट सक्रिय' : language === 'mr' ? '🟢 ईपीआर ऑडिट सक्रिय' : '🟢 EPR AUDIT ACTIVE'}
+            <button
+              type="button"
+              onClick={() => fetchKPIs(false)}
+              disabled={isRefreshing}
+              className="p-2.5 rounded-xl bg-purple-900/60 hover:bg-purple-800 border border-purple-700 text-purple-200 shadow transition-all active:scale-95 flex items-center gap-1.5 text-xs font-bold"
+              title="Refresh National Telemetry"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+              <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Sync Live'}</span>
+            </button>
+            <span className="px-3 py-2 rounded-xl bg-emerald-950 text-emerald-300 text-xs font-black border border-emerald-800 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>{language === 'hi' ? 'ईपीआर ऑडिट सक्रिय' : language === 'mr' ? 'ईपीआर ऑडिट सक्रिय' : 'EPR AUDIT ACTIVE'}</span>
             </span>
             <Link
               to="/admin/map"
-              className="min-h-[44px] px-4 py-2 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white rounded-xl text-xs font-bold shadow-lg flex items-center gap-2 transition-all"
+              className="min-h-[40px] px-4 py-2 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white rounded-xl text-xs font-bold shadow-lg flex items-center gap-2 transition-all"
             >
               <MapPin className="w-4 h-4" />
               <span>{language === 'hi' ? 'ई-वेस्ट जीआईएस मैप' : language === 'mr' ? 'ई-कचरा जीआयएस नकाशा' : 'E-Waste GIS Map'}</span>
@@ -195,21 +231,34 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 text-xs">
-          {Object.entries(materialBreakdown).map(([cat, weight]) => {
-            const pct = kpis?.totalWeightCollectedKg > 0 ? ((weight / kpis.totalWeightCollectedKg) * 100).toFixed(1) : 0;
-            return (
-              <div key={cat} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
-                <div className="flex justify-between items-center">
-                  <span className="font-black text-slate-200">{getCategoryLabel(cat, language)}</span>
-                  <span className="font-mono text-emerald-400 font-black">{pct}%</span>
+          {Object.entries(materialBreakdown)
+            .sort(([, a], [, b]) => b - a)
+            .map(([cat, weight]) => {
+              const pct = kpis?.totalWeightCollectedKg > 0 ? ((weight / kpis.totalWeightCollectedKg) * 100).toFixed(1) : '0';
+              const IconComp = CATEGORY_ICONS[cat] || Layers;
+              return (
+                <div key={cat} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 hover:border-purple-500/50 space-y-2.5 shadow-inner transition-all group">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded-lg bg-purple-950/80 border border-purple-800 flex items-center justify-center text-purple-300 shrink-0 group-hover:scale-110 transition-transform">
+                        <IconComp className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="font-black text-slate-200 truncate">{getCategoryLabel(cat, language)}</span>
+                    </div>
+                    <span className="font-mono text-emerald-400 font-black shrink-0">{pct}%</span>
+                  </div>
+                  <div className="text-xl font-black text-white font-mono">
+                    {Number(weight).toLocaleString('en-IN', { maximumFractionDigits: 1 })} kg
+                  </div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div
+                      style={{ width: `${Math.min(100, Math.max(0, Number(pct)))}%` }}
+                      className="bg-gradient-to-r from-purple-600 via-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
+                    ></div>
+                  </div>
                 </div>
-                <div className="text-xl font-black text-white font-mono">{weight} kg</div>
-                <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                  <div style={{ width: `${pct}%` }} className="bg-gradient-to-r from-emerald-600 to-teal-400 h-full rounded-full"></div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     </div>

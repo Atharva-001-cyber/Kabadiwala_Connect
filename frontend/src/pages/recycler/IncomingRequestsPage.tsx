@@ -6,11 +6,12 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { SafeImage } from '../../components/common/SafeImage';
 import { api } from '../../services/api';
+import { onPlatformSync } from '../../services/realtime';
 import { Lot, Offer } from '../../types';
 import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
 
 export const IncomingRequestsPage: React.FC = () => {
-  const { recyclerProfile } = useAuth();
+  const { user, recyclerProfile } = useAuth();
   const { t, language } = useLanguage();
   const { showToast } = useToast();
   const [lots, setLots] = useState<Lot[]>([]);
@@ -26,9 +27,54 @@ export const IncomingRequestsPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots({ limit: '40' });
+      const res = await api.getLots({ limit: '100' });
       if (res.success) {
-        setLots(res.lots);
+        const fetchedLots = res.lots;
+        const lotIds = fetchedLots.map(l => l.id);
+        const offersByLot: Record<string, Offer[]> = {};
+
+        if (lotIds.length > 0) {
+          try {
+            const offersRes = await api.getOffersForLots(lotIds);
+            if (offersRes.success && offersRes.offers) {
+              offersRes.offers.forEach((o: Offer) => {
+                if (!offersByLot[o.lotId]) offersByLot[o.lotId] = [];
+                offersByLot[o.lotId].push(o);
+              });
+            }
+          } catch (oe) {
+            console.warn('Failed to load offers for lots:', oe);
+          }
+        }
+
+        const myRecyclerId = recyclerProfile?.id || user?.id || 'rec_abc_1';
+        const myFacilityName = recyclerProfile?.facilityName || user?.name || 'ABC E-Waste Recycling Pvt Ltd';
+
+        // Filter to only actionable lots:
+        // 1. Lots open for bidding (CREATED or OFFER_RECEIVED)
+        // 2. Lots where this recycler's offer was ACCEPTED
+        const actionableLots = fetchedLots.filter(lot => {
+          const lotOffers = offersByLot[lot.id] || [];
+          const myOffer = lotOffers.find(
+            (o: Offer) => o.recyclerId === myRecyclerId || (myFacilityName && o.recyclerName === myFacilityName)
+          );
+          if (lot.status === 'CREATED' || lot.status === 'OFFER_RECEIVED') return true;
+          if (lot.status === 'ACCEPTED' && myOffer?.status === 'ACCEPTED') return true;
+          return false;
+        });
+
+        const decoratedLots = actionableLots.map(lot => {
+          const lotOffers = offersByLot[lot.id] || [];
+          const myOffer = lotOffers.find(
+            (o: Offer) => o.recyclerId === myRecyclerId || (myFacilityName && o.recyclerName === myFacilityName)
+          );
+          return {
+            ...lot,
+            myOffer
+          };
+        });
+
+        setLots(decoratedLots as Lot[]);
       }
     } catch (e) {
       console.warn('Failed to load lots:', e);
@@ -37,7 +83,21 @@ export const IncomingRequestsPage: React.FC = () => {
 
   useEffect(() => {
     fetchLots();
-  }, []);
+
+    // Real-time synchronization when lots or offers change
+    const unsubscribeSync = onPlatformSync(() => {
+      fetchLots();
+    });
+
+    const interval = setInterval(() => {
+      fetchLots();
+    }, 8000);
+
+    return () => {
+      unsubscribeSync();
+      clearInterval(interval);
+    };
+  }, [recyclerProfile?.id]);
 
   const handleOpenOfferModal = (lot: Lot) => {
     if (!isAuthorized) {
@@ -75,7 +135,9 @@ export const IncomingRequestsPage: React.FC = () => {
         offeredRatePerKg: parseFloat(offeredRate),
         pickupOffered,
         pickupEtaHours: parseInt(etaHours, 10) || 24,
-        notes
+        notes,
+        recyclerId: recyclerProfile?.id || user?.id,
+        recyclerName: recyclerProfile?.facilityName || user?.name
       });
 
       if (res.success) {
@@ -200,7 +262,7 @@ export const IncomingRequestsPage: React.FC = () => {
 
               {(lot as any).myOffer?.status === 'ACCEPTED' ? (
                 <Link
-                  to="/recycler/pickups"
+                  to={`/recycler/pickups?lotId=${lot.id}`}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow flex items-center gap-1.5 active:scale-95"
                 >
                   <Truck className="w-3.5 h-3.5" />

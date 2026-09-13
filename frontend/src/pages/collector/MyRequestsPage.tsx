@@ -18,6 +18,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
+import { onPlatformSync } from '../../services/realtime';
 import { Lot, Offer } from '../../types';
 import { getCategoryLabel } from '../../i18n/translations';
 
@@ -34,8 +35,8 @@ export const MyRequestsPage: React.FC = () => {
   const [selectedOfferForAcceptance, setSelectedOfferForAcceptance] = useState<{ offer: Offer; lot: Lot } | null>(null);
   const [acceptingInProgress, setAcceptingInProgress] = useState<boolean>(false);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent && lots.length === 0) setLoading(true);
     try {
       let collectorId = '';
       try {
@@ -72,6 +73,21 @@ export const MyRequestsPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Real-time synchronization on Supabase Cloud database events
+    const unsubscribeSync = onPlatformSync(() => {
+      fetchData(true);
+    });
+
+    // Background auto-refresh polling fallback (8 seconds)
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 8000);
+
+    return () => {
+      unsubscribeSync();
+      clearInterval(interval);
+    };
   }, []);
 
   const handleConfirmAcceptOffer = async () => {
@@ -266,7 +282,7 @@ export const MyRequestsPage: React.FC = () => {
                       <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
                     </Link>
 
-                    {(lot.status === 'PICKUP_SCHEDULED' || lot.status === 'RECEIVED' || lot.status === 'RECYCLED') && (
+                    {(lot.status === 'ACCEPTED' || lot.status === 'PICKUP_SCHEDULED' || lot.status === 'RECEIVED' || lot.status === 'RECYCLED') && (
                       <Link
                         to={`/collector/handover/${lot.id}`}
                         className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow"

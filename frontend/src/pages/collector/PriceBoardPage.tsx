@@ -450,7 +450,7 @@ export const PriceBoardPage: React.FC = () => {
                       <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight">
                         ₹{price.prevailingBuyPrice}
                       </span>
-                      <span className="text-xs font-bold text-slate-400">/ {price.unit}</span>
+                      <span className="text-xs font-bold text-slate-400">/ {price.unit ? String(price.unit).replace('₹/', '') : 'kg'}</span>
                     </div>
 
                     <div className="text-[11px] text-slate-400 flex justify-between pt-1 border-t border-slate-900">
@@ -462,9 +462,11 @@ export const PriceBoardPage: React.FC = () => {
                   {/* Recycler Live Offer Indicator (if available) */}
                   <div className="bg-slate-950/60 px-3 py-2 rounded-xl border border-slate-800/80 text-[11px] mb-2.5">
                     {recBid ? (
-                      <div className="flex items-center justify-between text-emerald-400 font-bold">
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wide">{t.recycOffer}:</span>
-                        <span className="font-mono">₹{recBid.rate}/kg ({recBid.recName.slice(0, 14)}...)</span>
+                      <div className="flex items-center justify-between text-emerald-400 font-bold gap-1">
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wide shrink-0">{t.recycOffer}:</span>
+                        <span className="font-mono text-emerald-300 text-xs font-black truncate text-right">
+                          ₹{recBid.rate}/kg • <span className="text-[10px] text-slate-300 font-medium">{recBid.recName.split(' ')[0]}</span>
+                        </span>
                       </div>
                     ) : (
                       <div className="text-slate-500 text-[10px] flex items-center justify-between">
@@ -633,20 +635,36 @@ export const PriceBoardPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Giant Valuation Amount */}
-              <div className="mt-2 text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight">
-                ₹{valBreakdown?.estimatedValue?.min || 0} – ₹{valBreakdown?.estimatedValue?.max || 0}
-              </div>
+              {/* Giant Valuation Amount & Formula */}
+              {(() => {
+                const weightNum = parseFloat(calcWeight) || 15;
+                const factor = calcCondition === 'INTACT' ? 1.0 : calcCondition === 'DAMAGED' ? 0.85 : 0.75;
+                const rate = selectedPriceRecord?.prevailingBuyPrice || 100;
+                const exactVal = Math.round(weightNum * rate * factor);
+                const minVal = Math.round(exactVal * 0.95);
+                const maxVal = Math.round(exactVal * 1.05);
 
-              {/* Formula breakdown */}
-              <div className="mt-3 p-3 bg-slate-900 rounded-2xl border border-slate-800/80 space-y-1 text-xs">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wide block font-bold">
-                  {t.estFormula || (language === 'hi' ? 'पारदर्शी गणना सूत्र' : language === 'mr' ? 'पारदर्शक सूत्र' : 'Formula Breakdown')}:
-                </span>
-                <p className="font-mono text-slate-300 text-xs">
-                  {calcWeight} kg × ₹{selectedPriceRecord?.prevailingBuyPrice || 0}/kg × {calcCondition === 'INTACT' ? '1.0' : calcCondition === 'DAMAGED' ? '0.85' : '0.75'}
-                </p>
-              </div>
+                return (
+                  <>
+                    <div className="mt-2 text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight flex items-baseline gap-2 flex-wrap">
+                      <span>₹{exactVal.toLocaleString('en-IN')}</span>
+                      <span className="text-xs font-bold text-slate-400 font-sans">
+                        ({language === 'hi' ? 'अनुमानित रेंज:' : 'Range:'} ₹{minVal} – ₹{maxVal})
+                      </span>
+                    </div>
+
+                    {/* Formula breakdown */}
+                    <div className="mt-3 p-3 bg-slate-900 rounded-2xl border border-slate-800/80 space-y-1 text-xs">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wide block font-bold">
+                        {t.estFormula || (language === 'hi' ? 'पारदर्शी गणना सूत्र' : language === 'mr' ? 'पारदर्शक सूत्र' : 'Formula Breakdown')}:
+                      </span>
+                      <p className="font-mono text-slate-300 text-xs">
+                        {calcWeight} kg × ₹{rate}/kg × {factor} = <b className="text-emerald-400">₹{exactVal}</b> ({calcCondition === 'INTACT' ? '100% Intact' : calcCondition === 'DAMAGED' ? '85% Damaged' : '75% Dismantled'})
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Prominent Low-Literacy Disclaimer */}
@@ -674,61 +692,81 @@ export const PriceBoardPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-          {/* Stage A */}
-          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-300">
-                {t.stageEstTitle || (language === 'hi' ? '1. अनुमानित मूल्य' : language === 'mr' ? '1. अंदाजे मूल्य' : '1. Estimated')}
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">{language === 'hi' ? 'प्रारंभिक' : language === 'mr' ? 'प्रारंभिक' : 'Estimated'}</span>
-            </div>
-            <div className="text-xl font-black text-emerald-400 font-mono">
-              ₹{valBreakdown?.estimatedValue?.min || 0} – ₹{valBreakdown?.estimatedValue?.max || 0}
-            </div>
-            <p className="text-[11px] text-slate-400 leading-tight">
-              {t.stageEstDesc || 'लॉट बनाते समय मंडी दर और वजन पर आधारित प्रारंभिक अनुमान।'}
-            </p>
-          </div>
+          {(() => {
+            const weightNum = parseFloat(calcWeight) || 15;
+            const factor = calcCondition === 'INTACT' ? 1.0 : calcCondition === 'DAMAGED' ? 0.85 : 0.75;
+            const rate = selectedPriceRecord?.prevailingBuyPrice || 100;
+            const exactMandiEst = Math.round(weightNum * rate * factor);
+            const activeBid = getRecyclerOfferForCategory(selectedCategory);
+            const quotedTotal = activeBid ? Math.round(weightNum * activeBid.rate) : null;
+            const margin = quotedTotal ? quotedTotal - exactMandiEst : null;
 
-          {/* Stage B */}
-          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-300">
-                {t.stageQuoteTitle || (language === 'hi' ? '2. खरीदार की बोली' : language === 'mr' ? '2. खरेदीदाराची बोली' : '2. Quoted')}
-              </span>
-              <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800">
-                {language === 'hi' ? 'औपचारिक ऑफर' : language === 'mr' ? 'अधिकृत ऑफर' : 'Formal Bid'}
-              </span>
-            </div>
-            <div className="text-xl font-black text-amber-400 font-mono">
-              {valBreakdown?.recyclerQuotedPrice 
-                ? `₹${valBreakdown.recyclerQuotedPrice.totalQuotedAmount} (₹${valBreakdown.recyclerQuotedPrice.offeredRatePerKg}/kg)` 
-                : (language === 'hi' ? 'अभी कोई बोली नहीं' : language === 'mr' ? 'सध्या कोणतीही बोली नाही' : 'No quote yet')}
-            </div>
-            <p className="text-[11px] text-slate-400 leading-tight">
-              {valBreakdown?.recyclerQuotedPrice 
-                ? `${valBreakdown.recyclerQuotedPrice.recyclerName} द्वारा दी गई बोली`
-                : (t.stageQuoteDesc || 'अधिकृत रीसाइक्लर द्वारा आपके सामान के लिए दिया गया औपचारिक ऑफर।')}
-            </p>
-          </div>
+            return (
+              <>
+                {/* Stage A */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-slate-300">
+                      {t.stageEstTitle || (language === 'hi' ? '1. प्रारंभिक मंडी अनुमान' : language === 'mr' ? '1. अंदाजे मूल्य' : '1. Mandi Baseline')}
+                    </span>
+                    <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-bold">
+                      {language === 'hi' ? 'कलेक्टर खरीद दर' : 'Spot Baseline'}
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-emerald-400 font-mono">
+                    ₹{exactMandiEst.toLocaleString('en-IN')}
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-tight">
+                    {language === 'hi'
+                      ? `${selectedDistrict} स्थानीय मंडी खरीद दर (₹${rate}/kg) पर आधारित प्रारंभिक मूल्य।`
+                      : 'Initial estimate based on local doorstep collection benchmark rate.'}
+                  </p>
+                </div>
 
-          {/* Stage C */}
-          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black text-slate-300">
-                {t.stageFinalTitle || (language === 'hi' ? '3. अंतिम बिक्री मूल्य' : language === 'mr' ? '3. अंतिम विक्री मूल्य' : '3. Final Sale')}
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">{language === 'hi' ? 'कांटे पर तौल' : language === 'mr' ? 'काट्यावर वजन' : 'Scale Weight'}</span>
-            </div>
-            <div className="text-xl font-black text-teal-400 font-mono">
-              {valBreakdown?.finalSaleBenchmark
-                ? `₹${valBreakdown.finalSaleBenchmark.settledAmount} (${language === 'hi' ? 'सत्यापित' : language === 'mr' ? 'सत्यापित' : 'Settled'})`
-                : (language === 'hi' ? 'हैंडओवर तौल के बाद' : language === 'mr' ? 'हँडओव्हर वजनानंतर' : 'After Scale Handover')}
-            </div>
-            <p className="text-[11px] text-slate-400 leading-tight">
-              {t.stageFinalDesc || 'भौतिक कांटे पर वजन जांचने के बाद सीधे खाते/कैश में मिलने वाली रसीद राशि।'}
-            </p>
-          </div>
+                {/* Stage B */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-slate-300">
+                      {t.stageQuoteTitle || (language === 'hi' ? '2. अधिकृत खरीदार की बोली' : language === 'mr' ? '2. खरेदीदाराची बोली' : '2. Recycler Quoted Bid')}
+                    </span>
+                    <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800 font-bold">
+                      {quotedTotal ? (language === 'hi' ? 'सर्वोत्तम ऑफर' : 'Best Offer') : (language === 'hi' ? 'प्रतीक्षारत' : 'Pending')}
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-amber-400 font-mono">
+                    {quotedTotal 
+                      ? `₹${quotedTotal.toLocaleString('en-IN')} (₹${activeBid?.rate}/kg)` 
+                      : (language === 'hi' ? 'अभी कोई बोली नहीं' : language === 'mr' ? 'सध्या कोणतीही बोली नाही' : 'No quote yet')}
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-tight">
+                    {activeBid 
+                      ? `${activeBid.recName} द्वारा औपचारिक फैक्ट्री बोली (${margin && margin > 0 ? `मुनाफा: +₹${margin}` : 'सत्यापित रीसाइक्लर'})`
+                      : (t.stageQuoteDesc || 'अधिकृत रीसाइक्लर द्वारा आपके सामान के लिए दिया गया औपचारिक ऑफर।')}
+                  </p>
+                </div>
+
+                {/* Stage C */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-slate-300">
+                      {t.stageFinalTitle || (language === 'hi' ? '3. अंतिम बिक्री मूल्य' : language === 'mr' ? '3. अंतिम विक्री मूल्य' : '3. Final Sale')}
+                    </span>
+                    <span className="text-[10px] bg-teal-950 text-teal-300 border border-teal-800 px-2 py-0.5 rounded-full font-bold">
+                      {language === 'hi' ? 'डिजिटल कांटा' : 'Scale Weight'}
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-teal-400 font-mono">
+                    {quotedTotal ? `₹${quotedTotal.toLocaleString('en-IN')} (तौल बाद)` : (language === 'hi' ? 'हैंडओवर तौल के बाद' : 'After Scale Handover')}
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-tight">
+                    {language === 'hi'
+                      ? 'रीसाइक्लिंग केंद्र के इलेक्ट्रॉनिक वेइंग स्केल पर वास्तविक वजन के बाद मिलने वाला सीधा भुगतान।'
+                      : 'Settled amount based on calibrated digital scale reading at facility.'}
+                  </p>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -769,24 +807,41 @@ export const PriceBoardPage: React.FC = () => {
         </div>
 
         {/* Clean Visual Bar Trend from Genuine Stored Records */}
-        {historyData?.hasSufficientData && historyData.history.length > 0 ? (
+        {historyData?.hasSufficientData && historyData.history && historyData.history.length > 0 ? (
           <div className="space-y-2">
             <p className="text-xs text-slate-400">{language === 'hi' ? 'समयरेखा के अनुसार वास्तविक भाव लॉग (₹/kg):' : language === 'mr' ? 'काळानुसार प्रत्यक्ष दर नोंदी (₹/kg):' : 'Observed Price Log Timeline (₹/kg):'}</p>
             <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2">
               {historyData.history.slice(-12).map((point: any, idx: number) => {
-                const maxPrice = Math.max(...historyData.history.map((h: any) => h.price), 100);
-                const heightPercent = Math.min(Math.max((point.price / maxPrice) * 100, 25), 100);
+                const priceVal = Number(point.price ?? point.rate ?? 0);
+                const allPrices = historyData.history.map((h: any) => Number(h.price ?? h.rate ?? 0)).filter((p: number) => p > 0);
+                const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
+                const heightPercent = maxPrice > 0 ? Math.min(Math.max(Math.round((priceVal / maxPrice) * 100), 25), 100) : 40;
+
+                let formattedDate = `D${idx + 1}`;
+                if (point.date) {
+                  try {
+                    const parsed = new Date(point.date);
+                    if (!isNaN(parsed.getTime())) {
+                      formattedDate = parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                    } else {
+                      formattedDate = String(point.date).slice(5, 10);
+                    }
+                  } catch {
+                    formattedDate = String(point.date).slice(5, 10);
+                  }
+                }
+
                 return (
                   <div key={idx} className="flex flex-col items-center gap-1 group">
-                    <span className="text-[10px] font-bold text-slate-300 font-mono">₹{point.price}</span>
+                    <span className="text-[10px] font-bold text-slate-300 font-mono">₹{priceVal}</span>
                     <div className="w-full bg-slate-950 rounded-xl h-24 flex items-end p-1 border border-slate-800">
                       <div
                         style={{ height: `${heightPercent}%` }}
-                        className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-lg group-hover:from-emerald-400 group-hover:to-teal-300 transition-all"
+                        className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-lg group-hover:from-emerald-400 group-hover:to-teal-300 transition-all shadow-sm"
                       ></div>
                     </div>
-                    <span className="text-[9px] text-slate-500 font-mono truncate w-full text-center">
-                      {point.date ? point.date.slice(5) : `W${idx+1}`}
+                    <span className="text-[9px] text-slate-400 font-mono truncate w-full text-center" title={String(point.date)}>
+                      {formattedDate}
                     </span>
                   </div>
                 );

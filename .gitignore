@@ -12,3 +12,7 @@ dist/
 # Scratch & IDE
 scratch/
 .agents/
+
+.vercel
+.env*
+frontend/check_db*.mjs

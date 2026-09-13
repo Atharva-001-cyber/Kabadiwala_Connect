@@ -29,65 +29,91 @@ import { MaterialCategory, LotCondition, SourceType } from '../../types';
 import { categoryLabels } from '../../i18n/translations';
 import { compressImageForMobile } from '../../utils/imageCompressor';
 import { validateImageQuality, ImageQualityReport } from '../../utils/imageValidator';
+import { analyzeScrapVision, VisionAnalysisResult, getMobileNetModel } from '../../utils/visionClassifier';
 
 export interface ScrapPhotoItem {
   id: string;
   file?: File;
   dataUrl: string;
   quality?: ImageQualityReport;
+  visionResult?: VisionAnalysisResult;
+  aiPrediction?: {
+    category: MaterialCategory;
+    confidence: number;
+    subCategory: string;
+    cpcbCode?: string;
+    features?: string[];
+  } | null;
+  nonEWasteAlert?: {
+    isNonEWaste: boolean;
+    type?: string;
+    title?: { hi: string; mr: string; en: string };
+    warning?: { hi: string; mr: string; en: string };
+    features?: string[];
+  } | null;
+  isSelfCertified?: boolean;
 }
 
 const MATERIAL_CATEGORIES: { 
   key: MaterialCategory; 
   icon: string; 
+  cpcbCode: string;
   fallbackRate: number;
   examples: { hi: string; mr: string; en: string };
 }[] = [
   { 
     key: 'PCB', 
     icon: '🔲', 
+    cpcbCode: 'ITEW1',
     fallbackRate: 104.5, 
     examples: { hi: 'मदरबोर्ड, सर्किट बोर्ड, कार्ड', mr: 'मदरबोर्ड, सर्किट बोर्ड', en: 'Motherboards, Circuit Cards' } 
   },
   { 
     key: 'BATTERY', 
     icon: '🔋', 
+    cpcbCode: 'BATT-01',
     fallbackRate: 86.0, 
     examples: { hi: 'मोबाइल, लैपटॉप, लेड-एसिड', mr: 'मोबाईल, लॅपटॉप बॅटरी', en: 'Mobile, Laptop, Li-ion cells' } 
   },
   { 
     key: 'CRT', 
     icon: '📺', 
+    cpcbCode: 'CEEW1',
     fallbackRate: 18.5, 
     examples: { hi: 'पुराना टीवी, भारी मॉनिटर', mr: 'जुना टीव्ही, मॉनिटर', en: 'Old TVs & CRT Monitors' } 
   },
   { 
     key: 'LCD', 
     icon: '🖥️', 
+    cpcbCode: 'CEEW2',
     fallbackRate: 42.0, 
     examples: { hi: 'फ्लैट स्क्रीन, एलईडी टीवी', mr: 'फ्लॅट स्क्रीन, एलईडी', en: 'Flat Screens & LED TVs' } 
   },
   { 
     key: 'CABLE', 
     icon: '🔌', 
+    cpcbCode: 'ITEW11',
     fallbackRate: 78.0, 
     examples: { hi: 'तांबे की वायरिंग, बिजली तार', mr: 'तांब्याची वायर, केबल', en: 'Copper Wiring & Power Cords' } 
   },
   { 
     key: 'MOTOR', 
     icon: '⚙️', 
+    cpcbCode: 'CEEW5',
     fallbackRate: 58.0, 
     examples: { hi: 'पंखा, मिक्सर, कॉपर मोटर', mr: 'फॅन, मिक्सर, मोटर', en: 'Fan, Mixer, Copper Motors' } 
   },
   { 
     key: 'MAGNET', 
     icon: '🧲', 
+    cpcbCode: 'ITEW14',
     fallbackRate: 35.0, 
     examples: { hi: 'हार्ड डिस्क, स्पीकर चुंबक', mr: 'हार्ड डिस्क, स्पीकर चुंबक', en: 'Hard Drive & Speaker Magnets' } 
   },
   { 
     key: 'MIXED_PLASTIC', 
     icon: '♻️', 
+    cpcbCode: 'EWP-01',
     fallbackRate: 22.0, 
     examples: { hi: 'प्रिंटर, सीपीयू प्लास्टिक बॉडी', mr: 'प्रिंटर, प्लॅस्टिक बॉडी', en: 'Printer & Computer Chassis' } 
   }
@@ -123,12 +149,6 @@ export const AddLotPage: React.FC = () => {
     source: 'DISTRICT_FALLBACK'
   });
 
-  // Vision Prediction State (Heuristic with Human Confirmation - Starts null)
-  const [aiPrediction, setAiPrediction] = useState<{
-    category: MaterialCategory;
-    confidence: number;
-    subCategory: string;
-  } | null>(null);
   const [isClassifying, setIsClassifying] = useState<boolean>(false);
 
   // Valuation Range
@@ -179,6 +199,11 @@ export const AddLotPage: React.FC = () => {
     }
   }, [collectorProfile]);
 
+  // Pre-warm MobileNet model in browser background so it's instantly hot for camera/gallery
+  useEffect(() => {
+    getMobileNetModel().catch(() => {});
+  }, []);
+
   // Recalculate valuation on category, weight, or condition changes
   useEffect(() => {
     const weightNum = parseFloat(approxWeight) || 0;
@@ -222,6 +247,16 @@ export const AddLotPage: React.FC = () => {
     setApproxWeight('1');
   };
 
+  // Toggle self-certification for edge cases (e.g. packaged components)
+  const handleToggleSelfCertification = (photoId: string) => {
+    setPhotos(prev => prev.map(p => {
+      if (p.id === photoId) {
+        return { ...p, isSelfCertified: !p.isSelfCertified };
+      }
+      return p;
+    }));
+  };
+
   // Unified image processing: mobile compression + quality check + multi-photo array + heuristic vision classification
   const processImageFile = async (rawFile: File) => {
     setIsClassifying(true);
@@ -232,11 +267,46 @@ export const AddLotPage: React.FC = () => {
       // 2. Deterministic Canvas-Based Image Quality Validation
       const qualityReport = await validateImageQuality(dataUrl || file);
 
+      // 3. Real Canvas-Based Computer Vision Feature Extraction (HSV Colors, Micro-Edges, Non-E-Waste Check)
+      const visionResult = await analyzeScrapVision(dataUrl || file);
+
+      // 4. Send image and client vision analysis to classification service
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('visionData', JSON.stringify(visionResult));
+
+      let photoNonEWaste: ScrapPhotoItem['nonEWasteAlert'] = null;
+      let photoAiPrediction: ScrapPhotoItem['aiPrediction'] = null;
+
+      if (visionResult.isNonEWaste) {
+        photoNonEWaste = {
+          isNonEWaste: true,
+          type: visionResult.nonEWasteType,
+          title: visionResult.nonEWasteTitle,
+          warning: visionResult.nonEWasteWarning,
+          features: visionResult.featuresDetected
+        };
+      } else if (visionResult.category && !visionResult.isAmbiguous) {
+        photoAiPrediction = {
+          category: visionResult.category,
+          confidence: visionResult.confidence,
+          subCategory: visionResult.subCategory || `${visionResult.category} Scrap Item`,
+          cpcbCode: visionResult.cpcbCode,
+          features: visionResult.featuresDetected
+        };
+        // Automatically synchronize selected category with client vision prediction
+        setSelectedCategory(visionResult.category);
+      }
+
       const newPhotoItem: ScrapPhotoItem = {
         id: `photo_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         file,
         dataUrl,
-        quality: qualityReport
+        quality: qualityReport,
+        visionResult,
+        aiPrediction: photoAiPrediction,
+        nonEWasteAlert: photoNonEWaste,
+        isSelfCertified: false
       };
 
       setPhotos(prev => {
@@ -244,25 +314,8 @@ export const AddLotPage: React.FC = () => {
         setActivePhotoIndex(next.length - 1);
         return next;
       });
-
-      // 3. Upload image for material heuristic classification
-      const formData = new FormData();
-      formData.append('image', file);
-      const res = await api.classifyMaterial(formData);
-      if (res.success) {
-        const classification = res.classification || res.prediction;
-        if (classification) {
-          const cat = classification.category || classification.materialCategory || 'PCB';
-          setAiPrediction({
-            category: cat,
-            confidence: classification.confidence || classification.confidenceScore || 0.88,
-            subCategory: classification.subCategory || `${cat} Scrap Item`
-          });
-          // Suggest category, but collector retains full manual confirmation
-        }
-      }
     } catch (err) {
-      console.warn('Vision classification fallback:', err);
+      console.warn('Vision processing error:', err);
     } finally {
       setIsClassifying(false);
     }
@@ -314,6 +367,21 @@ export const AddLotPage: React.FC = () => {
           ? 'फोटो गुणवत्ता निकषांवर नाकारला आहे. कृपया पुन्हा स्पष्ट फोटो काढा.'
           : 'Photo was rejected due to poor quality. Please retake.');
       showToast(reason, 'error');
+      return;
+    }
+
+    // Check for unverified non-e-waste anomalies in any uploaded photo
+    const invalidPhotoIdx = photos.findIndex(p => p.nonEWasteAlert?.isNonEWaste && !p.isSelfCertified);
+    if (invalidPhotoIdx !== -1) {
+      setActivePhotoIndex(invalidPhotoIdx);
+      showToast(
+        language === 'hi'
+          ? '⚠️ गैर-ई-कचरा अस्वीकृत: कपड़ों के टैग, कागज या सामान्य कचरा ई-कचरा लॉट में मान्य नहीं है। कृपया फोटो हटाएं या स्व-सत्यापित करें।'
+          : language === 'mr'
+          ? '⚠️ गैर-ई-कचरा नाकारला: कपड्यांचे टॅग किंवा कागद ई-कचऱ्यात चालणार नाही. कृपया फोटो काढा किंवा पुष्टी करा.'
+          : '⚠️ Non-E-Waste Prohibited: Clothing tags or general waste are not accepted under CPCB rules. Remove photo or self-certify.',
+        'error'
+      );
       return;
     }
 
@@ -383,11 +451,12 @@ export const AddLotPage: React.FC = () => {
         setCreatedSuccessLotId(res.lot.id);
 
         // Record ML feedback loop if AI suggestion was presented
-        if (aiPrediction && photoUrls[0]) {
+        const detectedPrediction = photos.find(p => p.aiPrediction)?.aiPrediction;
+        if (detectedPrediction && photoUrls[0]) {
           api.recordMLFeedback({
             lotId: res.lot.id,
             imagePath: photoUrls[0].substring(0, 100),
-            initialHeuristicPrediction: aiPrediction.category,
+            initialHeuristicPrediction: detectedPrediction.category,
             userConfirmedCategory: selectedCategory,
             collectorId: collectorProfile?.id,
             district: collectorProfile?.district
@@ -629,24 +698,30 @@ export const AddLotPage: React.FC = () => {
                     className="w-full h-52 sm:h-64 object-cover rounded-2xl"
                   />
 
-                  {/* Quality Assessment Badge Overlay */}
-                  {photos[activePhotoIndex]?.quality && (
+                  {/* Quality / Non-E-Waste Assessment Badge Overlay */}
+                  {photos[activePhotoIndex] && (
                     <div className={`absolute top-2.5 left-2.5 flex items-center gap-1.5 px-3 py-1.5 rounded-xl backdrop-blur-sm border text-[11px] font-black shadow-lg ${
-                      photos[activePhotoIndex]?.quality?.isRejectable
+                      photos[activePhotoIndex]?.nonEWasteAlert?.isNonEWaste && !photos[activePhotoIndex]?.isSelfCertified
+                        ? 'bg-amber-950/90 border-amber-500 text-amber-300 ring-2 ring-amber-500/40'
+                        : photos[activePhotoIndex]?.quality?.isRejectable
                         ? 'bg-red-950/90 border-red-500/90 text-red-300'
                         : photos[activePhotoIndex]?.quality?.warning
                         ? 'bg-slate-950/90 border-amber-500/80 text-amber-300'
                         : 'bg-slate-950/90 border-emerald-500/80 text-emerald-300'
                     }`}>
                       <span>
-                        {photos[activePhotoIndex]?.quality?.isRejectable
+                        {photos[activePhotoIndex]?.nonEWasteAlert?.isNonEWaste && !photos[activePhotoIndex]?.isSelfCertified
+                          ? '⚠️'
+                          : photos[activePhotoIndex]?.quality?.isRejectable
                           ? '✗'
                           : photos[activePhotoIndex]?.quality?.warning
                           ? '⚠️'
                           : '✓'}
                       </span>
                       <span>
-                        {photos[activePhotoIndex]?.quality?.isRejectable
+                        {photos[activePhotoIndex]?.nonEWasteAlert?.isNonEWaste && !photos[activePhotoIndex]?.isSelfCertified
+                          ? (photos[activePhotoIndex]?.nonEWasteAlert?.title?.[language] || photos[activePhotoIndex]?.nonEWasteAlert?.title?.en || '⚠️ Non-E-Waste Anomaly')
+                          : photos[activePhotoIndex]?.quality?.isRejectable
                           ? photos[activePhotoIndex]?.quality?.label?.[language]
                           : photos[activePhotoIndex]?.quality?.warning
                           ? photos[activePhotoIndex]?.quality?.warning?.[language]
@@ -709,7 +784,12 @@ export const AddLotPage: React.FC = () => {
                     {photos.map((p, idx) => (
                       <div
                         key={p.id}
-                        onClick={() => setActivePhotoIndex(idx)}
+                        onClick={() => {
+                          setActivePhotoIndex(idx);
+                          if (p.aiPrediction?.category) {
+                            setSelectedCategory(p.aiPrediction.category);
+                          }
+                        }}
                         className={`relative w-16 h-16 rounded-xl overflow-hidden cursor-pointer shrink-0 border-2 transition-all ${
                           activePhotoIndex === idx
                             ? 'border-emerald-500 ring-2 ring-emerald-500/30 scale-105'
@@ -717,10 +797,30 @@ export const AddLotPage: React.FC = () => {
                         }`}
                       >
                         <img src={p.dataUrl} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                        
+                        {/* Status Pill on Thumbnail */}
+                        <span className={`absolute bottom-0.5 left-0.5 px-1 rounded text-[8px] font-black shadow flex items-center gap-0.5 ${
+                          p.nonEWasteAlert?.isNonEWaste && !p.isSelfCertified
+                            ? 'bg-amber-500 text-slate-950 ring-1 ring-amber-300'
+                            : p.quality?.isRejectable
+                            ? 'bg-red-600 text-white'
+                            : p.aiPrediction?.category
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-900/90 text-slate-300'
+                        }`}>
+                          {p.nonEWasteAlert?.isNonEWaste && !p.isSelfCertified
+                            ? '⚠️'
+                            : p.quality?.isRejectable
+                            ? '✗'
+                            : p.aiPrediction?.category
+                            ? '✓'
+                            : `${idx + 1}`}
+                        </span>
+
                         <button
                           type="button"
                           onClick={(e) => handleRemovePhoto(p.id, e)}
-                          className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] shadow"
+                          className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] shadow hover:scale-110 active:scale-95"
                           title="Delete"
                         >
                           ×
@@ -797,7 +897,7 @@ export const AddLotPage: React.FC = () => {
           </div>
 
           {/* Hazardous Materials Safety Warning Alert */}
-          {(selectedCategory === 'BATTERY' || selectedCategory === 'CRT' || aiPrediction?.category === 'BATTERY' || aiPrediction?.category === 'CRT') && (
+          {(selectedCategory === 'BATTERY' || selectedCategory === 'CRT' || photos[activePhotoIndex]?.aiPrediction?.category === 'BATTERY' || photos[activePhotoIndex]?.aiPrediction?.category === 'CRT') && (
             <div className="bg-amber-950/80 border-2 border-amber-600/70 rounded-2xl p-3.5 flex items-start gap-2.5 text-xs text-amber-200 shadow-md">
               <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
@@ -815,23 +915,131 @@ export const AddLotPage: React.FC = () => {
             </div>
           )}
 
-          {/* Transparent Heuristic Vision Suggestion Box */}
-          {aiPrediction && (
+          {/* Classifying in progress spinner */}
+          {isClassifying && (
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-center gap-2 text-xs text-emerald-400 font-bold animate-pulse">
+              <Sparkles className="w-4 h-4 animate-spin" />
+              <span>
+                {language === 'hi'
+                  ? 'कंप्यूटर विज़न द्वारा फोटो का विश्लेषण हो रहा है...'
+                  : language === 'mr'
+                  ? 'कॉम्प्युटर व्हिजनद्वारे फोटो तपासला जात आहे...'
+                  : 'Analyzing photo with Computer Vision...'}
+              </span>
+            </div>
+          )}
+
+          {/* NON-E-WASTE ANOMALY WARNING BANNER (Clothing Tag, Paper, Non-Electronic) */}
+          {photos[activePhotoIndex]?.nonEWasteAlert && !photos[activePhotoIndex]?.isSelfCertified && (
+            <div className="bg-amber-950/90 border-2 border-amber-500 rounded-2xl p-4 space-y-3 shadow-xl text-left">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-amber-300 font-black text-xs sm:text-sm">
+                  <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span className="text-white">
+                    {photos[activePhotoIndex]?.nonEWasteAlert?.title?.[language] || photos[activePhotoIndex]?.nonEWasteAlert?.title?.hi || 'गैर-ई-कचरा चेतावनी (Non-E-Waste Alert)'}
+                  </span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-900/90 text-amber-200 text-[10px] font-black border border-amber-700">
+                  {language === 'hi' ? '⚠️ असामान्य वस्तु पहचान' : language === 'mr' ? '⚠️ असामान्य वस्तू' : '⚠️ Non-E-Waste Anomaly'}
+                </span>
+              </div>
+              <p className="text-xs text-amber-100 leading-relaxed font-medium">
+                {photos[activePhotoIndex]?.nonEWasteAlert?.warning?.[language] || photos[activePhotoIndex]?.nonEWasteAlert?.warning?.hi || 'फोटो में कपड़ों का टैग, कागज या गैर-इलेक्ट्रॉनिक वस्तु की पहचान हुई है। E-Waste Rules 2022 के तहत केवल प्रमाणित ई-कचरा ही स्वीकार्य है।'}
+              </p>
+              {photos[activePhotoIndex]?.nonEWasteAlert?.features && photos[activePhotoIndex]?.nonEWasteAlert?.features!.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-amber-300/80 font-mono">
+                  {photos[activePhotoIndex]?.nonEWasteAlert?.features!.map((f, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded bg-amber-950 border border-amber-800/60">
+                      • {f}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              {/* Actions & Self-Certification */}
+              <div className="pt-2 border-t border-amber-900/60 space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[11px] text-amber-200">
+                    {language === 'hi' ? 'सुधारात्मक कार्रवाई:' : language === 'mr' ? 'सुधारात्मक कारवाई:' : 'Corrective Action:'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(photos[activePhotoIndex]?.id)}
+                      className="px-3.5 py-1.5 bg-red-800 hover:bg-red-700 text-white rounded-xl text-xs font-black shadow flex items-center gap-1 active:scale-95 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{language === 'hi' ? 'यह फोटो हटाएं' : language === 'mr' ? 'हा फोटो काढा' : 'Remove Photo'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCameraModalOpen(true)}
+                      className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-black shadow flex items-center gap-1 active:scale-95 transition-all"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{language === 'hi' ? 'ई-कचरा फोटो लें' : language === 'mr' ? 'ई-कचरा फोटो काढा' : 'Retake E-Waste'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer pt-1 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={!!photos[activePhotoIndex]?.isSelfCertified}
+                    onChange={() => handleToggleSelfCertification(photos[activePhotoIndex]?.id)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-slate-900 border-slate-700"
+                  />
+                  <span className="text-amber-200/90 font-medium text-[11px]">
+                    {language === 'hi'
+                      ? 'स्व-सत्यापन: मैं पुष्टि करता हूँ कि यह वास्तविक ई-कचरा घटक है (कस्टम पैकेजिंग)'
+                      : language === 'mr'
+                      ? 'स्वयं-प्रमाणीकरण: हे खरे ई-कचरा साहित्य आहे याची मी पुष्टी करतो'
+                      : 'Self-Certification: I declare this is genuine electronic scrap (custom packaging)'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Transparent Heuristic Vision Suggestion Box (Only shown if genuine e-waste detected) */}
+          {photos[activePhotoIndex]?.aiPrediction && (!photos[activePhotoIndex]?.nonEWasteAlert || photos[activePhotoIndex]?.isSelfCertified) && (
             <div className="bg-emerald-950/80 border-2 border-emerald-500/60 rounded-2xl p-4 space-y-2.5 shadow-lg">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Sparkles className="w-5 h-5 text-amber-400 shrink-0" />
                   <span className="text-xs font-bold text-emerald-300">
                     {language === 'hi' ? 'पहचान सुझाव:' : language === 'mr' ? 'ओळख सूचना:' : 'Vision Suggestion:'}
                   </span>
                   <span className="font-black text-sm text-white">
-                    {categoryLabels[aiPrediction.category]?.[language] || aiPrediction.category}
+                    {categoryLabels[photos[activePhotoIndex]?.aiPrediction!.category]?.[language] || photos[activePhotoIndex]?.aiPrediction!.category}
+                  </span>
+                  {photos[activePhotoIndex]?.aiPrediction?.cpcbCode && (
+                    <span className="px-2 py-0.5 rounded bg-emerald-900 border border-emerald-600 text-emerald-200 text-[10px] font-mono font-black">
+                      CPCB: {photos[activePhotoIndex]?.aiPrediction!.cpcbCode}
+                    </span>
+                  )}
+                  <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                    ({Math.round(photos[activePhotoIndex]?.aiPrediction!.confidence * 100)}% Match)
                   </span>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-900/90 text-emerald-300 text-[10px] font-black border border-emerald-700">
-                  {language === 'hi' ? 'नियम-आधारित सुझाव — पुष्टि आवश्यक' : language === 'mr' ? 'नियमांवर आधारित शिफारस — पुष्टी आवश्यक' : 'Rule-Based Suggestion — Confirmation Required'}
+                  {language === 'hi' ? 'AI विज़न मॉडल (पुष्टि आवश्यक)' : language === 'mr' ? 'AI व्हिजन मॉडेल (पुष्टी आवश्यक)' : 'AI Vision Model (Confirmation Required)'}
                 </span>
               </div>
+              {photos[activePhotoIndex]?.aiPrediction?.subCategory && (
+                <div className="text-[11px] text-emerald-200/90 font-medium bg-emerald-900/40 px-2.5 py-1 rounded-xl border border-emerald-800/60 inline-block">
+                  📌 {photos[activePhotoIndex]?.aiPrediction!.subCategory}
+                </div>
+              )}
+              {photos[activePhotoIndex]?.aiPrediction?.features && photos[activePhotoIndex]?.aiPrediction!.features!.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-emerald-300/80 font-mono">
+                  {photos[activePhotoIndex]?.aiPrediction!.features!.map((f, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800/60">
+                      ✓ {f}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center justify-between pt-1 border-t border-emerald-900/60 flex-wrap gap-2">
                 <span className="text-[11px] text-slate-300 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -847,7 +1055,7 @@ export const AddLotPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      handleSelectCategory(aiPrediction.category);
+                      handleSelectCategory(photos[activePhotoIndex]?.aiPrediction!.category);
                       handleProceedToStep2();
                     }}
                     className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow flex items-center gap-1 active:scale-95 transition-all"
@@ -871,19 +1079,36 @@ export const AddLotPage: React.FC = () => {
             </div>
           )}
 
-          {/* Navigation to Step 2 - Fully Localized (Bug Fix for "Next: Select Material") */}
+          {/* Navigation to Step 2 - Dynamic Warning if Anomaly present */}
           <button
             type="button"
             onClick={handleProceedToStep2}
-            className="w-full min-h-[52px] py-3.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-sm rounded-2xl shadow-xl shadow-emerald-950 flex items-center justify-center gap-2 transition-all mt-4"
+            className={`w-full min-h-[52px] py-3.5 font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all mt-4 ${
+              photos.some(p => p.nonEWasteAlert?.isNonEWaste && !p.isSelfCertified)
+                ? 'bg-amber-700 hover:bg-amber-600 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950'
+            }`}
           >
-            <span>
-              {language === 'hi'
-                ? 'सामग्री चुनें ➔'
-                : language === 'mr'
-                ? 'साहित्य प्रकार निवडा ➔'
-                : 'Select Material ➔'}
-            </span>
+            {photos.some(p => p.nonEWasteAlert?.isNonEWaste && !p.isSelfCertified) ? (
+              <>
+                <AlertCircle className="w-4 h-4 text-amber-200" />
+                <span>
+                  {language === 'hi'
+                    ? 'अमान्य फोटो हटाएं या सत्यापित करें ➔'
+                    : language === 'mr'
+                    ? 'अमान्य फोटो काढा किंवा पुष्टी करा ➔'
+                    : 'Resolve Invalid Photo to Proceed ➔'}
+                </span>
+              </>
+            ) : (
+              <span>
+                {language === 'hi'
+                  ? 'सामग्री चुनें ➔'
+                  : language === 'mr'
+                  ? 'साहित्य प्रकार निवडा ➔'
+                  : 'Select Material ➔'}
+              </span>
+            )}
           </button>
         </div>
       )}
@@ -900,7 +1125,7 @@ export const AddLotPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {MATERIAL_CATEGORIES.map(({ key: cat, icon, fallbackRate, examples }) => {
+            {MATERIAL_CATEGORIES.map(({ key: cat, icon, cpcbCode, fallbackRate, examples }) => {
               const info = categoryLabels[cat];
               const isSelected = selectedCategory === cat;
               const rate = livePrices[cat] || fallbackRate;
@@ -918,11 +1143,16 @@ export const AddLotPage: React.FC = () => {
                 >
                   <div className="flex items-center justify-between w-full mb-1">
                     <span className="text-3xl">{icon}</span>
-                    {isSelected ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                    ) : (
-                      <span className="text-[10px] font-bold text-slate-500 font-mono">₹{rate}/kg</span>
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      {isSelected ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-500 font-mono">₹{rate}/kg</span>
+                      )}
+                      <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-900 border border-slate-800 text-emerald-400">
+                        {cpcbCode}
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <h4 className="font-black text-xs sm:text-sm leading-tight text-white">{info[language] || cat}</h4>
@@ -1231,9 +1461,14 @@ export const AddLotPage: React.FC = () => {
                 </div>
               )}
               <div className="space-y-0.5">
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                  {selectedCategory}
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                    {selectedCategory}
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded bg-slate-900 text-emerald-300 font-mono text-[9px] font-black border border-slate-700">
+                    CPCB: {MATERIAL_CATEGORIES.find(m => m.key === selectedCategory)?.cpcbCode || 'ITEW1'}
+                  </span>
+                </div>
                 <h3 className="text-base font-black text-white leading-tight">
                   {categoryLabels[selectedCategory]?.[language] || selectedCategory}
                 </h3>

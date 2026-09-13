@@ -78,7 +78,7 @@ export const GreenCertificateModal: React.FC<GreenCertificateModalProps> = ({ lo
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <span className="text-slate-500 text-xs block">{t.certScaleWeight}</span>
-              <span className="font-bold text-slate-900">{handover?.actualWeight || lot.approxWeight} kg</span>
+              <span className="font-bold text-slate-900">{handover?.actualWeight || lot.actualWeight || lot.approxWeight} kg</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <span className="text-slate-500 text-xs block">{t.certCollector}</span>
@@ -87,7 +87,7 @@ export const GreenCertificateModal: React.FC<GreenCertificateModalProps> = ({ lo
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <span className="text-slate-500 text-xs block">{t.certAuthorizedRecycler}</span>
-              <span className="font-semibold text-slate-900">GreenEarth E-Waste Solutions</span>
+              <span className="font-semibold text-slate-900">ABC E-Waste Recycling Pvt Ltd</span>
               <span className="text-[10px] text-emerald-700 block">Reg: CPCB/EWR/UP/LKO/8812</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">

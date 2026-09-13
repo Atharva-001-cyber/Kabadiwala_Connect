@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, UserRole, CollectorProfile, RecyclerProfile } from '../types';
 import { api, setAuthToken, removeAuthToken, getAuthToken } from '../services/api';
+import { signInWithGoogle } from '../services/firebase';
 
 export interface LoginResult {
   success: boolean;
@@ -23,10 +24,20 @@ interface AuthContextType {
     district?: string,
     extra?: { facilityName?: string; adminPasscode?: string }
   ) => Promise<LoginResult>;
+  loginWithGoogle: (role: UserRole, district?: string) => Promise<LoginResult>;
   switchDemoRole: (role: UserRole) => Promise<LoginResult>;
   logout: () => void;
   refreshUser: () => Promise<void>;
-  updateProfile: (data: { name?: string; district?: string; state?: string; preferredPaymentMethod?: string; upiId?: string }) => Promise<{ success: boolean; message?: string }>;
+  updateProfile: (data: { 
+    name?: string; 
+    district?: string; 
+    state?: string; 
+    preferredPaymentMethod?: string; 
+    upiId?: string;
+    kycStatus?: any;
+    kycMaskedId?: string;
+    address?: string;
+  }) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -101,6 +112,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithGoogle = async (selectedRole: UserRole, district?: string): Promise<LoginResult> => {
+    try {
+      setIsLoading(true);
+      const fbRes = await signInWithGoogle();
+      if (!fbRes.success || !fbRes.user) {
+        return {
+          success: false,
+          message: fbRes.error || 'Google Sign-in was cancelled or failed'
+        };
+      }
+
+      const res = await api.syncGoogleUser({
+        googleUser: {
+          uid: fbRes.user.uid,
+          email: fbRes.user.email,
+          displayName: fbRes.user.displayName,
+          photoURL: fbRes.user.photoURL,
+          phoneNumber: fbRes.user.phoneNumber
+        },
+        role: selectedRole,
+        district
+      });
+
+      if (res.success && res.token) {
+        setAuthToken(res.token);
+        setUser(res.user);
+        setRole(res.user.role);
+        setCollectorProfile(res.collectorProfile || null);
+        setRecyclerProfile(res.recyclerProfile || null);
+        return { success: true, role: res.user.role };
+      }
+      return { success: false, message: 'Could not sync Google profile' };
+    } catch (err: any) {
+      console.warn('Google login error:', err.message || 'Login failed');
+      return { success: false, message: err.message || 'Login failed' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const switchDemoRole = async (targetRole: UserRole): Promise<LoginResult> => {
     const rolePhones: Record<UserRole, string> = {
       COLLECTOR: '9876543210',
@@ -112,7 +163,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await loginWithOtp(phone, otp, targetRole);
   };
 
-  const updateProfile = async (data: { name?: string; district?: string; state?: string; preferredPaymentMethod?: string; upiId?: string }) => {
+  const updateProfile = async (data: { 
+    name?: string; 
+    district?: string; 
+    state?: string; 
+    preferredPaymentMethod?: string; 
+    upiId?: string;
+    kycStatus?: any;
+    kycMaskedId?: string;
+    address?: string;
+  }) => {
     try {
       const res = await api.updateProfile(data);
       if (res.success) {
@@ -145,6 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         loginWithOtp,
+        loginWithGoogle,
         switchDemoRole,
         logout,
         refreshUser,

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { SafeImage } from '../../components/common/SafeImage';
 import { api } from '../../services/api';
+import { onPlatformSync } from '../../services/realtime';
 import { Lot, Pickup } from '../../types';
 import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
 
@@ -16,12 +17,12 @@ export const RecyclerDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchData = async (silent = false) => {
+      if (!silent) setLoading(true);
       try {
         const [lotsRes, pickupsRes] = await Promise.all([
-          api.getLots({ limit: '40' }),
-          api.getPickups({ limit: '30' })
+          api.getLots({ limit: '150' }),
+          api.getPickups({ limit: '50' })
         ]);
         if (lotsRes.success) setLots(lotsRes.lots);
         if (pickupsRes.success) setPickups(pickupsRes.pickups);
@@ -32,6 +33,21 @@ export const RecyclerDashboard: React.FC = () => {
       }
     };
     fetchData();
+
+    // Real-time synchronization on Supabase database events
+    const unsubscribeSync = onPlatformSync(() => {
+      fetchData(true);
+    });
+
+    // Background auto-refresh polling (8 seconds)
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 8000);
+
+    return () => {
+      unsubscribeSync();
+      clearInterval(interval);
+    };
   }, []);
 
   const newRequests = lots.filter(l => l.status === 'CREATED' || l.status === 'OFFER_RECEIVED');
@@ -212,7 +228,7 @@ export const RecyclerDashboard: React.FC = () => {
         </h2>
 
         <div className="space-y-3">
-          {lots.slice(0, 4).map((lot) => (
+          {lots.slice(0, 6).map((lot) => (
             <div
               key={lot.id}
               className="bg-slate-950 border border-slate-800/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
