@@ -514,45 +514,37 @@ export const CameraModal: React.FC<CameraModalProps> = ({
         )}
       </div>
 
-      {/* A5: Always-Accessible Quick Fallback Toolbar (Never trapped inside cameraError) */}
-      <div className="flex items-center justify-center gap-2 py-1.5 px-3 max-w-xl mx-auto w-full z-10">
-        <button
-          type="button"
-          onClick={() => fallbackInputRef.current?.click()}
-          className="flex-1 py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 border border-slate-800 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all"
-          title={language === 'hi' ? 'डिवाइस कैमरा ऐप खोलें' : language === 'mr' ? 'डिव्हाइस कॅमेरा उघडा' : 'Use Device Camera'}
-        >
-          <Camera className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{language === 'hi' ? 'डिवाइस कैमरा इस्तेमाल करें' : language === 'mr' ? 'डिव्हाइस कॅमेरा वापरा' : 'Use Device Camera'}</span>
-        </button>
+      {/* Optional Gallery Switcher: Clean single action shown if user prefers gallery instead of live camera */}
+      {!cameraError && isFeedReady && (
+        <div className="flex items-center justify-center py-1 px-3 max-w-xl mx-auto w-full z-10">
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            className="py-1.5 px-4 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 border border-slate-800/80 text-[11px] font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm"
+            title={language === 'hi' ? 'गैलरी से फोटो चुनें' : language === 'mr' ? 'गॅलरीमधून निवडा' : 'Choose from Gallery'}
+          >
+            <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{language === 'hi' ? 'या गैलरी से फोटो चुनें' : language === 'mr' ? 'किंवा गॅलरीमधून निवडा' : 'Or choose from Gallery'}</span>
+          </button>
+        </div>
+      )}
 
-        <button
-          type="button"
-          onClick={() => galleryInputRef.current?.click()}
-          className="flex-1 py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 border border-slate-800 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all"
-          title={language === 'hi' ? 'गैलरी से फोटो चुनें' : language === 'mr' ? 'गॅलरीमधून निवडा' : 'Choose from Gallery'}
-        >
-          <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{language === 'hi' ? 'गैलरी से चुनें' : language === 'mr' ? 'गॅलरीमधून निवडा' : 'Choose from Gallery'}</span>
-        </button>
-
-        {/* Hidden Fallback Inputs */}
-        <input
-          ref={fallbackInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFallbackFileChange}
-          className="hidden"
-        />
-        <input
-          ref={galleryInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFallbackFileChange}
-          className="hidden"
-        />
-      </div>
+      {/* Hidden Fallback Inputs */}
+      <input
+        ref={fallbackInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFallbackFileChange}
+        className="hidden"
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFallbackFileChange}
+        className="hidden"
+      />
 
       {/* Bottom Shutter / Action Controls */}
       <div className="flex items-center justify-around w-full max-w-xl mx-auto py-2 z-10">

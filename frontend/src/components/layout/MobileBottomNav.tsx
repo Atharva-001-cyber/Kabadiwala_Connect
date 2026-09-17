@@ -62,8 +62,8 @@ export const MobileBottomNav: React.FC = () => {
   const items = getMobileItems(role);
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 py-1 px-2 md:hidden shadow-2xl safe-area-bottom">
-      <div className="flex items-center justify-around">
+    <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-1 px-2 md:hidden shadow-lg safe-area-bottom transition-colors">
+      <div className="flex items-center justify-around w-full max-w-md mx-auto">
         {items.map((item) => {
           const isActive = item.exact
             ? path === item.to
@@ -77,10 +77,10 @@ export const MobileBottomNav: React.FC = () => {
                 to={item.to}
                 className="flex flex-col items-center -mt-5"
               >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-xl shadow-emerald-950 flex items-center justify-center ring-4 ring-slate-950 hover:scale-105 active:scale-95 transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-xl shadow-emerald-600/30 dark:shadow-emerald-950 flex items-center justify-center ring-4 ring-slate-50 dark:ring-slate-900 hover:scale-105 active:scale-95 transition-all">
                   <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-black text-emerald-400 mt-1 max-w-[60px] truncate text-center">
+                <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 mt-1 max-w-[60px] truncate text-center">
                   {item.label}
                 </span>
               </Link>
@@ -91,14 +91,14 @@ export const MobileBottomNav: React.FC = () => {
             <Link
               key={item.to}
               to={item.to}
-              className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center min-h-[44px] min-w-[48px] py-1 px-1 rounded-xl transition-all ${
                 isActive
-                  ? 'text-emerald-400 font-extrabold bg-emerald-950/40'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-emerald-700 dark:text-emerald-400 font-extrabold bg-emerald-50 dark:bg-emerald-950/40'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-bold mt-0.5 max-w-[60px] truncate text-center">
+              <span className="text-[10px] font-bold mt-0.5 max-w-[62px] truncate text-center leading-tight">
                 {item.label}
               </span>
             </Link>

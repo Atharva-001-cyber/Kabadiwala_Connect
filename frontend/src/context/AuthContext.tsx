@@ -16,6 +16,7 @@ interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isDemoUser: boolean;
   loginWithOtp: (
     phone: string,
     otp: string,
@@ -43,11 +44,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [collectorProfile, setCollectorProfile] = useState<CollectorProfile | null>(null);
-  const [recyclerProfile, setRecyclerProfile] = useState<RecyclerProfile | null>(null);
-  const [role, setRole] = useState<UserRole>('COLLECTOR');
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [collectorProfile, setCollectorProfile] = useState<CollectorProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem('collectorProfile');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [recyclerProfile, setRecyclerProfile] = useState<RecyclerProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem('recyclerProfile');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [role, setRole] = useState<UserRole>(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? (JSON.parse(stored).role as UserRole) || 'COLLECTOR' : 'COLLECTOR';
+    } catch {
+      return 'COLLECTOR';
+    }
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    const token = getAuthToken();
+    const storedUser = localStorage.getItem('user');
+    // If token exists and we already have cached user, do NOT block the UI!
+    return Boolean(token && !storedUser);
+  });
 
   const refreshUser = useCallback(async () => {
     const token = getAuthToken();
@@ -189,11 +223,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     removeAuthToken();
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('collectorProfile');
+      localStorage.removeItem('recyclerProfile');
+      localStorage.removeItem('authUser');
+    } catch {}
     setUser(null);
     setCollectorProfile(null);
     setRecyclerProfile(null);
     setRole('COLLECTOR');
   };
+
+  const DEMO_PHONES = ['9876543210', '9820098200', '9999999999'];
+  const isDemoUser = Boolean(user?.phone && DEMO_PHONES.includes(user.phone.trim().replace(/\D/g, '')));
 
   return (
     <AuthContext.Provider
@@ -204,6 +247,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role,
         isAuthenticated: !!user,
         isLoading,
+        isDemoUser,
         loginWithOtp,
         loginWithGoogle,
         switchDemoRole,

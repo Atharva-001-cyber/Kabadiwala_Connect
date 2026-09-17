@@ -9,12 +9,16 @@ import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Offer } from '../../types';
 import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
+import { StatusBadge } from '../../components/common/StatusBadge';
+import { EmptyState } from '../../components/common/EmptyState';
+import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 
 export const IncomingRequestsPage: React.FC = () => {
   const { user, recyclerProfile } = useAuth();
   const { t, language } = useLanguage();
   const { showToast } = useToast();
   const [lots, setLots] = useState<Lot[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const [offeredRate, setOfferedRate] = useState<string>('95');
   const [pickupOffered, setPickupOffered] = useState<boolean>(true);
@@ -27,7 +31,7 @@ export const IncomingRequestsPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots({ limit: '100' });
+      const res = await api.getLots();
       if (res.success) {
         const fetchedLots = res.lots;
         const lotIds = fetchedLots.map(l => l.id);
@@ -78,6 +82,8 @@ export const IncomingRequestsPage: React.FC = () => {
       }
     } catch (e) {
       console.warn('Failed to load lots:', e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -157,27 +163,41 @@ export const IncomingRequestsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl">
-        <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-          <span>📦</span>
-          <span>{t.incomingLotsTitle}</span>
-        </h1>
-        <p className="text-xs text-slate-400 font-medium mt-0.5">
-          {t.incomingLotsSubtitle}
-        </p>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-800 flex items-center gap-1">
+                <Package className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                CPCB Schedule-I Digital Bidding Rail
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-display flex items-center gap-2">
+              <span>📦</span>
+              <span>{t.incomingLotsTitle}</span>
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+              {t.incomingLotsSubtitle}
+            </p>
+          </div>
+
+          <div className="px-3.5 py-1.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 self-start sm:self-auto">
+            <span>Available Lots: <b className="text-blue-600 dark:text-blue-400 font-mono">{lots.length}</b></span>
+          </div>
+        </div>
       </div>
 
       {/* Regulatory Status Alert Banner */}
       {!isAuthorized && (
-        <div className={`p-4 rounded-2xl border flex items-start gap-3 shadow-lg ${
+        <div className={`p-4 rounded-2xl border flex items-start gap-3 shadow-sm ${
           recyclerProfile?.authorizationStatus === 'SUSPENDED'
-            ? 'bg-rose-950/80 border-rose-600 text-rose-200'
-            : 'bg-amber-950/80 border-amber-600 text-amber-200'
+            ? 'bg-rose-50 dark:bg-rose-950/80 border-rose-300 dark:border-rose-600 text-rose-800 dark:text-rose-200'
+            : 'bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-600 text-amber-800 dark:text-amber-200'
         }`}>
           <ShieldAlert className={`w-5 h-5 shrink-0 mt-0.5 ${
-            recyclerProfile?.authorizationStatus === 'SUSPENDED' ? 'text-rose-400' : 'text-amber-400'
+            recyclerProfile?.authorizationStatus === 'SUSPENDED' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'
           }`} />
           <div className="text-xs space-y-0.5">
             <span className="font-black text-sm block">
@@ -185,7 +205,7 @@ export const IncomingRequestsPage: React.FC = () => {
                 ? (language === 'hi' ? 'परिचालन प्रतिबंधित: लाइसेंस निलंबित है' : language === 'mr' ? 'कामकाज प्रतिबंधित: परवाना निलंबित आहे' : 'Operations Restricted: License Suspended')
                 : (language === 'hi' ? 'विनियामक सत्यापन लंबित है' : language === 'mr' ? 'नियामक पडताळणी प्रलंबित आहे' : 'Regulatory Verification Pending')}
             </span>
-            <p className="opacity-90">
+            <p className="opacity-90 leading-relaxed">
               {recyclerProfile?.authorizationStatus === 'SUSPENDED'
                 ? (language === 'hi' ? 'CPCB ई-कचरा नियमों के अनुसार निलंबित रीसाइक्लर बोलियां प्रस्तुत नहीं कर सकते।' : language === 'mr' ? 'CPCB नियमांनुसार निलंबित रिसायकलर नवीन बोली करू शकत नाहीत.' : 'Suspended facilities are legally prohibited from placing bids under CPCB E-Waste rules.')
                 : (language === 'hi' ? 'राज्य प्रदूषण नियंत्रण बोर्ड द्वारा सत्यापन पूर्ण होने तक नई बोलियां प्रस्तुत करना प्रतिबंधित है।' : language === 'mr' ? 'SPCB द्वारे पडताळणी पूर्ण होईपर्यंत नवीन बोली करणे प्रतिबंधित आहे.' : 'Quoting is disabled until state regulatory authorities verify your operating credentials.')}
@@ -195,83 +215,90 @@ export const IncomingRequestsPage: React.FC = () => {
       )}
 
       {/* Lots Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {lots.map((lot) => (
-          <div
-            key={lot.id}
-            className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-3xl p-5 shadow-xl space-y-4 transition-all"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <SafeImage
-                  src={lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
-                  alt={lot.materialCategory}
-                  category={lot.materialCategory}
-                  className="w-16 h-16 rounded-2xl object-cover border border-slate-700 shrink-0"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-400">{lot.id}</span>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                      {getStatusLabel(lot.status, language)}
-                    </span>
-                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
-                      lot.dataSource === 'LIVE'
-                        ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                        : 'bg-slate-800 text-slate-400 border-slate-700'
-                    }`}>
-                      {lot.dataSource === 'LIVE' ? t.liveBadge : t.demoBadge}
-                    </span>
+      {loading ? (
+        <LoadingSkeleton variant="card" count={4} />
+      ) : lots.length === 0 ? (
+        <EmptyState
+          title={language === 'hi' ? 'कोई नया लॉट उपलब्ध नहीं है' : language === 'mr' ? 'कोणताही नवीन लॉट उपलब्ध नाही' : 'No Incoming Scrap Lots Found'}
+          description={language === 'hi' ? 'वर्तमान में पंजीकृत क्षेत्र में नए स्क्रैप लॉट अनुरोध उपलब्ध नहीं हैं। नए अनुरोध आते ही यहां रीयल-टाइम में प्रदर्शित होंगे।' : language === 'mr' ? 'सध्या कोणतीही नवीन स्क्रॅप लॉट विनंती नाही.' : 'There are currently no open scrap lots matching your authorized material categories or jurisdiction. New collection requests will appear in real time.'}
+          icon={<Package className="w-8 h-8 text-blue-500" />}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {lots.map((lot) => (
+            <div
+              key={lot.id}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/60 dark:hover:border-blue-500/50 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md space-y-4 transition-all"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <SafeImage
+                    src={lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
+                    alt={lot.materialCategory}
+                    category={lot.materialCategory}
+                    className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400">{lot.id}</span>
+                      <StatusBadge status={lot.status} size="sm" />
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
+                        lot.dataSource === 'LIVE'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                      }`}>
+                        {lot.dataSource === 'LIVE' ? t.liveBadge : t.demoBadge}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white mt-0.5">{getCategoryLabel(lot.materialCategory, language)}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span>{lot.collectorName} • {lot.locationDistrict}, {lot.locationState}</span>
+                    </p>
                   </div>
-                  <h3 className="text-base font-black text-white mt-0.5">{getCategoryLabel(lot.materialCategory, language)}</h3>
-                  <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                    <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                    <span>{lot.collectorName} • {lot.locationDistrict}, {lot.locationState}</span>
-                  </p>
                 </div>
               </div>
-            </div>
 
             {/* Weight and Valuation details */}
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-slate-500 text-[10px] block">{t.totalWeight}</span>
-                <span className="font-black text-white text-sm">{lot.approxWeight} kg</span>
+            <div className="grid grid-cols-3 gap-2.5 text-xs">
+              <div className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider block">{t.totalWeight}</span>
+                <span className="font-black text-slate-900 dark:text-white text-base font-mono mt-0.5 block">{lot.approxWeight} kg</span>
               </div>
-              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-slate-500 text-[10px] block">{t.condition}</span>
-                <span className="font-bold text-slate-300">{lot.condition}</span>
+              <div className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider block">{t.condition}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block capitalize">{lot.condition}</span>
               </div>
-              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span className="text-slate-500 text-[10px] block">{t.estimatedValue}</span>
-                <span className="font-bold text-emerald-400">₹{lot.estimatedValueMin} – ₹{lot.estimatedValueMax}</span>
+              <div className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider block">{t.estimatedValue}</span>
+                <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs mt-0.5 block font-mono">₹{lot.estimatedValueMin}–{lot.estimatedValueMax}</span>
               </div>
             </div>
 
             {lot.description && (
-              <p className="text-xs text-slate-400 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 italic">
+              <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 italic">
                 "{lot.description}"
               </p>
             )}
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-              <span className="text-xs text-slate-400 font-mono">
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-mono font-medium">
                 {new Date(lot.createdAt).toLocaleDateString('en-IN')}
               </span>
 
               {(lot as any).myOffer?.status === 'ACCEPTED' ? (
                 <Link
                   to={`/recycler/pickups?lotId=${lot.id}`}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow flex items-center gap-1.5 active:scale-95"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 active:scale-95 transition-all"
                 >
                   <Truck className="w-3.5 h-3.5" />
                   <span>{language === 'hi' ? 'डील स्वीकृत • पिकअप शेड्यूल करें' : language === 'mr' ? 'ऑफर स्वीकृत • पिकअप नियोजित करा' : 'Deal Accepted • Schedule Pickup'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               ) : (lot as any).myOffer?.status === 'PENDING' ? (
-                <div className="px-3.5 py-2 bg-slate-800 border border-blue-500/50 text-blue-300 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                <div className="px-3.5 py-2 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-500/50 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>
                     {language === 'hi'
                       ? `बोली सक्रिय: ₹${(lot as any).myOffer.offeredRatePerKg}/kg`
@@ -285,10 +312,10 @@ export const IncomingRequestsPage: React.FC = () => {
                   type="button"
                   disabled={!isAuthorized}
                   onClick={() => handleOpenOfferModal(lot)}
-                  className={`px-4 py-2 rounded-xl text-xs font-extrabold shadow flex items-center gap-1.5 ${
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition-all ${
                     isAuthorized
-                      ? 'bg-blue-600 hover:bg-blue-500 active:scale-95 text-white'
-                      : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                      ? 'bg-blue-600 hover:bg-blue-700 active:scale-95 text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
                   }`}
                   title={!isAuthorized ? 'CPCB Authorization Required' : undefined}
                 >
@@ -300,33 +327,34 @@ export const IncomingRequestsPage: React.FC = () => {
           </div>
         ))}
       </div>
+      )}
 
       {/* Make Offer Modal */}
       {selectedLot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-blue-500/50 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
-                <h3 className="text-base font-black text-white">{t.makeOfferModalTitle}</h3>
-                <p className="text-xs text-blue-400 font-mono">{selectedLot.id} • {getCategoryLabel(selectedLot.materialCategory, language)}</p>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">{t.makeOfferModalTitle}</h3>
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-mono font-bold mt-0.5">{selectedLot.id} • {getCategoryLabel(selectedLot.materialCategory, language)}</p>
               </div>
               <button
                 onClick={() => setSelectedLot(null)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white text-sm font-bold transition-colors"
               >
                 ✕
               </button>
             </div>
 
             {successMsg ? (
-              <div className="bg-emerald-950 border border-emerald-500 rounded-2xl p-4 text-center text-emerald-300 font-bold text-sm">
-                <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-400 mb-1" />
+              <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-500 rounded-2xl p-4 text-center text-emerald-800 dark:text-emerald-300 font-bold text-sm">
+                <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-600 dark:text-emerald-400 mb-1" />
                 {successMsg}
               </div>
             ) : (
               <form onSubmit={handleSubmitOffer} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
                     {t.offeredRateLabel}
                   </label>
                   <div className="relative">
@@ -335,21 +363,21 @@ export const IncomingRequestsPage: React.FC = () => {
                       step="1"
                       value={offeredRate}
                       onChange={(e) => setOfferedRate(e.target.value)}
-                      className="w-full pl-4 pr-16 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-xl font-black focus:outline-none focus:border-blue-500"
+                      className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-mono text-xl font-black focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                       required
                     />
-                    <span className="absolute right-3 top-3 text-slate-400 font-bold">₹ / kg</span>
+                    <span className="absolute right-3 top-3.5 text-slate-500 dark:text-slate-400 font-bold">₹ / kg</span>
                   </div>
-                  <div className="flex justify-between text-slate-400 mt-1 font-bold">
+                  <div className="flex justify-between text-slate-600 dark:text-slate-400 mt-1.5 font-bold">
                     <span>{t.estimatedTotalLabel}</span>
-                    <span className="text-emerald-400 font-black text-sm">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm font-mono">
                       ₹{Math.round((parseFloat(offeredRate) || 0) * selectedLot.approxWeight).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <span className="font-bold text-slate-300">{t.pickupIncludedLabel}</span>
+                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span className="font-bold text-slate-700 dark:text-slate-300">{t.pickupIncludedLabel}</span>
                   <input
                     type="checkbox"
                     checked={pickupOffered}
@@ -359,13 +387,13 @@ export const IncomingRequestsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
                     {t.pickupEtaLabel}
                   </label>
                   <select
                     value={etaHours}
                     onChange={(e) => setEtaHours(e.target.value)}
-                    className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold focus:outline-none focus:border-blue-500"
                   >
                     <option value="12">{t.eta12h}</option>
                     <option value="24">{t.eta24h}</option>
@@ -374,21 +402,21 @@ export const IncomingRequestsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
                     {t.notesToCollectorLabel}
                   </label>
                   <textarea
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-blue-500 text-xs"
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs"
                   ></textarea>
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-extrabold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
                 >
                   <Send className="w-4 h-4" />
                   <span>{submitting ? t.loadingText : t.sendOfferBtn}</span>

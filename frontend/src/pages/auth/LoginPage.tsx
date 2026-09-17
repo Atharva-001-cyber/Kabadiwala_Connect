@@ -20,11 +20,14 @@ import {
   Building2,
   MapPin,
   KeyRound,
-  UserPlus
+  UserPlus,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { UserRole, Language } from '../../types';
 import { api } from '../../services/api';
@@ -77,6 +80,7 @@ export const LoginPage: React.FC = () => {
 
   const { loginWithOtp, loginWithGoogle, switchDemoRole } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const { speak, stop, isSpeaking } = useSpeech();
 
@@ -417,11 +421,11 @@ export const LoginPage: React.FC = () => {
       streamBadge: language === 'hi' ? 'अनौपचारिक ई-कचरा संकलन' : language === 'mr' ? 'अनौपचारिक ई-कचरा संकलन' : 'Informal Collection Stream',
       title: t.authCollectorTitle,
       desc: t.authCollectorDesc,
-      borderColor: 'border-emerald-500',
-      activeTab: 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40',
-      boxBg: 'bg-emerald-950/40 border-emerald-800/60',
-      accentColor: 'text-emerald-400',
-      btnBg: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-950',
+      borderColor: 'border-emerald-600',
+      activeTab: 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40 font-black ring-2 ring-emerald-500',
+      boxBg: 'bg-emerald-50/90 dark:bg-emerald-950/40 border-2 border-emerald-300 dark:border-emerald-800/60',
+      accentColor: 'text-emerald-900 dark:text-emerald-300 font-extrabold',
+      btnBg: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-950',
       icon: '📦',
       highlights: [
         language === 'hi' ? 'दलाल-मुक्त पारदर्शी भाव' : language === 'mr' ? 'दलालमुक्त पारदर्शक दर' : 'Zero Middleman Deductions',
@@ -434,11 +438,11 @@ export const LoginPage: React.FC = () => {
       streamBadge: language === 'hi' ? 'CPCB पंजीकृत रीसाइक्लिंग केंद्र' : language === 'mr' ? 'CPCB नोंदणीकृत रिसायकलिंग केंद्र' : 'Registered Facility Stream',
       title: t.authRecyclerTitle,
       desc: t.authRecyclerDesc,
-      borderColor: 'border-blue-500',
-      activeTab: 'bg-blue-600 text-white shadow-lg shadow-blue-950/40',
-      boxBg: 'bg-blue-950/40 border-blue-800/60',
-      accentColor: 'text-blue-400',
-      btnBg: 'bg-blue-600 hover:bg-blue-500 shadow-blue-950',
+      borderColor: 'border-blue-600',
+      activeTab: 'bg-blue-600 text-white shadow-lg shadow-blue-950/40 font-black ring-2 ring-blue-500',
+      boxBg: 'bg-blue-50/90 dark:bg-blue-950/40 border-2 border-blue-300 dark:border-blue-800/60',
+      accentColor: 'text-blue-900 dark:text-blue-300 font-extrabold',
+      btnBg: 'bg-blue-600 hover:bg-blue-700 shadow-blue-950',
       icon: '🏭',
       highlights: [
         language === 'hi' ? 'प्लेटफॉर्म-प्रबंधित अधिकृत रीसाइक्लर' : language === 'mr' ? 'प्लॅटफॉर्म-व्यवस्थापित अधिकृत रिसायकलर' : 'Platform-Managed Authorization',
@@ -451,11 +455,11 @@ export const LoginPage: React.FC = () => {
       streamBadge: language === 'hi' ? 'राज्य / राष्ट्रीय विनियामक प्रकोष्ठ' : language === 'mr' ? 'राज्य / राष्ट्रीय नियामक कक्ष' : 'State & National Oversight Cell',
       title: t.authAdminTitle,
       desc: t.authAdminDesc,
-      borderColor: 'border-purple-500',
-      activeTab: 'bg-purple-600 text-white shadow-lg shadow-purple-950/40',
-      boxBg: 'bg-purple-950/40 border-purple-800/60',
-      accentColor: 'text-purple-400',
-      btnBg: 'bg-purple-600 hover:bg-purple-500 shadow-purple-950',
+      borderColor: 'border-purple-600',
+      activeTab: 'bg-purple-600 text-white shadow-lg shadow-purple-950/40 font-black ring-2 ring-purple-500',
+      boxBg: 'bg-purple-50/90 dark:bg-purple-950/40 border-2 border-purple-300 dark:border-purple-800/60',
+      accentColor: 'text-purple-900 dark:text-purple-300 font-extrabold',
+      btnBg: 'bg-purple-600 hover:bg-purple-700 shadow-purple-950',
       icon: '🛡️',
       highlights: [
         language === 'hi' ? 'राष्ट्रीय ई-कचरा GIS गतिविधि मैप' : language === 'mr' ? 'राष्ट्रीय ई-कचरा GIS नकाशा' : 'National GIS Density Telemetry',
@@ -466,30 +470,30 @@ export const LoginPage: React.FC = () => {
   }[selectedRole];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-black transition-colors duration-200">
       {/* Top Government-Grade Unauthenticated Header */}
-      <header className="h-16 px-4 sm:px-8 border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md flex items-center justify-between z-20">
+      <header className="h-16 px-4 sm:px-8 border-b border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-950">
             <Recycle className="w-6 h-6 animate-spin-slow" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base sm:text-lg tracking-tight text-white">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">
                 {t.appTitle}
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+              <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                 SIH #229
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
               {t.appSubtitle}
             </p>
           </div>
         </div>
 
-        {/* Right Header Controls: Audio Assistance & Single Language Switcher */}
-        <div className="flex items-center gap-2.5">
+        {/* Right Header Controls: Audio Assistance, 1-Click Theme Switcher & Single Language Switcher */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           <button
             type="button"
             onClick={() => {
@@ -501,7 +505,7 @@ export const LoginPage: React.FC = () => {
             }}
             className={`p-2 rounded-xl border transition-all ${isSpeaking
                 ? 'bg-amber-500 text-slate-950 border-amber-400 ring-2 ring-amber-300'
-                : 'bg-slate-800 hover:bg-slate-700 text-emerald-300 border-slate-700'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-300 border-slate-300 dark:border-slate-700'
               }`}
             title={isSpeaking ? (t.voiceStop || 'Stop') : (t.audioGuidanceBtn || 'Audio Guidance')}
             aria-label={isSpeaking ? (t.voicePlaying || 'Playing voice...') : (t.audioGuidanceBtn || 'Audio Guidance')}
@@ -513,18 +517,33 @@ export const LoginPage: React.FC = () => {
             )}
           </button>
 
+          {/* 1-Click Dual Theme Switcher (☀️ Light / 🌙 Dark) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all shadow-sm active:scale-95 shrink-0"
+            title={theme === 'light' ? 'Switch to Enterprise Dark Mode' : 'Switch to National DPI Light Mode'}
+            aria-label="Toggle visual theme"
+          >
+            {theme === 'light' ? (
+              <Moon className="w-4 h-4 text-indigo-600 shrink-0" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+            )}
+          </button>
+
           {/* SINGLE Language Selector on Login Page */}
-          <div className="relative flex items-center bg-slate-800 rounded-xl px-2.5 py-1.5 border border-slate-700">
-            <Globe className="w-4 h-4 text-emerald-400 mr-1.5 shrink-0" />
+          <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-2.5 py-1.5 border border-slate-300 dark:border-slate-700">
+            <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mr-1.5 shrink-0" />
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-transparent text-xs font-black text-slate-200 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-black text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
               aria-label="Language Selector"
             >
-              <option value="hi" className="bg-slate-900 text-white">हिंदी (HI)</option>
-              <option value="mr" className="bg-slate-900 text-white">मराठी (MR)</option>
-              <option value="en" className="bg-slate-900 text-white">English (EN)</option>
+              <option value="hi" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">हिंदी (HI)</option>
+              <option value="mr" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">मराठी (MR)</option>
+              <option value="en" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">English (EN)</option>
             </select>
           </div>
         </div>
@@ -533,19 +552,19 @@ export const LoginPage: React.FC = () => {
       {/* Main Authentication Arena */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative">
         {/* Subtle Ambient Background Gradients */}
-        <div className="absolute top-1/4 -left-32 w-80 h-80 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-1/4 -left-32 w-80 h-80 bg-emerald-600/10 dark:bg-emerald-600/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-blue-600/10 dark:bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="w-full max-w-4xl bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 relative z-10 backdrop-blur-xl">
+        <div className="w-full max-w-6xl xl:max-w-7xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl dark:shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 relative z-10 backdrop-blur-xl transition-colors">
           {/* Left Column: Platform Identity & Environmental Mission */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/60 p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800">
+          <div className="lg:col-span-5 xl:col-span-6 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950 text-white p-6 sm:p-8 xl:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-extrabold">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>{language === 'hi' ? 'MoEFCC एवं CPCB अनुपालित' : language === 'mr' ? 'MoEFCC आणि CPCB अनुपालन' : 'MoEFCC & CPCB Compliant'}</span>
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
+              <h2 className="text-xl sm:text-2xl xl:text-3xl font-black text-white leading-tight">
                 {t.loginSubtitle}
               </h2>
 
@@ -597,6 +616,22 @@ export const LoginPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* National Live Impact Counter */}
+              <div className="pt-4 border-t border-slate-800/80 grid grid-cols-3 gap-2 text-center">
+                <div className="bg-slate-950/60 border border-emerald-900/40 rounded-2xl p-2.5">
+                  <span className="text-emerald-400 font-black text-sm block">1,420+ MT</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{language === 'hi' ? 'रीसाइकिल्ड कचरा' : language === 'mr' ? 'पुनर्प्रक्रिया कचरा' : 'Scrap Diverted'}</span>
+                </div>
+                <div className="bg-slate-950/60 border border-blue-900/40 rounded-2xl p-2.5">
+                  <span className="text-blue-400 font-black text-sm block">100%</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{language === 'hi' ? 'डिजिटल तौल' : language === 'mr' ? 'डिजिटल वजन' : 'Scale Verified'}</span>
+                </div>
+                <div className="bg-slate-950/60 border border-purple-900/40 rounded-2xl p-2.5">
+                  <span className="text-purple-400 font-black text-sm block">18+</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{language === 'hi' ? 'सक्रिय राज्य' : language === 'mr' ? 'सक्रिय राज्ये' : 'Active States'}</span>
+                </div>
+              </div>
             </div>
 
             <div className="pt-6 mt-6 border-t border-slate-800 text-[11px] text-slate-400">
@@ -605,11 +640,11 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Right Column: SINGLE Role Selector + Differentiated Auth Box */}
-          <div className="lg:col-span-7 p-6 sm:p-8 space-y-5 flex flex-col justify-between bg-slate-900">
+          <div className="lg:col-span-7 xl:col-span-6 p-6 sm:p-8 xl:p-10 space-y-5 flex flex-col justify-between bg-white dark:bg-slate-900 transition-colors">
             <div className="space-y-4">
               {/* SINGLE Role Selector */}
               <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-400 block mb-2">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 block mb-2">
                   {language === 'hi' ? 'अपनी भूमिका चुनें' : language === 'mr' ? 'आपली भूमिका निवडा' : 'Select Portal Role'}
                 </label>
 
@@ -626,8 +661,8 @@ export const LoginPage: React.FC = () => {
                         type="button"
                         onClick={() => handleRoleSelect(item.r as UserRole)}
                         className={`p-3 rounded-2xl text-center border font-bold text-xs transition-all duration-200 flex flex-col items-center gap-1 ${isSelected
-                            ? `${roleMeta.activeTab} border-transparent ring-2 ring-white/20`
-                            : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:bg-slate-750 hover:text-white'
+                            ? `${roleMeta.activeTab} border-transparent ring-2 ring-slate-900/10 dark:ring-white/20`
+                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-750 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                           }`}
                       >
                         <span className="text-xl">{item.icon}</span>
@@ -644,19 +679,19 @@ export const LoginPage: React.FC = () => {
                   <span className={`text-xs font-black uppercase tracking-wider ${roleMeta.accentColor}`}>
                     {roleMeta.portalTitle}
                   </span>
-                  <span className="text-[11px] text-slate-400 font-mono font-bold">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono font-bold">
                     {roleMeta.streamBadge}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-300 font-medium">
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">
                   {roleMeta.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-slate-800 text-[10px] text-slate-300">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-600 dark:text-slate-300">
                   {roleMeta.highlights.map((h, i) => (
                     <span key={i} className="flex items-center gap-1">
-                      <span className="text-emerald-400">✓</span> {h}
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span> {h}
                     </span>
                   ))}
                 </div>
@@ -664,12 +699,12 @@ export const LoginPage: React.FC = () => {
 
               {/* Role Conflict Warning Banner (Option 2 Role Guard) */}
               {roleConflict?.hasConflict && (
-                <div className="p-4 rounded-2xl bg-amber-950/80 border-2 border-amber-500 space-y-2.5 animate-in fade-in-50">
-                  <div className="flex items-center gap-2 text-amber-300 font-black text-sm">
-                    <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/80 border-2 border-amber-500 space-y-2.5 animate-in fade-in-50">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-black text-sm">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>{t.roleConflictNotice || 'भूमिका टकराव / Role Conflict'}</span>
                   </div>
-                  <p className="text-xs text-amber-200 font-medium leading-relaxed">
+                  <p className="text-xs text-amber-900 dark:text-amber-200 font-medium leading-relaxed">
                     {language === 'hi'
                       ? `यह मोबाइल नंबर (+91 ${phone}) पहले से ${roleConflict.registeredRole} के रूप में पंजीकृत है। कृपया ${roleConflict.registeredRole} पोर्टल चुनें।`
                       : language === 'mr'
@@ -699,7 +734,7 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isSubmitting || isSendingOtp}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-sm flex items-center justify-between shadow-xl shadow-black/40 transition-all active:scale-[0.98] border border-slate-200 group"
+                  className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-50 dark:hover:bg-slate-100 text-slate-900 font-extrabold text-sm flex items-center justify-between shadow-md dark:shadow-xl dark:shadow-black/40 transition-all active:scale-[0.98] border border-slate-300 dark:border-slate-200 group"
                   aria-label="Sign in with Google"
                 >
                   <div className="flex items-center gap-3">
@@ -719,11 +754,11 @@ export const LoginPage: React.FC = () => {
                 </button>
 
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-slate-800"></div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     {language === 'hi' ? 'या मोबाइल नंबर से' : language === 'mr' ? 'किंवा मोबाईल नंबरने' : 'Or with Mobile Number'}
                   </span>
-                  <div className="flex-1 h-px bg-slate-800"></div>
+                  <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
                 </div>
               </div>
 
@@ -732,19 +767,19 @@ export const LoginPage: React.FC = () => {
                 <form onSubmit={handleSendOtp} className="space-y-3.5">
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-bold text-slate-300">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                         {selectedRole === 'ADMIN'
                           ? (language === 'hi' ? 'अधिकृत प्रशासक मोबाइल नंबर' : language === 'mr' ? 'अधिकृत प्रशासक मोबाईल नंबर' : 'Authorized Administrator Mobile')
                           : t.enterMobile}
                       </label>
                       {selectedRole === 'ADMIN' && (
-                        <span className="text-[10px] font-extrabold text-purple-300 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+                        <span className="text-[10px] font-extrabold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-300 dark:border-purple-800">
                           {language === 'hi' ? '🔒 विनियामक क्रेडेंशियल आवश्यक' : language === 'mr' ? '🔒 नियामक ओळख आवश्यक' : '🔒 Authorized Credentials Required'}
                         </span>
                       )}
                     </div>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-extrabold text-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 dark:text-slate-400 font-extrabold text-sm">
                         +91
                       </div>
                       <input
@@ -753,27 +788,27 @@ export const LoginPage: React.FC = () => {
                         value={phone}
                         onChange={(e) => handlePhoneChange(e.target.value)}
                         placeholder={selectedRole === 'ADMIN' ? '99999 99999' : selectedRole === 'RECYCLER' ? '98200 98200' : '98765 43210'}
-                        className={`w-full pl-14 pr-4 py-3 bg-slate-800 border rounded-2xl text-white font-mono font-bold text-base focus:outline-none transition-all ${
+                        className={`w-full pl-14 pr-4 py-3 bg-white dark:bg-slate-800 border rounded-2xl text-slate-900 dark:text-white font-mono font-bold text-base focus:outline-none transition-all ${
                           roleConflict?.hasConflict
                             ? 'border-amber-500 ring-1 ring-amber-500'
-                            : 'border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
+                            : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm'
                         }`}
                         required
                         aria-label="Mobile Number"
                       />
-                      <Phone className="w-5 h-5 absolute right-3.5 top-3 text-slate-500" />
+                      <Phone className="w-5 h-5 absolute right-3.5 top-3 text-slate-400 dark:text-slate-500" />
                     </div>
                   </div>
 
                   {/* Dynamic New User Registration Fields */}
                   {isNewUser && !roleConflict?.hasConflict && (
-                    <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 space-y-3 animate-in fade-in-50">
+                    <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-500/40 space-y-3 animate-in fade-in-50">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-emerald-400 font-extrabold text-xs">
+                        <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs">
                           <UserPlus className="w-4 h-4" />
                           <span>{t.newUserNotice || 'नया उपयोगकर्ता पंजीकरण'}</span>
                         </div>
-                        <span className="text-[10px] bg-emerald-900/80 text-emerald-200 px-2 py-0.5 rounded font-mono font-bold">
+                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded font-mono font-bold">
                           Real-time Supabase Cloud
                         </span>
                       </div>
@@ -781,8 +816,8 @@ export const LoginPage: React.FC = () => {
                       {selectedRole === 'COLLECTOR' && (
                         <>
                           <div>
-                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                              {t.fullNameLabel || 'पूरा नाम'} <span className="text-emerald-400">*</span>
+                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                              {t.fullNameLabel || 'पूरा नाम'} <span className="text-emerald-600 dark:text-emerald-400">*</span>
                             </label>
                             <input
                               type="text"
@@ -790,18 +825,18 @@ export const LoginPage: React.FC = () => {
                               value={userName}
                               onChange={(e) => setUserName(e.target.value)}
                               placeholder={language === 'hi' ? 'उदा. रमेश कुमार' : language === 'mr' ? 'उदा. रमेश कुमार' : 'e.g. Ramesh Kumar'}
-                              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-medium text-xs focus:outline-none focus:border-emerald-500"
+                              className="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-medium text-xs focus:outline-none focus:border-emerald-500 shadow-sm"
                             />
                           </div>
                           <div>
-                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                               {t.districtLabel || 'जिला (स्थान)'}
                             </label>
                             <div className="relative">
                               <select
                                 value={district}
                                 onChange={(e) => setDistrict(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-emerald-500"
+                                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-emerald-500 shadow-sm"
                               >
                                 <option value="Lucknow">Lucknow (उत्तर प्रदेश)</option>
                                 <option value="Pune">Pune (महाराष्ट्र)</option>
@@ -819,8 +854,8 @@ export const LoginPage: React.FC = () => {
                       {selectedRole === 'RECYCLER' && (
                         <>
                           <div>
-                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                              {t.facilityNameLabel || 'रीसाइक्लिंग केंद्र / फर्म का नाम'} <span className="text-blue-400">*</span>
+                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                              {t.facilityNameLabel || 'रीसाइक्लिंग केंद्र / फर्म का नाम'} <span className="text-blue-600 dark:text-blue-400">*</span>
                             </label>
                             <div className="relative">
                               <input
@@ -829,13 +864,13 @@ export const LoginPage: React.FC = () => {
                                 value={facilityName}
                                 onChange={(e) => setFacilityName(e.target.value)}
                                 placeholder="e.g. GreenEarth E-Waste Solutions Pvt Ltd"
-                                className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-blue-500"
+                                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-blue-500 shadow-sm"
                               />
                               <Building2 className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                             </div>
                           </div>
                           <div>
-                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                               {t.fullNameLabel || 'संपर्क व्यक्ति का नाम'}
                             </label>
                             <input
@@ -843,18 +878,18 @@ export const LoginPage: React.FC = () => {
                               value={userName}
                               onChange={(e) => setUserName(e.target.value)}
                               placeholder="e.g. Operations Manager"
-                              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-blue-500"
+                              className="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm"
                             />
                           </div>
                           <div>
-                            <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                               {t.districtLabel || 'जिला / परिचालन क्षेत्र'}
                             </label>
                             <div className="relative">
                               <select
                                 value={district}
                                 onChange={(e) => setDistrict(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-blue-500"
+                                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-blue-500 shadow-sm"
                               >
                                 <option value="Lucknow">Lucknow (Uttar Pradesh)</option>
                                 <option value="Pune">Pune (Maharashtra)</option>
@@ -873,12 +908,12 @@ export const LoginPage: React.FC = () => {
 
                   {/* Admin Master Passcode Security Field */}
                   {selectedRole === 'ADMIN' && phone !== '9999999999' && (
-                    <div className="p-3.5 rounded-2xl bg-purple-950/60 border border-purple-600/60 space-y-2 animate-in fade-in-50">
+                    <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-600/60 space-y-2 animate-in fade-in-50">
                       <div className="flex items-center justify-between">
-                        <label className="block text-[11px] font-bold text-purple-200">
-                          {t.adminPasscodeLabel || 'CPCB मास्टर पासकोड (अनिवार्य)'} <span className="text-red-400">*</span>
+                        <label className="block text-[11px] font-bold text-purple-900 dark:text-purple-200">
+                          {t.adminPasscodeLabel || 'CPCB मास्टर पासकोड (अनिवार्य)'} <span className="text-red-500 dark:text-red-400">*</span>
                         </label>
-                        <span className="text-[10px] text-purple-300 font-mono bg-purple-900/80 px-2 py-0.5 rounded">
+                        <span className="text-[10px] text-purple-700 dark:text-purple-300 font-mono bg-purple-100 dark:bg-purple-900/80 px-2 py-0.5 rounded border border-purple-200 dark:border-transparent">
                           Security Guard
                         </span>
                       </div>
@@ -888,12 +923,12 @@ export const LoginPage: React.FC = () => {
                           value={adminPasscode}
                           onChange={(e) => setAdminPasscode(e.target.value)}
                           placeholder="SIH2026-CPCB-ADMIN"
-                          className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-purple-500/60 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-purple-400"
+                          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-500/60 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-purple-500 shadow-sm"
                         />
-                        <KeyRound className="w-4 h-4 absolute left-3 top-2.5 text-purple-400" />
+                        <KeyRound className="w-4 h-4 absolute left-3 top-2.5 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <p className="text-[10px] text-purple-300/80 font-mono">
-                        SIH Jury Key: <span className="font-bold text-white">SIH2026-CPCB-ADMIN</span>
+                      <p className="text-[10px] text-purple-700 dark:text-purple-300/80 font-mono">
+                        SIH Jury Key: <span className="font-bold text-purple-950 dark:text-white">SIH2026-CPCB-ADMIN</span>
                       </p>
                     </div>
                   )}
@@ -916,17 +951,17 @@ export const LoginPage: React.FC = () => {
                 <form onSubmit={handleVerify} className="space-y-3.5">
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-bold text-slate-300">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                         {isFirebaseOtp || selectedRole === 'RECYCLER'
                           ? (language === 'hi' ? 'मोबाइल पर प्राप्त 6-अंकीय SMS OTP दर्ज करें' : language === 'mr' ? 'मोबाईलवर प्राप्त 6-अंकी SMS OTP टाका' : 'Enter 6-digit SMS OTP from Phone')
                           : t.enterOtp}
                       </label>
                       {phone === '9876543210' || phone === '9820098200' || phone === '9999999999' ? (
-                        <span className="text-[11px] text-amber-300 font-bold bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700/60 font-mono">
+                        <span className="text-[11px] text-amber-900 dark:text-amber-300 font-bold bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700/60 font-mono">
                           SIH Judge Demo OTP: {phone === '9820098200' ? '123456' : '1234'}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
                           {isFirebaseOtp ? 'Google Verified SMS' : 'Expires in 5m'}
                         </span>
                       )}
@@ -934,8 +969,8 @@ export const LoginPage: React.FC = () => {
 
                     {/* Real Firebase SMS Dispatched Banner */}
                     {isFirebaseOtp && (
-                      <div className="mb-3 p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/50 flex items-center justify-between text-xs animate-in fade-in-50">
-                        <div className="flex items-center gap-2 text-emerald-300">
+                      <div className="mb-3 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/50 flex items-center justify-between text-xs animate-in fade-in-50">
+                        <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
                           <span className="text-base">📲</span>
                           <span className="font-semibold">
                             {language === 'hi'
@@ -945,7 +980,7 @@ export const LoginPage: React.FC = () => {
                               : `Real SMS OTP sent to your phone (+91 ${phone}):`}
                           </span>
                         </div>
-                        <span className="font-mono font-black text-xs text-emerald-200 bg-emerald-900/90 px-2.5 py-1 rounded-xl border border-emerald-600/80 shadow-inner">
+                        <span className="font-mono font-black text-xs text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900/90 px-2.5 py-1 rounded-xl border border-emerald-300 dark:border-emerald-600/80 shadow-inner">
                           Check Mobile SMS
                         </span>
                       </div>
@@ -953,12 +988,12 @@ export const LoginPage: React.FC = () => {
 
                     {/* Simulation / Fallback Banner */}
                     {!isFirebaseOtp && receivedOtp && phone !== '9876543210' && phone !== '9820098200' && phone !== '9999999999' && (
-                      <div className="mb-3 p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/50 flex items-center justify-between text-xs animate-in fade-in-50">
-                        <div className="flex items-center gap-2 text-emerald-300">
+                      <div className="mb-3 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/50 flex items-center justify-between text-xs animate-in fade-in-50">
+                        <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
                           <span className="text-base">📩</span>
                           <span className="font-semibold">{language === 'hi' ? 'SMS सत्यापन कोड:' : language === 'mr' ? 'SMS पडताळणी कोड:' : 'SMS Verification OTP:'}</span>
                         </div>
-                        <span className="font-mono font-black text-base text-emerald-200 bg-emerald-900/90 px-3 py-1 rounded-xl border border-emerald-600/80 tracking-widest shadow-inner">
+                        <span className="font-mono font-black text-base text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900/90 px-3 py-1 rounded-xl border border-emerald-300 dark:border-emerald-600/80 tracking-widest shadow-inner">
                           {receivedOtp}
                         </span>
                       </div>
@@ -971,7 +1006,7 @@ export const LoginPage: React.FC = () => {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                         placeholder={isFirebaseOtp || selectedRole === 'RECYCLER' ? '••••••' : '••••'}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800 border-2 border-emerald-500 rounded-2xl text-white font-mono tracking-widest text-center text-xl font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border-2 border-emerald-500 rounded-2xl text-slate-900 dark:text-white font-mono tracking-widest text-center text-xl font-black focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
                         required
                         autoFocus
                         aria-label="OTP"
@@ -999,19 +1034,19 @@ export const LoginPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setOtpSent(false)}
-                      className="text-slate-400 hover:text-slate-200 font-semibold"
+                      className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-semibold transition-colors"
                     >
                       {t.changeMobile || '← मोबाइल नंबर बदलें'}
                     </button>
                     {resendTimer > 0 ? (
-                      <span className="text-slate-500 font-mono">
+                      <span className="text-slate-500 dark:text-slate-400 font-mono">
                         {t.resendOtpIn || 'पुनः OTP'} ({resendTimer}s)
                       </span>
                     ) : (
                       <button
                         type="button"
                         onClick={() => handleSendOtp()}
-                        className="text-emerald-400 hover:text-emerald-300 font-bold underline"
+                        className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold underline"
                       >
                         {t.resendOtp || 'OTP पुनः भेजें'}
                       </button>
@@ -1022,17 +1057,17 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {/* SIH Judge Evaluation Quick-Access Drawer */}
-            <div className="pt-4 border-t border-slate-800">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setShowJudgeDrawer(!showJudgeDrawer)}
-                className="w-full flex items-center justify-between text-xs text-amber-300 font-extrabold p-2.5 rounded-xl bg-amber-950/30 border border-amber-800/40 hover:bg-amber-950/50 transition-colors"
+                className="w-full flex items-center justify-between text-xs text-amber-900 dark:text-amber-300 font-extrabold p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 dark:bg-amber-950/30 dark:hover:bg-amber-950/50 border border-amber-300 dark:border-amber-800/40 transition-colors"
               >
                 <div className="flex items-center gap-1.5">
-                  <Scale className="w-4 h-4 text-amber-400" />
+                  <Scale className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   <span className="tracking-tight">⚖️ {language === 'hi' ? 'SIH 2026 मूल्यांकन / जज डेमो त्वरित प्रवेश' : language === 'mr' ? 'SIH 2026 मूल्यमापन / परीक्षक डेमो त्वरित प्रवेश' : 'SIH 2026 Evaluation / Judge Demo Quick-Access'}</span>
                 </div>
-                <span className="text-[10px] text-amber-400 font-mono font-bold">
+                <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono font-bold">
                   {showJudgeDrawer
                     ? (language === 'hi' ? '▲ त्वरित प्रवेश छुपाएं' : language === 'mr' ? '▲ त्वरित प्रवेश लपवा' : '▲ Hide Quick-Access')
                     : (language === 'hi' ? '▼ डेमो खाते देखें' : language === 'mr' ? '▼ डेमो खाती पहा' : '▼ View Demo Accounts')}
@@ -1040,23 +1075,23 @@ export const LoginPage: React.FC = () => {
               </button>
 
               {showJudgeDrawer && (
-                <div className="mt-2.5 p-3 rounded-2xl bg-slate-950/80 border border-amber-500/30 space-y-2.5 animate-in fade-in-50 duration-150">
-                  <div className="text-[11px] text-amber-200/80 font-medium flex items-center justify-between">
+                <div className="mt-2.5 p-3 rounded-2xl bg-amber-50/50 dark:bg-slate-950/80 border border-amber-300 dark:border-amber-500/30 space-y-2.5 animate-in fade-in-50 duration-150">
+                  <div className="text-[11px] text-amber-900 dark:text-amber-200/80 font-medium flex items-center justify-between">
                     <span>{language === 'hi' ? 'हैकथॉन जजों के त्वरित मूल्यांकन हेतु पूर्व-कॉन्फ़िगर किए गए खाते:' : language === 'mr' ? 'हॅकाथॉन परीक्षकांच्या त्वरित मूल्यमापनासाठी पूर्व-कॉन्फिगर केलेली खाती:' : 'Pre-configured test accounts for rapid hackathon jury review:'}</span>
-                    <span className="font-mono text-[10px] text-emerald-400 font-bold">Collector/Admin OTP: 1234 • Recycler Demo OTP: 123456</span>
+                    <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Collector/Admin OTP: 1234 • Recycler Demo OTP: 123456</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div className="p-2.5 bg-slate-900 border border-slate-700 hover:border-emerald-600/60 rounded-xl transition-all flex flex-col justify-between">
+                    <div className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-600/60 rounded-xl transition-all shadow-sm flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-black text-emerald-400">📦 {t.roleCollector}</span>
-                          <span className="text-[9px] font-mono text-slate-400">98765 43210</span>
+                          <span className="text-xs font-black text-emerald-700 dark:text-emerald-400">📦 {t.roleCollector}</span>
+                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400">98765 43210</span>
                         </div>
-                        <span className="text-[11px] font-bold text-white block truncate">{language === 'hi' ? 'रमेश कुमार' : language === 'mr' ? 'रमेश कुमार' : 'Ramesh Kumar'}</span>
-                        <span className="text-[10px] text-slate-400 block truncate">{language === 'hi' ? 'लखनऊ स्क्रैप क्लस्टर' : language === 'mr' ? 'लखनऊ स्क्रॅप क्लस्टर' : 'Lucknow Scrap Cluster'}</span>
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">{language === 'hi' ? 'रमेश कुमार' : language === 'mr' ? 'रमेश कुमार' : 'Ramesh Kumar'}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">{language === 'hi' ? 'लखनऊ स्क्रैप क्लस्टर' : language === 'mr' ? 'लखनऊ स्क्रॅप क्लस्टर' : 'Lucknow Scrap Cluster'}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-800">
+                      <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <button
                           type="button"
                           onClick={() => handleJudgeOneClick('COLLECTOR')}
@@ -1067,7 +1102,7 @@ export const LoginPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleFillDemoCredentials('COLLECTOR')}
-                          className="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] border border-slate-700 transition-all active:scale-95"
+                          className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] border border-slate-300 dark:border-slate-700 transition-all active:scale-95"
                           title="Fill form to test manual flow"
                         >
                           ✍️ Form
@@ -1075,21 +1110,21 @@ export const LoginPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-slate-900 border border-slate-700 hover:border-blue-600/60 rounded-xl transition-all flex flex-col justify-between">
+                    <div className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-600/60 rounded-xl transition-all shadow-sm flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-black text-blue-400">🏭 {t.roleRecycler}</span>
-                          <span className="text-[9px] font-mono text-slate-400">98200 98200</span>
+                          <span className="text-xs font-black text-blue-700 dark:text-blue-400">🏭 {t.roleRecycler}</span>
+                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400">98200 98200</span>
                         </div>
-                        <span className="text-[11px] font-bold text-white block truncate">ABC E-Waste Recycling Pvt Ltd</span>
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">ABC E-Waste Recycling Pvt Ltd</span>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] text-emerald-400 block truncate">CPCB Authorized</span>
-                          <span className="text-[9px] font-mono font-black text-amber-300 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-700/60">
+                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block truncate">CPCB Authorized</span>
+                          <span className="text-[9px] font-mono font-black text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-700/60">
                             OTP: 123456
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-800">
+                      <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <button
                           type="button"
                           onClick={() => handleJudgeOneClick('RECYCLER')}
@@ -1100,7 +1135,7 @@ export const LoginPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleFillDemoCredentials('RECYCLER')}
-                          className="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] border border-slate-700 transition-all active:scale-95"
+                          className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] border border-slate-300 dark:border-slate-700 transition-all active:scale-95"
                           title="Fill form to test manual flow"
                         >
                           ✍️ Form
@@ -1108,16 +1143,16 @@ export const LoginPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-slate-900 border border-slate-700 hover:border-purple-600/60 rounded-xl transition-all flex flex-col justify-between">
+                    <div className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-purple-500 dark:hover:border-purple-600/60 rounded-xl transition-all shadow-sm flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-black text-purple-400">🛡️ {t.roleAdmin}</span>
-                          <span className="text-[9px] font-mono text-slate-400">99999 99999</span>
+                          <span className="text-xs font-black text-purple-700 dark:text-purple-400">🛡️ {t.roleAdmin}</span>
+                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400">99999 99999</span>
                         </div>
-                        <span className="text-[11px] font-bold text-white block truncate">{language === 'hi' ? 'नियामक अधिकारी' : language === 'mr' ? 'नियामक अधिकारी' : 'Regulatory Officer'}</span>
-                        <span className="text-[10px] text-slate-400 block truncate">{language === 'hi' ? 'राष्ट्रीय विनियामक प्रकोष्ठ' : language === 'mr' ? 'राष्ट्रीय नियामक कक्ष' : 'National Oversight Cell'}</span>
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">{language === 'hi' ? 'नियामक अधिकारी' : language === 'mr' ? 'नियामक अधिकारी' : 'Regulatory Officer'}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">{language === 'hi' ? 'राष्ट्रीय विनियामक प्रकोष्ठ' : language === 'mr' ? 'राष्ट्रीय नियामक कक्ष' : 'National Oversight Cell'}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-800">
+                      <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <button
                           type="button"
                           onClick={() => handleJudgeOneClick('ADMIN')}
@@ -1128,7 +1163,7 @@ export const LoginPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleFillDemoCredentials('ADMIN')}
-                          className="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] border border-slate-700 transition-all active:scale-95"
+                          className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] border border-slate-300 dark:border-slate-700 transition-all active:scale-95"
                           title="Fill form to test manual flow"
                         >
                           ✍️ Form
@@ -1144,7 +1179,7 @@ export const LoginPage: React.FC = () => {
       </main>
 
       {/* Modern Compact Environmental Footer */}
-      <footer className="h-10 px-4 sm:px-8 border-t border-slate-800/80 bg-slate-900/60 flex items-center justify-between text-[11px] text-slate-400">
+      <footer className="h-10 px-4 sm:px-8 border-t border-slate-200 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
         <div>{language === 'hi' ? 'स्मार्ट इंडिया हैकथॉन 2026 • पर्यावरण, वन और जलवायु परिवर्तन मंत्रालय' : language === 'mr' ? 'स्मार्ट इंडिया हॅकाथॉन 2026 • पर्यावरण, वन आणि हवामान बदल मंत्रालय' : 'Smart India Hackathon 2026 • Ministry of Environment, Forest and Climate Change'}</div>
         <div className="hidden sm:block">{language === 'hi' ? 'CPCB ई-कचरा नियम 2022 • विस्तारित निर्माता उत्तरदायित्व (EPR)' : language === 'mr' ? 'CPCB ई-कचरा नियम 2022 • विस्तारित उत्पादक जबाबदारी (EPR)' : 'CPCB E-Waste Rules 2022 • Extended Producer Responsibility (EPR)'}</div>
       </footer>

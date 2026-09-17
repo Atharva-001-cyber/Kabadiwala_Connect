@@ -95,7 +95,7 @@ export const CollectorProfilePage: React.FC = () => {
         setLoadingMetrics(true);
         const colId = collectorProfile?.id || 'col_1';
         const [lotsRes, ledgerRes] = await Promise.all([
-          api.getLots({ collectorId: colId, limit: '50' }).catch(() => ({ success: false, lots: [] })),
+          api.getLots({ collectorId: colId }).catch(() => ({ success: false, lots: [] })),
           api.getCollectorLedger(colId).catch(() => ({ success: false, summary: null }))
         ]);
 
@@ -321,43 +321,43 @@ export const CollectorProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-20 relative">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 relative">
       {/* Floating Government DLT SMS Notification Banner */}
       {smsNotification?.show && (
-        <div className="fixed top-4 right-4 z-[120] max-w-sm w-[90vw] sm:w-96 bg-slate-900/95 border-2 border-emerald-500 rounded-2xl p-4 shadow-2xl space-y-2 backdrop-blur-md animate-slideDown">
+        <div className="fixed top-4 right-4 z-[120] max-w-sm w-[90vw] sm:w-96 bg-white/95 dark:bg-slate-900/95 border-2 border-emerald-500 rounded-2xl p-4 shadow-2xl space-y-2 backdrop-blur-md animate-slideDown">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold text-sm">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/40 flex items-center justify-center font-bold text-sm">
                 💬
               </div>
               <div>
-                <span className="text-xs font-black text-white">{smsNotification.sender}</span>
-                <span className="text-[10px] text-emerald-400 block font-bold">CPCB National SMS Gateway</span>
+                <span className="text-xs font-black text-slate-900 dark:text-white">{smsNotification.sender}</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-bold">CPCB National SMS Gateway</span>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setSmsNotification(null)}
-              className="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg bg-slate-100 dark:bg-slate-800"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <p className="text-[11px] text-slate-200 font-medium leading-relaxed bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+          <p className="text-[11px] text-slate-700 dark:text-slate-200 font-medium leading-relaxed bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
             {smsNotification.body}
           </p>
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-mono font-black text-emerald-400">
+            <span className="text-xs font-mono font-black text-emerald-600 dark:text-emerald-400">
               Code: {smsNotification.otp}
             </span>
             <button
               type="button"
               onClick={handleAutoFillOtp}
-              className="text-xs font-black text-emerald-300 hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 active:scale-95 transition-all"
+              className="text-xs font-black text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-600/30 hover:bg-emerald-100 dark:hover:bg-emerald-600/50 border border-emerald-200 dark:border-emerald-500/50 active:scale-95 transition-all"
             >
-              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
               <span>Tap to Auto-fill</span>
             </button>
           </div>
@@ -365,32 +365,32 @@ export const CollectorProfilePage: React.FC = () => {
       )}
 
       {/* Profile Card Header */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border-2 border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-7 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 flex items-center justify-center text-white text-3xl font-black shadow-lg">
                 <User className="w-9 h-9" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-slate-950 shadow">
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-slate-950 shadow">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
               </div>
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-white">{displayName}</h1>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{displayName}</h1>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 font-bold">
                   E-Collector
                 </span>
               </div>
-              <p className="text-xs font-mono text-emerald-400 font-bold mt-0.5">
+              <p className="text-xs font-mono text-emerald-700 dark:text-emerald-400 font-bold mt-0.5">
                 {language === 'hi' ? 'लाइसेंस आईडी:' : language === 'mr' ? 'परवाना आयडी:' : 'CPCB Reg:'} {cpcbRegNo}
               </p>
 
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[11px] font-black border border-emerald-700 shadow">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[11px] font-black border border-emerald-200 dark:border-emerald-700 shadow-xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>{language === 'hi' ? 'CPCB एवं UIDAI सत्यापित ई-कलेक्टर' : 'CPCB & UIDAI Verified Collector'}</span>
                 </span>
               </div>
@@ -401,7 +401,7 @@ export const CollectorProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowIdCardModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black flex items-center gap-1.5 shadow active:scale-95 transition-all"
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow active:scale-95 transition-all"
             >
               <QrCode className="w-4 h-4" />
               <span>{language === 'hi' ? 'डिजिटल आईडी कार्ड' : 'Digital ID Card'}</span>
@@ -410,25 +410,25 @@ export const CollectorProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditing(!isEditing)}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition-colors"
               title={isEditing ? 'Cancel Edit' : 'Edit Profile'}
             >
-              {isEditing ? <X className="w-4 h-4 text-red-400" /> : <Edit3 className="w-4 h-4 text-emerald-400" />}
+              {isEditing ? <X className="w-4 h-4 text-red-500" /> : <Edit3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
             </button>
           </div>
         </div>
 
         {/* CPCB Rule 16 Official e-KYC Accreditation Banner */}
-        <div className="bg-emerald-950/40 border-2 border-emerald-600/70 p-4 rounded-2xl space-y-2 shadow-inner">
+        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border-2 border-emerald-200 dark:border-emerald-600/70 p-4 rounded-2xl space-y-2 shadow-xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-              <h2 className="text-xs font-black text-emerald-200 uppercase tracking-wider">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <h2 className="text-xs font-black text-emerald-950 dark:text-emerald-200 uppercase tracking-wider">
                 {language === 'hi' ? 'सरकारी e-KYC एवं CPCB प्राधिकृत पहचान' : 'Government e-KYC & CPCB Authorization'}
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-900/80 border border-emerald-700 text-emerald-200 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/80 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 font-bold">
                 {maskedAadhaar}
               </span>
               <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500 text-slate-950">
@@ -437,18 +437,18 @@ export const CollectorProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-[11px] text-emerald-100/90 leading-relaxed font-medium">
+          <p className="text-[11px] text-emerald-900 dark:text-emerald-100/90 leading-relaxed font-medium">
             {language === 'hi'
               ? 'ई-कचरा (प्रबंधन) नियम 2022 नियम 16 के अंतर्गत पंजीकृत औपचारिक अनौपचारिक कचरा बीनने वाले के रूप में सत्यापित। प्रत्यक्ष बैंक भुगतान और वैध संग्रह हेतु अधिकृत।'
               : 'Formally accredited under E-Waste (Management) Rules 2022, Rule 16. Authorized for doorstep e-waste aggregation and direct digital escrow bank settlements.'}
           </p>
 
-          <div className="pt-1 flex items-center justify-between text-[11px] text-emerald-300 font-bold border-t border-emerald-900/60">
+          <div className="pt-1 flex items-center justify-between text-[11px] text-emerald-700 dark:text-emerald-300 font-bold border-t border-emerald-200 dark:border-emerald-900/60">
             <span>Valid Until: 31-Dec-2028 (CPCB National Registry)</span>
             <button
               type="button"
               onClick={() => setShowIdCardModal(true)}
-              className="underline hover:text-white flex items-center gap-1 text-[11px]"
+              className="underline hover:text-emerald-950 dark:hover:text-white flex items-center gap-1 text-[11px]"
             >
               <span>{language === 'hi' ? 'प्रमाणपत्र देखें' : 'View Certificate'}</span>
               <ExternalLink className="w-3 h-3" />
@@ -459,8 +459,8 @@ export const CollectorProfilePage: React.FC = () => {
         {/* Live Aggregated Statistics from Real Supabase Data */}
         <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Award className="w-3.5 h-3.5 text-amber-400" />
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
               <span>{language === 'hi' ? 'लाइव कार्य एवं पर्यावरण प्रभाव मेट्रिक्स' : 'Live Operations & Environmental Impact'}</span>
             </h3>
             {loadingMetrics && (
@@ -469,43 +469,43 @@ export const CollectorProfilePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                <Scale className="w-3 h-3 text-emerald-400" />
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
+                <Scale className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                 <span>Verified Scrap</span>
               </span>
-              <p className="text-base font-black text-white font-mono">
-                {liveMetrics.totalWeight.toLocaleString('en-IN')} <span className="text-xs font-bold text-emerald-400">kg</span>
+              <p className="text-base font-black text-slate-900 dark:text-white font-mono">
+                {liveMetrics.totalWeight.toLocaleString('en-IN')} <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">kg</span>
               </p>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                <Wallet className="w-3 h-3 text-amber-400" />
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
+                <Wallet className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                 <span>Total Earnings</span>
               </span>
-              <p className="text-base font-black text-white font-mono">
+              <p className="text-base font-black text-slate-900 dark:text-white font-mono">
                 ₹{liveMetrics.totalEarnings.toLocaleString('en-IN')}
               </p>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                <Leaf className="w-3 h-3 text-teal-400" />
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
+                <Leaf className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                 <span>CO₂ Diverted</span>
               </span>
-              <p className="text-base font-black text-white font-mono">
-                {liveMetrics.co2Diverted} <span className="text-xs font-bold text-teal-400">kg CO₂e</span>
+              <p className="text-base font-black text-slate-900 dark:text-white font-mono">
+                {liveMetrics.co2Diverted} <span className="text-xs font-bold text-teal-600 dark:text-teal-400">kg CO₂e</span>
               </p>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-blue-400" />
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-blue-500 dark:text-blue-400" />
                 <span>Lead Prevented</span>
               </span>
-              <p className="text-base font-black text-white font-mono">
-                {liveMetrics.leadPrevented} <span className="text-xs font-bold text-blue-400">kg</span>
+              <p className="text-base font-black text-slate-900 dark:text-white font-mono">
+                {liveMetrics.leadPrevented} <span className="text-xs font-bold text-blue-500 dark:text-blue-400">kg</span>
               </p>
             </div>
           </div>
@@ -513,14 +513,14 @@ export const CollectorProfilePage: React.FC = () => {
 
         {/* Edit Form or Information Details */}
         {isEditing ? (
-          <form onSubmit={handleSaveProfile} className="space-y-4 bg-slate-950 p-5 rounded-2xl border border-slate-800 animate-fadeIn">
-            <h3 className="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+          <form onSubmit={handleSaveProfile} className="space-y-4 bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 animate-fadeIn">
+            <h3 className="text-xs font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
               <Edit3 className="w-3.5 h-3.5" />
               <span>{language === 'hi' ? 'प्रोफ़ाइल एवं भुगतान विवरण संपादित करें' : 'Edit Profile & Payout Details'}</span>
             </h3>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 mb-1">
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                 {language === 'hi' ? 'पूरा नाम' : 'Full Name'}
               </label>
               <input
@@ -528,14 +528,14 @@ export const CollectorProfilePage: React.FC = () => {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="e.g. Ramesh Kumar"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   {language === 'hi' ? 'जिला' : 'District'}
                 </label>
                 <input
@@ -543,13 +543,13 @@ export const CollectorProfilePage: React.FC = () => {
                   value={editDistrict}
                   onChange={(e) => setEditDistrict(e.target.value)}
                   placeholder="e.g. Lucknow, Kanpur, Pune"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                   {language === 'hi' ? 'राज्य' : 'State'}
                 </label>
                 <input
@@ -557,14 +557,14 @@ export const CollectorProfilePage: React.FC = () => {
                   value={editState}
                   onChange={(e) => setEditState(e.target.value)}
                   placeholder="e.g. Uttar Pradesh, Maharashtra"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 mb-1">
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                 {language === 'hi' ? 'कबाड़ यार्ड / कार्यक्षेत्र का पता' : 'Scrap Yard / Operating Ward Address'}
               </label>
               <input
@@ -572,12 +572,12 @@ export const CollectorProfilePage: React.FC = () => {
                 value={editAddress}
                 onChange={(e) => setEditAddress(e.target.value)}
                 placeholder="e.g. Shop 14, Nadarganj Industrial Gate, Lucknow"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 mb-1">
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                 {language === 'hi' ? 'UPI आईडी (सीधे खाते में भुगतान हेतु)' : 'UPI ID (For Direct Handover Payouts)'}
               </label>
               <input
@@ -585,11 +585,11 @@ export const CollectorProfilePage: React.FC = () => {
                 value={editUpiId}
                 onChange={(e) => setEditUpiId(e.target.value)}
                 placeholder="e.g. 9876543210@paytm or collector@oksbi"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono font-bold focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-mono font-bold focus:outline-none focus:border-emerald-500"
                 required
               />
-              <p className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1 font-medium">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                 <span>Connected with Razorpay Direct Payout Gateway</span>
               </p>
             </div>
@@ -598,7 +598,7 @@ export const CollectorProfilePage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow active:scale-95"
+                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow active:scale-95"
               >
                 <Check className="w-4 h-4" />
                 <span>{isSaving ? 'Saving...' : (language === 'hi' ? 'विवरण सुरक्षित करें' : 'Save Changes')}</span>
@@ -606,7 +606,7 @@ export const CollectorProfilePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors"
+                className="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors"
               >
                 {language === 'hi' ? 'रद्द करें' : 'Cancel'}
               </button>
@@ -614,41 +614,41 @@ export const CollectorProfilePage: React.FC = () => {
           </form>
         ) : (
           <div className="space-y-3 text-xs">
-            <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center">
-              <span className="text-slate-400 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-emerald-400" />
+            <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <Phone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="font-medium">{language === 'hi' ? 'मोबाइल नंबर:' : 'Registered Mobile:'}</span>
               </span>
-              <span className="font-mono font-bold text-white text-sm">+91 {displayPhone}</span>
+              <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">+91 {displayPhone}</span>
             </div>
 
-            <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center">
-              <span className="text-slate-400 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-emerald-400" />
+            <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="font-medium">{language === 'hi' ? 'कार्य क्षेत्र एवं जिला:' : 'Operating Territory:'}</span>
               </span>
-              <span className="font-bold text-white text-right">
+              <span className="font-bold text-slate-900 dark:text-white text-right">
                 {displayAddress}, {editDistrict}, {editState}
               </span>
             </div>
 
-            <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center">
-              <span className="text-slate-400 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-emerald-400" />
+            <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="font-medium">{language === 'hi' ? 'UPI पेआउट आईडी:' : 'UPI Payout ID:'}</span>
               </span>
               <div className="text-right">
-                <span className="font-mono font-black text-emerald-400 text-sm block">{displayUpi}</span>
-                <span className="text-[10px] text-slate-400 font-bold">Razorpay Payouts Active</span>
+                <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm block">{displayUpi}</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Razorpay Payouts Active</span>
               </div>
             </div>
 
-            <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center">
-              <span className="text-slate-400 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-emerald-400" />
+            <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="font-medium">{language === 'hi' ? 'पोर्टल भाषा:' : 'Preferred Language:'}</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-900 text-emerald-400 border border-slate-800">
+              <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-50 dark:bg-slate-900 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-slate-800">
                 {language === 'hi' ? 'हिंदी (Hindi)' : language === 'mr' ? 'मराठी (Marathi)' : 'English (EN)'}
               </span>
             </div>
@@ -656,20 +656,20 @@ export const CollectorProfilePage: React.FC = () => {
         )}
 
         {/* Action Buttons: e-KYC Verification Modal trigger and Logout */}
-        <div className="pt-2 border-t border-slate-800 flex flex-col sm:flex-row gap-3">
+        <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-3">
           <button
             type="button"
             onClick={handleStartKycVerification}
-            className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-300 font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow"
+            className="flex-1 py-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-emerald-200 dark:border-slate-700 text-emerald-800 dark:text-emerald-300 font-black rounded-2xl text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"
           >
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>{language === 'hi' ? 'e-KYC दस्तावेज री-वेरिफाई करें' : 'Verify / Update e-KYC Documents'}</span>
           </button>
 
           <button
             type="button"
             onClick={logout}
-            className="px-6 py-3 bg-red-950/50 hover:bg-red-900/60 border border-red-800/70 text-red-300 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
+            className="px-6 py-3 bg-red-50 hover:bg-red-100 dark:bg-red-950/50 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-800/70 text-red-700 dark:text-red-300 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-colors active:scale-95"
           >
             <LogOut className="w-4 h-4" />
             <span>{t.logout || 'Logout'}</span>
@@ -681,80 +681,80 @@ export const CollectorProfilePage: React.FC = () => {
       {/* DIGITAL COLLECTOR IDENTITY CARD MODAL (PRINTABLE)         */}
       {/* ========================================================= */}
       {showIdCardModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border-2 border-emerald-500/60 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-emerald-500/60 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-fadeIn">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-black text-sm text-white uppercase tracking-wider">
+                <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-wider">
                   CPCB Authorized Collector ID Card
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowIdCardModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Printable ID Card Body */}
-            <div id="collector-id-card" className="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-2 border-emerald-500 rounded-2xl p-5 text-white space-y-4 shadow-xl relative overflow-hidden">
+            <div id="collector-id-card" className="bg-gradient-to-b from-white via-slate-50 to-emerald-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 border-2 border-emerald-500 rounded-2xl p-5 text-slate-900 dark:text-white space-y-4 shadow-xl relative overflow-hidden">
               {/* Government Header */}
-              <div className="text-center border-b border-emerald-900/80 pb-3 space-y-1">
-                <span className="text-[9px] uppercase tracking-widest text-emerald-400 font-bold block">
+              <div className="text-center border-b border-emerald-200 dark:border-emerald-900/80 pb-3 space-y-1">
+                <span className="text-[9px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400 font-bold block">
                   Govt. of India • E-Waste Management Rules 2022
                 </span>
-                <h4 className="text-sm font-black tracking-tight text-white uppercase">
+                <h4 className="text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase">
                   Central Pollution Control Board (CPCB)
                 </h4>
-                <span className="text-[10px] font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-800 inline-block">
+                <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-800 inline-block">
                   Authorized Informal Waste Harvester
                 </span>
               </div>
 
               {/* Identity Details & Photo */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-24 rounded-xl bg-slate-800 border-2 border-emerald-500/60 flex flex-col items-center justify-center text-slate-300 shrink-0 shadow">
-                  <User className="w-12 h-12 text-emerald-400" />
-                  <span className="text-[8px] font-bold uppercase mt-1 text-slate-400">Authorized</span>
+                <div className="w-20 h-24 rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-emerald-500/60 flex flex-col items-center justify-center text-slate-600 dark:text-slate-300 shrink-0 shadow">
+                  <User className="w-12 h-12 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-[8px] font-bold uppercase mt-1 text-slate-500 dark:text-slate-400">Authorized</span>
                 </div>
 
                 <div className="space-y-1 text-xs min-w-0">
-                  <h5 className="font-black text-base text-white truncate">{displayName}</h5>
-                  <p className="text-[11px] font-mono text-emerald-400 font-bold">
+                  <h5 className="font-black text-base text-slate-900 dark:text-white truncate">{displayName}</h5>
+                  <p className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-bold">
                     Reg No: {cpcbRegNo}
                   </p>
-                  <p className="text-[11px] text-slate-300">
-                    <span className="text-slate-400 font-bold">Mobile:</span> +91 {displayPhone}
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Mobile:</span> +91 {displayPhone}
                   </p>
-                  <p className="text-[11px] text-slate-300 truncate">
-                    <span className="text-slate-400 font-bold">Ward:</span> {displayAddress}
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">Ward:</span> {displayAddress}
                   </p>
-                  <p className="text-[11px] text-slate-300">
-                    <span className="text-slate-400 font-bold">State:</span> {editState}
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">State:</span> {editState}
                   </p>
                 </div>
               </div>
 
               {/* QR Verification & Hologram Bar */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+              <div className="bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
                 <div className="space-y-0.5">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 block">Digital Verification</span>
-                  <p className="text-[10px] text-emerald-300 font-bold">Scan with camera to verify CPCB accreditation</p>
-                  <span className="text-[9px] font-mono text-slate-400 block">UIDAI: {maskedAadhaar}</span>
+                  <span className="text-[9px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Digital Verification</span>
+                  <p className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">Scan with camera to verify CPCB accreditation</p>
+                  <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 block">UIDAI: {maskedAadhaar}</span>
                 </div>
 
-                <div className="p-1.5 bg-white rounded-lg shrink-0 shadow">
+                <div className="p-1.5 bg-white rounded-lg shrink-0 shadow border border-slate-200 dark:border-transparent">
                   <QrCode className="w-12 h-12 text-slate-950" />
                 </div>
               </div>
 
               {/* Statutory Validity Footer */}
-              <div className="text-center pt-1 border-t border-slate-800 text-[9px] text-slate-400 space-y-0.5">
-                <p className="font-bold text-emerald-400">Valid Throughout India Until: 31-Dec-2028</p>
+              <div className="text-center pt-1 border-t border-slate-200 dark:border-slate-800 text-[9px] text-slate-500 dark:text-slate-400 space-y-0.5">
+                <p className="font-bold text-emerald-700 dark:text-emerald-400">Valid Throughout India Until: 31-Dec-2028</p>
                 <p>Protected under CPCB Informal Waste Collector Recognition Scheme.</p>
               </div>
             </div>
@@ -764,7 +764,7 @@ export const CollectorProfilePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 shadow active:scale-95 transition-all"
+                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 shadow active:scale-95 transition-all"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Official ID Card</span>
@@ -773,7 +773,7 @@ export const CollectorProfilePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowIdCardModal(false)}
-                className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors"
+                className="px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors"
               >
                 Close
               </button>
@@ -786,20 +786,20 @@ export const CollectorProfilePage: React.FC = () => {
       {/* INTERACTIVE e-KYC VERIFICATION MODAL                      */}
       {/* ========================================================= */}
       {showKycModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border-2 border-emerald-500/70 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-emerald-500/70 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-fadeIn">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-black text-sm text-white uppercase tracking-wider">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-wider">
                   Official UIDAI / CPCB e-KYC
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowKycModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -808,12 +808,12 @@ export const CollectorProfilePage: React.FC = () => {
             {/* STEP 1: Enter ID Number */}
             {kycStep === 'INPUT' && (
               <form onSubmit={handleSendKycOtp} className="space-y-4">
-                <div className="flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+                <div className="flex rounded-xl bg-slate-100 dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-800">
                   <button
                     type="button"
                     onClick={() => setKycDocType('AADHAAR')}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${
-                      kycDocType === 'AADHAAR' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                      kycDocType === 'AADHAAR' ? 'bg-emerald-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Aadhaar Card (12-digit)
@@ -822,7 +822,7 @@ export const CollectorProfilePage: React.FC = () => {
                     type="button"
                     onClick={() => setKycDocType('PAN')}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${
-                      kycDocType === 'PAN' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                      kycDocType === 'PAN' ? 'bg-emerald-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     PAN Card (10-char)
@@ -830,7 +830,7 @@ export const CollectorProfilePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     {kycDocType === 'AADHAAR' ? 'Enter 12-Digit Aadhaar Number' : 'Enter 10-Character PAN Number'}
                   </label>
                   <input
@@ -839,21 +839,21 @@ export const CollectorProfilePage: React.FC = () => {
                     onChange={(e) => setKycInputNumber(e.target.value.toUpperCase())}
                     placeholder={kycDocType === 'AADHAAR' ? '4928 3841 8921' : 'ABCDE1234F'}
                     maxLength={kycDocType === 'AADHAAR' ? 14 : 10}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-sm tracking-wider focus:outline-none focus:border-emerald-500 font-bold"
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-mono text-sm tracking-wider focus:outline-none focus:border-emerald-500 font-bold"
                     required
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                     Direct OTP will be sent to registered mobile +91 {displayPhone}.
                   </p>
                 </div>
 
-                <div className="p-3 bg-emerald-950/40 border border-emerald-800/80 rounded-xl text-[11px] text-emerald-300 font-medium">
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
                   🔒 Encrypted with SHA-256 and UIDAI Verhoeff standards. Only masked identification token is retained.
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <span>Request Verification OTP</span>
                   <ArrowRight className="w-4 h-4" />
@@ -865,8 +865,8 @@ export const CollectorProfilePage: React.FC = () => {
             {kycStep === 'OTP' && (
               <form onSubmit={handleConfirmKycOtp} className="space-y-4">
                 <div className="text-center space-y-1">
-                  <h4 className="text-xs font-bold text-white">Enter 6-Digit Verification Code</h4>
-                  <p className="text-[11px] text-slate-400">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Enter 6-Digit Verification Code</h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     Dispatched via Government DLT Gateway to +91 {displayPhone}
                   </p>
                 </div>
@@ -886,8 +886,8 @@ export const CollectorProfilePage: React.FC = () => {
                       onKeyDown={(e) => handleDigitKeyDown(idx, e)}
                       className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black font-mono rounded-xl border-2 transition-all outline-none ${
                         digit 
-                          ? 'bg-emerald-950/60 border-emerald-400 text-white shadow-md' 
-                          : 'bg-slate-950 border-slate-700 text-white focus:border-emerald-500 focus:bg-slate-900'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 dark:border-emerald-400 text-emerald-900 dark:text-white shadow-md' 
+                          : 'bg-white dark:bg-slate-950 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900'
                       }`}
                     />
                   ))}
@@ -895,14 +895,14 @@ export const CollectorProfilePage: React.FC = () => {
 
                 {/* Auto-read helper and Timer */}
                 <div className="flex items-center justify-between text-xs font-bold pt-1">
-                  <span className="text-slate-400 text-[11px]">Resend in: {otpTimer}s</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-[11px]">Resend in: {otpTimer}s</span>
                   {generatedOtp && (
                     <button
                       type="button"
                       onClick={handleAutoFillOtp}
-                      className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-950/60 border border-emerald-700/60 active:scale-95 transition-all text-[11px]"
+                      className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-700/60 active:scale-95 transition-all text-[11px]"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>Auto-read SMS ({generatedOtp})</span>
                     </button>
                   )}
@@ -911,7 +911,7 @@ export const CollectorProfilePage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isVerifyingKyc}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
                   <span>{isVerifyingKyc ? 'Verifying with UIDAI & CPCB...' : 'Verify & Issue Authorization'}</span>
@@ -922,17 +922,17 @@ export const CollectorProfilePage: React.FC = () => {
             {/* STEP 3: Verification Successful */}
             {kycStep === 'SUCCESS' && (
               <div className="text-center py-4 space-y-3">
-                <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500 flex items-center justify-center mx-auto shadow-lg">
+                <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-2 border-emerald-500 flex items-center justify-center mx-auto shadow-lg">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h4 className="text-sm font-black text-white">e-KYC Successfully Verified!</h4>
-                <p className="text-xs text-emerald-300">
+                <h4 className="text-sm font-black text-slate-900 dark:text-white">e-KYC Successfully Verified!</h4>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300">
                   CPCB E-Waste Harvester License Certificate issued. Your account is now fully authorized for institutional collections.
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowKycModal(false)}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all"
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all"
                 >
                   Done
                 </button>

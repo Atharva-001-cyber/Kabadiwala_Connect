@@ -13,7 +13,7 @@ export const DashboardLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
 
-  // Pre-warm SWR cache in the background during idle time so navigation is instantaneous (<50ms)
+  // Pre-warm SWR cache in the background immediately so all portal navigation is instantaneous (<50ms)
   useEffect(() => {
     const prewarmCache = () => {
       try {
@@ -23,23 +23,37 @@ export const DashboardLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
             const cp = localStorage.getItem('collectorProfile');
             if (cp) colId = JSON.parse(cp)?.id;
           } catch {}
-          api.getLots(colId ? { collectorId: colId, limit: '50' } : { limit: '50' }).catch(() => {});
+          api.getLots(colId ? { collectorId: colId } : {}).catch(() => {});
+          api.getLots({}).catch(() => {});
           api.getRecyclers({ district: 'Lucknow' }).catch(() => {});
           api.getPriceBoard('Lucknow').catch(() => {});
           api.getCollectorLedger(colId || 'col_1').catch(() => {});
         } else if (role === 'RECYCLER') {
-          api.getLots({ limit: '40' }).catch(() => {});
+          let recId = '';
+          try {
+            const rp = localStorage.getItem('recyclerProfile');
+            if (rp) recId = JSON.parse(rp)?.id;
+          } catch {}
+          api.getLots({}).catch(() => {});
+          api.getPickups(recId ? { recyclerId: recId } : {}).catch(() => {});
           api.getRecyclers({ district: 'Lucknow' }).catch(() => {});
+          api.getRecyclerTransactions(recId || undefined).catch(() => {});
+        } else if (role === 'ADMIN') {
+          api.getAdminKPIs().catch(() => {});
+          api.getAdminMapData().catch(() => {});
+          api.getAnomalies().catch(() => {});
+          api.getDisputes().catch(() => {});
+          api.getRecyclers().catch(() => {});
         }
       } catch {}
     };
 
-    const timer = setTimeout(prewarmCache, 250);
+    const timer = setTimeout(prewarmCache, 0);
     return () => clearTimeout(timer);
   }, [role]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans overflow-x-hidden">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex font-sans overflow-x-hidden transition-colors duration-200">
       {/* Mobile Drawer Backdrop */}
       {isMobileOpen && (
         <div
@@ -67,15 +81,15 @@ export const DashboardLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
         <DashboardHeader onToggleMobile={() => setIsMobileOpen(!isMobileOpen)} />
         <SyncStatusBanner />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 pb-24 md:pb-8">
+        <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 md:py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8 min-w-0">
           {children || <Outlet />}
         </main>
 
         {/* Mobile Thumb Navigation */}
         <MobileBottomNav />
 
-        {/* Multilingual Voice Copilot for Waste Collectors */}
-        {role === 'COLLECTOR' && <KabaadSaathiAssistant />}
+        {/* Multilingual Voice Copilot — Universal for all roles (Collector, Recycler, Admin) */}
+        <KabaadSaathiAssistant />
       </div>
     </div>
   );

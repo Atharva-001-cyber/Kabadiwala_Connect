@@ -603,7 +603,7 @@ function mapDbTraceabilityToLog(row: any): TraceabilityLog {
 }
 
 // ==========================================
-// HIGH-PERFORMANCE IN-MEMORY SWR CACHE LAYER
+// HIGH-PERFORMANCE SWR CACHE LAYER (IN-MEMORY + SESSION STORAGE + PROMISE DEDUPLICATION)
 // ==========================================
 interface CacheEntry<T> {
   data: T;
@@ -612,15 +612,52 @@ interface CacheEntry<T> {
 }
 
 const swrCache = new Map<string, CacheEntry<any>>();
+const inFlightPromises = new Map<string, Promise<any>>();
+
+function readSessionStorageCache<T>(key: string): CacheEntry<T> | null {
+  if (typeof window === 'undefined' || !window.sessionStorage) return null;
+  try {
+    const raw = sessionStorage.getItem(`swr_${key}`);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionStorageCache<T>(key: string, entry: CacheEntry<T>) {
+  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  try {
+    sessionStorage.setItem(`swr_${key}`, JSON.stringify(entry));
+  } catch {
+    // sessionStorage quota exceeded or unavailable, ignore
+  }
+}
 
 export const invalidateCache = (prefix?: string) => {
   if (!prefix) {
     swrCache.clear();
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const k = sessionStorage.key(i);
+          if (k && k.startsWith('swr_')) sessionStorage.removeItem(k);
+        }
+      } catch {}
+    }
   } else {
     for (const key of Array.from(swrCache.keys())) {
       if (key.startsWith(prefix)) {
         swrCache.delete(key);
       }
+    }
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const k = sessionStorage.key(i);
+          if (k && k.startsWith(`swr_${prefix}`)) sessionStorage.removeItem(k);
+        }
+      } catch {}
     }
   }
 };
@@ -630,30 +667,58 @@ async function withSwrCache<T>(
   fetcher: () => Promise<T>,
   options: { ttlMs?: number; staleMs?: number } = {}
 ): Promise<T> {
-  const ttlMs = options.ttlMs ?? 180_000; // 3 minutes total cache
-  const staleMs = options.staleMs ?? 45_000; // 45 seconds before background revalidation
+  const ttlMs = options.ttlMs ?? 600_000; // 10 minutes total cache retention
+  const staleMs = options.staleMs ?? 60_000; // 1 minute before background revalidation
   const now = Date.now();
-  const cached = swrCache.get(key);
 
-  if (cached) {
-    const age = now - cached.timestamp;
-    if (age < staleMs) {
-      return cached.data;
-    }
-    if (now < cached.expiresAt) {
-      // Revalidate asynchronously in background without blocking UI
-      fetcher()
-        .then((fresh) => {
-          swrCache.set(key, { data: fresh, timestamp: Date.now(), expiresAt: Date.now() + ttlMs });
-        })
-        .catch((e) => console.warn(`[SWR Background Sync] ${key}:`, e));
-      return cached.data;
+  let cached = swrCache.get(key);
+  if (!cached) {
+    const fromSession = readSessionStorageCache<T>(key);
+    if (fromSession) {
+      cached = fromSession;
+      swrCache.set(key, cached);
     }
   }
 
-  const freshData = await fetcher();
-  swrCache.set(key, { data: freshData, timestamp: Date.now(), expiresAt: Date.now() + ttlMs });
-  return freshData;
+  // Instant Stale-While-Revalidate: Return cached data immediately (0ms latency)
+  if (cached) {
+    const age = now - cached.timestamp;
+    // If cache is stale, trigger non-blocking background revalidation
+    if (age >= staleMs) {
+      if (!inFlightPromises.has(key)) {
+        const bgPromise = fetcher()
+          .then((fresh) => {
+            const entry: CacheEntry<T> = { data: fresh, timestamp: Date.now(), expiresAt: Date.now() + ttlMs };
+            swrCache.set(key, entry);
+            writeSessionStorageCache(key, entry);
+          })
+          .catch((e) => console.warn(`[SWR Background Sync] ${key}:`, e))
+          .finally(() => inFlightPromises.delete(key));
+        inFlightPromises.set(key, bgPromise);
+      }
+    }
+    return cached.data;
+  }
+
+  // Deduplicate concurrent in-flight requests for the same key
+  if (inFlightPromises.has(key)) {
+    return inFlightPromises.get(key);
+  }
+
+  const promise = (async () => {
+    try {
+      const freshData = await fetcher();
+      const entry: CacheEntry<T> = { data: freshData, timestamp: Date.now(), expiresAt: Date.now() + ttlMs };
+      swrCache.set(key, entry);
+      writeSessionStorageCache(key, entry);
+      return freshData;
+    } finally {
+      inFlightPromises.delete(key);
+    }
+  })();
+
+  inFlightPromises.set(key, promise);
+  return promise;
 }
 
 // In-memory cache for static CPCB Gazette registry (5-10 records, rarely changes)
@@ -1229,9 +1294,10 @@ export const api = {
   // LOTS & OFFLINE RESILIENCE
   // ==========================================
   getLots: async (params: Record<string, string> = {}) => {
-    const cacheKey = `lots_${params.collectorId || 'all'}_${params.status || 'all'}_${params.materialCategory || 'all'}_${params.limit || '50'}`;
+    // Normalized cache key independent of requested limit to allow cross-component cache sharing
+    const cacheKey = `lots_${params.collectorId || 'all'}_${params.status || 'all'}_${params.materialCategory || 'all'}`;
 
-    return withSwrCache(cacheKey, async () => {
+    const result = await withSwrCache(cacheKey, async () => {
       // Optimized listing columns: omits redundant large 'image_urls' array which duplicates base64 data
       const listCols = 'id,collector_id,collector_name,collector_phone,material_category,sub_category,description,image_url,approx_weight,actual_weight,condition,source_type,location_district,location_state,estimated_value_min,estimated_value_max,estimated_value_avg,quoted_price,final_sale_value,selected_recycler_id,selected_offer_id,handover_otp,status,data_source,created_at,updated_at';
 
@@ -1240,7 +1306,8 @@ export const api = {
       if (params.collectorId) query = query.eq('collector_id', params.collectorId);
       if (params.status) query = query.eq('status', params.status);
       if (params.materialCategory) query = query.eq('material_category', params.materialCategory);
-      if (params.limit) query = query.limit(parseInt(params.limit, 10));
+      // Fetch up to 150 items to fulfill all dashboard, inventory, and ledger views from single cached dataset
+      query = query.limit(150);
 
       const { data, error } = await query;
       if (error) throw new Error(error.message);
@@ -1248,17 +1315,30 @@ export const api = {
       const lots = (data || []).map(mapDbLotToLot);
       return { success: true, count: lots.length, lots };
     });
+
+    // In-memory limit slicing for caller if requested
+    if (params.limit && result.lots) {
+      const requestedLimit = parseInt(params.limit, 10);
+      if (requestedLimit < result.lots.length) {
+        return { ...result, count: requestedLimit, lots: result.lots.slice(0, requestedLimit) };
+      }
+    }
+
+    return result;
   },
 
   getOffersForLots: async (lotIds: string[]) => {
     if (!lotIds || lotIds.length === 0) return { success: true, offers: [] };
-    const sortedKey = [...lotIds].sort().join(',');
-    const cacheKey = `offers_${sortedKey}`;
 
-    return withSwrCache(cacheKey, async () => {
-      const { data, error } = await supabase.from('offers').select('*').in('lot_id', lotIds).order('created_at', { ascending: false });
+    // Shared global active offers pool cached with SWR for zero-latency retrieval
+    return withSwrCache('offers_active_pool', async () => {
+      const { data, error } = await supabase.from('offers').select('*').order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
-      return { success: true, offers: (data || []).map(mapDbOfferToOffer) };
+      return { success: true, allOffers: (data || []).map(mapDbOfferToOffer) };
+    }, { ttlMs: 60_000, staleMs: 20_000 }).then(res => {
+      const lotIdSet = new Set(lotIds);
+      const filtered = (res.allOffers || []).filter((o: Offer) => lotIdSet.has(o.lotId));
+      return { success: true, offers: filtered };
     });
   },
 
@@ -1266,17 +1346,17 @@ export const api = {
     const cacheKey = `lot_detail_${id}`;
 
     return withSwrCache(cacheKey, async () => {
-      const { data: lotRow, error } = await supabase.from('lots').select('*').eq('id', id).single();
-      if (error || !lotRow) throw new Error(error?.message || 'Lot not found');
-      const lot = mapDbLotToLot(lotRow);
-
-      const [offersRes, pickupRes, handoverRes, traceRes] = await Promise.all([
+      // Execute all 5 relational queries concurrently in a single parallel roundtrip
+      const [lotRes, offersRes, pickupRes, handoverRes, traceRes] = await Promise.all([
+        supabase.from('lots').select('*').eq('id', id).single(),
         supabase.from('offers').select('*').eq('lot_id', id).order('created_at', { ascending: false }),
         supabase.from('pickups').select('*').eq('lot_id', id).maybeSingle(),
         supabase.from('handovers').select('*').eq('lot_id', id).maybeSingle(),
         supabase.from('traceability_logs').select('*').eq('lot_id', id).order('timestamp', { ascending: true })
       ]);
 
+      if (lotRes.error || !lotRes.data) throw new Error(lotRes.error?.message || 'Lot not found');
+      const lot = mapDbLotToLot(lotRes.data);
       const offers = (offersRes.data || []).map(mapDbOfferToOffer);
       const pickup = pickupRes.data ? mapDbPickupToPickup(pickupRes.data) : undefined;
       const handover = handoverRes.data ? mapDbHandoverToHandover(handoverRes.data) : undefined;
@@ -1541,58 +1621,62 @@ export const api = {
 
   getPriceHistory: async (category: MaterialCategory, days: number = 30, district: string = 'Lucknow') => {
     const normKey = (district || '').trim().toLowerCase();
-    const matchedKey = Object.keys(CITY_MANDI_PRICE_MATRIX).find(k => normKey.includes(k) || k.includes(normKey)) || 'lucknow';
-    const cityMatrix = CITY_MANDI_PRICE_MATRIX[matchedKey];
-    const catRateInfo = cityMatrix.rates[category] || { prevailing: 100, change7Days: 2.5, trend: 'UP' };
-    const basePrice = catRateInfo.prevailing;
-    const trendPercent = catRateInfo.change7Days;
-    const observedTrend = catRateInfo.trend;
+    const cacheKey = `price_history_${category}_${days}_${normKey}`;
 
-    const { data: hist } = await supabase.from('price_history_log')
-      .select('*')
-      .eq('material_category', category)
-      .order('date', { ascending: false })
-      .limit(days);
+    return withSwrCache(cacheKey, async () => {
+      const matchedKey = Object.keys(CITY_MANDI_PRICE_MATRIX).find(k => normKey.includes(k) || k.includes(normKey)) || 'lucknow';
+      const cityMatrix = CITY_MANDI_PRICE_MATRIX[matchedKey];
+      const catRateInfo = cityMatrix.rates[category] || { prevailing: 100, change7Days: 2.5, trend: 'UP' };
+      const basePrice = catRateInfo.prevailing;
+      const trendPercent = catRateInfo.change7Days;
+      const observedTrend = catRateInfo.trend;
 
-    const history = (hist && hist.length > 0 && matchedKey === 'lucknow')
-      ? hist.map((h: any) => {
-          const val = Number(h.rate || h.price || basePrice);
-          return {
-            date: h.date,
-            price: val,
-            rate: val,
-            source: h.source || `${district} Mandi Spot Observation`
-          };
-        })
-      : Array.from({ length: Math.min(days, 15) }, (_, i) => {
-          const d = new Date();
-          d.setDate(d.getDate() - (15 - i));
-          // Calculate realistic trend progression ending at basePrice today
-          const dayFraction = (i - 14) / 14;
-          const totalDrift = (trendPercent / 100) * basePrice;
-          const wobble = ((i % 3) - 1) * (basePrice * 0.005);
-          const val = Math.round((basePrice + (dayFraction * totalDrift) + wobble) * 10) / 10;
-          return {
-            date: d.toISOString().split('T')[0],
-            price: val,
-            rate: val,
-            source: cityMatrix.source
-          };
-        });
+      const { data: hist } = await supabase.from('price_history_log')
+        .select('*')
+        .eq('material_category', category)
+        .order('date', { ascending: false })
+        .limit(days);
 
-    return {
-      success: true,
-      category,
-      district,
-      basePrice,
-      isSynthetic: false,
-      dataSource: 'LIVE',
-      observedTrend,
-      trendPercent,
-      hasSufficientData: true,
-      dataPoints: history.length,
-      history
-    };
+      const history = (hist && hist.length > 0 && matchedKey === 'lucknow')
+        ? hist.map((h: any) => {
+            const val = Number(h.rate || h.price || basePrice);
+            return {
+              date: h.date,
+              price: val,
+              rate: val,
+              source: h.source || `${district} Mandi Spot Observation`
+            };
+          })
+        : Array.from({ length: Math.min(days, 15) }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (15 - i));
+            // Calculate realistic trend progression ending at basePrice today
+            const dayFraction = (i - 14) / 14;
+            const totalDrift = (trendPercent / 100) * basePrice;
+            const wobble = ((i % 3) - 1) * (basePrice * 0.005);
+            const val = Math.round((basePrice + (dayFraction * totalDrift) + wobble) * 10) / 10;
+            return {
+              date: d.toISOString().split('T')[0],
+              price: val,
+              rate: val,
+              source: cityMatrix.source
+            };
+          });
+
+      return {
+        success: true,
+        category,
+        district,
+        basePrice,
+        isSynthetic: false,
+        dataSource: 'LIVE',
+        observedTrend,
+        trendPercent,
+        hasSufficientData: true,
+        dataPoints: history.length,
+        history
+      };
+    }, { ttlMs: 180_000, staleMs: 60_000 });
   },
 
   estimateLotValue: async (data: { materialCategory: MaterialCategory; weight: number; condition?: string; district?: string }) => {
@@ -2041,15 +2125,19 @@ export const api = {
   // PICKUPS
   // ==========================================
   getPickups: async (params: Record<string, string> = {}) => {
-    let query = supabase.from('pickups').select('*').order('created_at', { ascending: false });
-    if (params.collectorId) query = query.eq('collector_id', params.collectorId);
-    if (params.recyclerId) query = query.eq('recycler_id', params.recyclerId);
-    if (params.status) query = query.eq('pickup_status', params.status);
+    const cacheKey = `pickups_${params.collectorId || 'all'}_${params.recyclerId || 'all'}_${params.status || 'all'}`;
 
-    const { data, error } = await query;
-    if (error) throw error;
-    const pickups = (data || []).map(mapDbPickupToPickup);
-    return { success: true, count: pickups.length, pickups };
+    return withSwrCache(cacheKey, async () => {
+      let query = supabase.from('pickups').select('*').order('created_at', { ascending: false });
+      if (params.collectorId) query = query.eq('collector_id', params.collectorId);
+      if (params.recyclerId) query = query.eq('recycler_id', params.recyclerId);
+      if (params.status) query = query.eq('pickup_status', params.status);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      const pickups = (data || []).map(mapDbPickupToPickup);
+      return { success: true, count: pickups.length, pickups };
+    }, { ttlMs: 60_000, staleMs: 20_000 });
   },
 
   schedulePickup: async (data: any) => {
@@ -2133,6 +2221,10 @@ export const api = {
       payload_hash: hashes.payloadHash,
       event_hash: hashes.eventHash
     });
+
+    invalidateCache('pickups');
+    invalidateCache('lots');
+    invalidateCache('lot_detail_');
 
     return {
       success: true,
@@ -2319,14 +2411,21 @@ export const api = {
   // ==========================================
   getTraceability: async (lotId: string) => {
     return withSwrCache(`trace_${lotId}`, async () => {
-      const { data: lotRow } = await supabase.from('lots').select('*').eq('id', lotId).single();
-      if (!lotRow) throw new Error('Lot not found');
-
-      const [recRes, hoRes, logsRes] = await Promise.all([
-        lotRow.selected_recycler_id ? supabase.from('recyclers').select('*').eq('id', lotRow.selected_recycler_id).maybeSingle() : Promise.resolve({ data: null }),
+      const [lotRes, hoRes, logsRes] = await Promise.all([
+        supabase.from('lots').select('*').eq('id', lotId).single(),
         supabase.from('handovers').select('*').eq('lot_id', lotId).maybeSingle(),
         supabase.from('traceability_logs').select('*').eq('lot_id', lotId).order('timestamp', { ascending: true })
       ]);
+      if (lotRes.error || !lotRes.data) throw new Error(lotRes.error?.message || 'Lot not found');
+      const lotRow = lotRes.data;
+
+      let recycler: any = undefined;
+      if (lotRow.selected_recycler_id) {
+        try {
+          const recRes = await api.getRecyclerById(lotRow.selected_recycler_id);
+          if (recRes.success) recycler = recRes.recycler;
+        } catch {}
+      }
 
       const timeline = (logsRes.data || []).map(mapDbTraceabilityToLog);
       const lastLog = timeline[timeline.length - 1];
@@ -2334,7 +2433,7 @@ export const api = {
       return {
         success: true,
         lot: mapDbLotToLot(lotRow),
-        recycler: recRes.data ? mapDbRecyclerToRecycler(recRes.data) : undefined,
+        recycler,
         handover: hoRes.data ? mapDbHandoverToHandover(hoRes.data) : undefined,
         timeline,
         currentStage: lastLog?.stage || lotRow.status
@@ -2922,17 +3021,21 @@ export const api = {
 
     return withSwrCache(cacheKey, async () => {
       let q = supabase.from('payments').select('*').order('timestamp', { ascending: false });
-    if (collectorId) q = q.eq('collector_id', collectorId);
-    let { data: rows, error } = await q;
-    if (error) throw error;
-
-    // Graceful fallback if collectorId has 0 payments but payments table has general data
-    if ((!rows || rows.length === 0) && collectorId && collectorId !== 'col_1') {
-      const fallbackRes = await supabase.from('payments').select('*').eq('collector_id', 'col_1').order('timestamp', { ascending: false });
-      if (fallbackRes.data && fallbackRes.data.length > 0) {
-        rows = fallbackRes.data;
+      if (collectorId && collectorId !== 'col_1') {
+        q = q.in('collector_id', [collectorId, 'col_1']);
+      } else if (collectorId) {
+        q = q.eq('collector_id', collectorId);
       }
-    }
+      let { data: rows, error } = await q;
+      if (error) throw error;
+
+      // Prefer user's authentic payments if present; otherwise fallback to col_1 demo records
+      if (collectorId && collectorId !== 'col_1' && rows && rows.length > 0) {
+        const userRows = rows.filter((r: any) => r.collector_id === collectorId);
+        if (userRows.length > 0) {
+          rows = userRows;
+        }
+      }
 
     const transactions = (rows || []).map((r: any) => ({
       id: r.id,
@@ -3066,231 +3169,237 @@ export const api = {
   // ADMIN DASHBOARD, ANOMALIES & AUDIT
   // ==========================================
   getAdminKPIs: async () => {
-    const [lotsRes, collectorsRes, recyclersRes, anomaliesRes, payRes] = await Promise.all([
-      supabase.from('lots').select('material_category, approx_weight, status', { count: 'exact' }),
-      supabase.from('collectors').select('*', { count: 'exact', head: true }),
-      supabase.from('recyclers').select('authorization_status, total_processed_kg', { count: 'exact' }),
-      supabase.from('anomalies').select('status', { count: 'exact' }),
-      supabase.from('payments').select('amount')
-    ]);
+    return withSwrCache('admin_kpis', async () => {
+      const [lotsRes, collectorsRes, recyclersRes, anomaliesRes, payRes] = await Promise.all([
+        supabase.from('lots').select('material_category, approx_weight, status', { count: 'exact' }),
+        supabase.from('collectors').select('*', { count: 'exact', head: true }),
+        supabase.from('recyclers').select('authorization_status, total_processed_kg', { count: 'exact' }),
+        supabase.from('anomalies').select('status', { count: 'exact' }),
+        supabase.from('payments').select('amount')
+      ]);
 
-    const totalLots = lotsRes.count || 0;
-    const totalCollectors = collectorsRes.count || 27;
-    const totalRecyclers = recyclersRes.count || 9;
-    const authorizedRecyclers = (recyclersRes.data || []).filter((r: any) => r.authorization_status === 'AUTHORIZED').length || 8;
-    const openAnomalies = (anomaliesRes.data || []).filter((a: any) => a.status === 'OPEN').length || (anomaliesRes.count || 3);
+      const totalLots = lotsRes.count || 0;
+      const totalCollectors = collectorsRes.count || 27;
+      const totalRecyclers = recyclersRes.count || 9;
+      const authorizedRecyclers = (recyclersRes.data || []).filter((r: any) => r.authorization_status === 'AUTHORIZED').length || 8;
+      const openAnomalies = (anomaliesRes.data || []).filter((a: any) => a.status === 'OPEN').length || (anomaliesRes.count || 3);
 
-    let totalVolumeKg = 0;
-    let totalWeightRecycledKg = 0;
-    const CANONICAL_MAP: Record<string, string> = {
-      'PCB': 'PCB',
-      'PRINTED_CIRCUIT_BOARDS': 'PCB',
-      'MOTHERBOARD': 'PCB',
-      'BATTERY': 'BATTERY',
-      'BATTERIES': 'BATTERY',
-      'CRT': 'CRT',
-      'LCD': 'LCD',
-      'DISPLAY_UNITS': 'LCD',
-      'CABLE': 'CABLE',
-      'CABLES_AND_WIRES': 'CABLE',
-      'MOTOR': 'MOTOR',
-      'MAGNET': 'MAGNET',
-      'MIXED_PLASTIC': 'MIXED_PLASTIC',
-      'CONSUMER_ELECTRONICS': 'MIXED_PLASTIC'
-    };
+      let totalVolumeKg = 0;
+      let totalWeightRecycledKg = 0;
+      const CANONICAL_MAP: Record<string, string> = {
+        'PCB': 'PCB',
+        'PRINTED_CIRCUIT_BOARDS': 'PCB',
+        'MOTHERBOARD': 'PCB',
+        'BATTERY': 'BATTERY',
+        'BATTERIES': 'BATTERY',
+        'CRT': 'CRT',
+        'LCD': 'LCD',
+        'DISPLAY_UNITS': 'LCD',
+        'CABLE': 'CABLE',
+        'CABLES_AND_WIRES': 'CABLE',
+        'MOTOR': 'MOTOR',
+        'MAGNET': 'MAGNET',
+        'MIXED_PLASTIC': 'MIXED_PLASTIC',
+        'CONSUMER_ELECTRONICS': 'MIXED_PLASTIC'
+      };
 
-    const breakdown: Record<string, number> = {
-      PCB: 0,
-      BATTERY: 0,
-      CRT: 0,
-      LCD: 0,
-      CABLE: 0,
-      MOTOR: 0,
-      MAGNET: 0,
-      MIXED_PLASTIC: 0
-    };
+      const breakdown: Record<string, number> = {
+        PCB: 0,
+        BATTERY: 0,
+        CRT: 0,
+        LCD: 0,
+        CABLE: 0,
+        MOTOR: 0,
+        MAGNET: 0,
+        MIXED_PLASTIC: 0
+      };
 
-    (lotsRes.data || []).forEach((lot: any) => {
-      const wt = Number(lot.approx_weight) || 0;
-      totalVolumeKg += wt;
-      if (lot.status === 'RECYCLED' || lot.status === 'RECEIVED' || lot.status === 'PROCESSING') {
-        totalWeightRecycledKg += wt;
+      (lotsRes.data || []).forEach((lot: any) => {
+        const wt = Number(lot.approx_weight) || 0;
+        totalVolumeKg += wt;
+        if (lot.status === 'RECYCLED' || lot.status === 'RECEIVED' || lot.status === 'PROCESSING') {
+          totalWeightRecycledKg += wt;
+        }
+        const rawCat = lot.material_category || 'MIXED_PLASTIC';
+        const cat = CANONICAL_MAP[rawCat] || 'MIXED_PLASTIC';
+        breakdown[cat] = (breakdown[cat] || 0) + wt;
+      });
+
+      // Round all category weights to 1 decimal place to prevent floating-point anomalies
+      for (const key of Object.keys(breakdown)) {
+        breakdown[key] = Math.round(breakdown[key] * 10) / 10;
       }
-      const rawCat = lot.material_category || 'MIXED_PLASTIC';
-      const cat = CANONICAL_MAP[rawCat] || 'MIXED_PLASTIC';
-      breakdown[cat] = (breakdown[cat] || 0) + wt;
-    });
 
-    // Round all category weights to 1 decimal place to prevent floating-point anomalies
-    for (const key of Object.keys(breakdown)) {
-      breakdown[key] = Math.round(breakdown[key] * 10) / 10;
-    }
+      const totalTurnover = (payRes.data || []).reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0);
+      const formalRate = totalVolumeKg > 0 ? Number(((totalWeightRecycledKg / totalVolumeKg) * 100).toFixed(1)) : 88.4;
 
-    const totalTurnover = (payRes.data || []).reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0);
-    const formalRate = totalVolumeKg > 0 ? Number(((totalWeightRecycledKg / totalVolumeKg) * 100).toFixed(1)) : 88.4;
-
-    return {
-      success: true,
-      kpis: {
-        totalCollectors,
-        authorizedRecyclers,
-        totalRecyclers,
-        totalWeightRecycledKg: Math.round(totalWeightRecycledKg),
-        totalWeightCollectedKg: Math.round(totalVolumeKg),
-        formalRecyclingRatePercent: formalRate,
-        totalDisbursedValueINR: totalTurnover,
-        openAnomalies,
-        // Also include backward-compatible aliases
-        totalLotsRegistered: totalLots,
-        totalVolumeProcessedKg: Math.round(totalVolumeKg),
-        totalFinancialTurnover: totalTurnover,
-        registeredUsersCount: totalCollectors + totalRecyclers,
-        authorizedRecyclersCount: authorizedRecyclers,
-        verifiedHandoversCount: Math.round(totalLots * 0.4),
-        circularEconomyRatePercent: formalRate
-      },
-      materialBreakdown: breakdown
-    };
+      return {
+        success: true,
+        kpis: {
+          totalCollectors,
+          authorizedRecyclers,
+          totalRecyclers,
+          totalWeightRecycledKg: Math.round(totalWeightRecycledKg),
+          totalWeightCollectedKg: Math.round(totalVolumeKg),
+          formalRecyclingRatePercent: formalRate,
+          totalDisbursedValueINR: totalTurnover,
+          openAnomalies,
+          // Also include backward-compatible aliases
+          totalLotsRegistered: totalLots,
+          totalVolumeProcessedKg: Math.round(totalVolumeKg),
+          totalFinancialTurnover: totalTurnover,
+          registeredUsersCount: totalCollectors + totalRecyclers,
+          authorizedRecyclersCount: authorizedRecyclers,
+          verifiedHandoversCount: Math.round(totalLots * 0.4),
+          circularEconomyRatePercent: formalRate
+        },
+        materialBreakdown: breakdown
+      };
+    }, { ttlMs: 60_000, staleMs: 20_000 });
   },
 
   getAdminMapData: async () => {
-    const [recRes, lotsRes, cpcbRes, colRes] = await Promise.all([
-      supabase.from('recyclers').select('*'),
-      supabase.from('lots').select('location_district, approx_weight, material_category, status'),
-      supabase.from('cpcb_master_registry').select('*'),
-      supabase.from('collectors').select('district, state, id')
-    ]);
+    return withSwrCache('admin_map_data', async () => {
+      const [recRes, lotsRes, cpcbRes, colRes] = await Promise.all([
+        supabase.from('recyclers').select('*'),
+        supabase.from('lots').select('location_district, approx_weight, material_category, status'),
+        supabase.from('cpcb_master_registry').select('*'),
+        supabase.from('collectors').select('district, state, id')
+      ]);
 
-    const cpcbRegistry = cpcbRes.data || [];
-    const recyclers = (recRes.data || []).map(row => mapDbRecyclerToRecycler(row, cpcbRegistry));
+      const cpcbRegistry = cpcbRes.data || [];
+      const recyclers = (recRes.data || []).map(row => mapDbRecyclerToRecycler(row, cpcbRegistry));
 
-    const districtCoords: Record<string, [number, number]> = {
-      'Lucknow': [26.8467, 80.9462],
-      'Kanpur': [26.4499, 80.3319],
-      'Varanasi': [25.3176, 82.9739],
-      'Noida': [28.5355, 77.3910],
-      'Haridwar': [29.9457, 78.1642],
-      'Mumbai': [19.0760, 72.8777],
-      'Pune': [18.5204, 73.8567],
-      'Pune West': [18.5089, 73.7925],
-      'Delhi': [28.7041, 77.1025],
-      'Delhi NCR': [28.6139, 77.2090],
-      'Bengaluru': [12.9716, 77.5946],
-      'Nagpur': [21.1458, 79.0882]
-    };
+      const districtCoords: Record<string, [number, number]> = {
+        'Lucknow': [26.8467, 80.9462],
+        'Kanpur': [26.4499, 80.3319],
+        'Varanasi': [25.3176, 82.9739],
+        'Noida': [28.5355, 77.3910],
+        'Haridwar': [29.9457, 78.1642],
+        'Mumbai': [19.0760, 72.8777],
+        'Pune': [18.5204, 73.8567],
+        'Pune West': [18.5089, 73.7925],
+        'Delhi': [28.7041, 77.1025],
+        'Delhi NCR': [28.6139, 77.2090],
+        'Bengaluru': [12.9716, 77.5946],
+        'Nagpur': [21.1458, 79.0882]
+      };
 
-    const districtStateMap: Record<string, string> = {
-      'Lucknow': 'Uttar Pradesh',
-      'Kanpur': 'Uttar Pradesh',
-      'Varanasi': 'Uttar Pradesh',
-      'Noida': 'Uttar Pradesh',
-      'Haridwar': 'Uttarakhand',
-      'Mumbai': 'Maharashtra',
-      'Pune': 'Maharashtra',
-      'Pune West': 'Maharashtra',
-      'Nagpur': 'Maharashtra',
-      'Delhi': 'Delhi / NCR',
-      'Delhi NCR': 'Delhi / NCR',
-      'Bengaluru': 'Karnataka'
-    };
+      const districtStateMap: Record<string, string> = {
+        'Lucknow': 'Uttar Pradesh',
+        'Kanpur': 'Uttar Pradesh',
+        'Varanasi': 'Uttar Pradesh',
+        'Noida': 'Uttar Pradesh',
+        'Haridwar': 'Uttarakhand',
+        'Mumbai': 'Maharashtra',
+        'Pune': 'Maharashtra',
+        'Pune West': 'Maharashtra',
+        'Nagpur': 'Maharashtra',
+        'Delhi': 'Delhi / NCR',
+        'Delhi NCR': 'Delhi / NCR',
+        'Bengaluru': 'Karnataka'
+      };
 
-    // Calculate active collectors per district
-    const collectorCounts: Record<string, number> = {};
-    (colRes.data || []).forEach((c: any) => {
-      const d = c.district?.trim() || 'Lucknow';
-      collectorCounts[d] = (collectorCounts[d] || 0) + 1;
-    });
+      // Calculate active collectors per district
+      const collectorCounts: Record<string, number> = {};
+      (colRes.data || []).forEach((c: any) => {
+        const d = c.district?.trim() || 'Lucknow';
+        collectorCounts[d] = (collectorCounts[d] || 0) + 1;
+      });
 
-    const clusterMap: Record<string, {
-      district: string;
-      state: string;
-      count: number;
-      totalLots: number;
-      totalKg: number;
-      totalWeightKg: number;
-      activeCollectors: number;
-      recyclersCount: number;
-      lat: number;
-      lng: number;
-      topMaterials: Record<string, number>;
-    }> = {};
+      const clusterMap: Record<string, {
+        district: string;
+        state: string;
+        count: number;
+        totalLots: number;
+        totalKg: number;
+        totalWeightKg: number;
+        activeCollectors: number;
+        recyclersCount: number;
+        lat: number;
+        lng: number;
+        topMaterials: Record<string, number>;
+      }> = {};
 
-    let nationalTotalKg = 0;
-    let nationalTotalLots = 0;
+      let nationalTotalKg = 0;
+      let nationalTotalLots = 0;
 
-    (lotsRes.data || []).forEach((l: any) => {
-      const d = l.location_district || 'Lucknow';
-      if (!clusterMap[d]) {
-        const coords = districtCoords[d] || [26.8467, 80.9462];
-        const localRecyclers = recyclers.filter(r => r.district?.toLowerCase() === d.toLowerCase());
-        clusterMap[d] = {
-          district: d,
-          state: districtStateMap[d] || 'Uttar Pradesh',
-          count: 0,
-          totalLots: 0,
-          totalKg: 0,
-          totalWeightKg: 0,
-          activeCollectors: collectorCounts[d] || (d === 'Lucknow' ? 28 : (d === 'Pune' ? 3 : 1)),
-          recyclersCount: localRecyclers.length,
-          lat: coords[0],
-          lng: coords[1],
-          topMaterials: {}
-        };
+      (lotsRes.data || []).forEach((l: any) => {
+        const d = l.location_district || 'Lucknow';
+        if (!clusterMap[d]) {
+          const coords = districtCoords[d] || [26.8467, 80.9462];
+          const localRecyclers = recyclers.filter(r => r.district?.toLowerCase() === d.toLowerCase());
+          clusterMap[d] = {
+            district: d,
+            state: districtStateMap[d] || 'Uttar Pradesh',
+            count: 0,
+            totalLots: 0,
+            totalKg: 0,
+            totalWeightKg: 0,
+            activeCollectors: collectorCounts[d] || (d === 'Lucknow' ? 28 : (d === 'Pune' ? 3 : 1)),
+            recyclersCount: localRecyclers.length,
+            lat: coords[0],
+            lng: coords[1],
+            topMaterials: {}
+          };
+        }
+        const wt = Number(l.approx_weight) || 0;
+        clusterMap[d].count += 1;
+        clusterMap[d].totalLots += 1;
+        clusterMap[d].totalKg += wt;
+        clusterMap[d].totalWeightKg += wt;
+        nationalTotalKg += wt;
+        nationalTotalLots += 1;
+
+        const cat = l.material_category || 'OTHER';
+        clusterMap[d].topMaterials[cat] = (clusterMap[d].topMaterials[cat] || 0) + wt;
+      });
+
+      // Ensure rounding to 1 decimal place
+      for (const d of Object.keys(clusterMap)) {
+        clusterMap[d].totalKg = Math.round(clusterMap[d].totalKg * 10) / 10;
+        clusterMap[d].totalWeightKg = Math.round(clusterMap[d].totalWeightKg * 10) / 10;
+        for (const m of Object.keys(clusterMap[d].topMaterials)) {
+          clusterMap[d].topMaterials[m] = Math.round(clusterMap[d].topMaterials[m] * 10) / 10;
+        }
       }
-      const wt = Number(l.approx_weight) || 0;
-      clusterMap[d].count += 1;
-      clusterMap[d].totalLots += 1;
-      clusterMap[d].totalKg += wt;
-      clusterMap[d].totalWeightKg += wt;
-      nationalTotalKg += wt;
-      nationalTotalLots += 1;
 
-      const cat = l.material_category || 'OTHER';
-      clusterMap[d].topMaterials[cat] = (clusterMap[d].topMaterials[cat] || 0) + wt;
-    });
-
-    // Ensure rounding to 1 decimal place
-    for (const d of Object.keys(clusterMap)) {
-      clusterMap[d].totalKg = Math.round(clusterMap[d].totalKg * 10) / 10;
-      clusterMap[d].totalWeightKg = Math.round(clusterMap[d].totalWeightKg * 10) / 10;
-      for (const m of Object.keys(clusterMap[d].topMaterials)) {
-        clusterMap[d].topMaterials[m] = Math.round(clusterMap[d].topMaterials[m] * 10) / 10;
-      }
-    }
-
-    return {
-      success: true,
-      recyclers,
-      collectionClusters: Object.values(clusterMap),
-      summary: {
-        totalMonitoredDistricts: Object.keys(clusterMap).length,
-        nationalTotalKg: Math.round(nationalTotalKg * 10) / 10,
-        nationalTotalLots,
-        totalRecyclersCount: recyclers.length,
-        authorizedRecyclersCount: recyclers.filter(r => r.authorizationStatus === 'AUTHORIZED').length
-      }
-    };
+      return {
+        success: true,
+        recyclers,
+        collectionClusters: Object.values(clusterMap),
+        summary: {
+          totalMonitoredDistricts: Object.keys(clusterMap).length,
+          nationalTotalKg: Math.round(nationalTotalKg * 10) / 10,
+          nationalTotalLots,
+          totalRecyclersCount: recyclers.length,
+          authorizedRecyclersCount: recyclers.filter(r => r.authorizationStatus === 'AUTHORIZED').length
+        }
+      };
+    }, { ttlMs: 60_000, staleMs: 20_000 });
   },
 
   getAnomalies: async () => {
-    const { data, error } = await supabase.from('anomalies').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    const anomalies: AnomalyFlag[] = (data || []).map((a: any) => ({
-      id: a.id,
-      lotId: a.entity_id || a.id,
-      entityType: (a.entity_type as any) || 'LOT',
-      entityId: a.entity_id,
-      collectorId: 'col_1',
-      anomalyType: (a.type as AnomalyType) || 'PRICE_OUTLIER',
-      severity: (a.severity as AnomalySeverity) || 'MEDIUM',
-      description: a.description,
-      flaggedBy: a.flagged_by,
-      status: (a.status as AnomalyStatus) || 'OPEN',
-      createdAt: a.created_at,
-      resolvedAt: a.resolved_at,
-      resolutionNotes: a.resolution_notes
-    }));
-    return { success: true, count: anomalies.length, anomalies };
+    return withSwrCache('anomalies_all', async () => {
+      const { data, error } = await supabase.from('anomalies').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      const anomalies: AnomalyFlag[] = (data || []).map((a: any) => ({
+        id: a.id,
+        lotId: a.entity_id || a.id,
+        entityType: (a.entity_type as any) || 'LOT',
+        entityId: a.entity_id,
+        collectorId: 'col_1',
+        anomalyType: (a.type as AnomalyType) || 'PRICE_OUTLIER',
+        severity: (a.severity as AnomalySeverity) || 'MEDIUM',
+        description: a.description,
+        flaggedBy: a.flagged_by,
+        status: (a.status as AnomalyStatus) || 'OPEN',
+        createdAt: a.created_at,
+        resolvedAt: a.resolved_at,
+        resolutionNotes: a.resolution_notes
+      }));
+      return { success: true, count: anomalies.length, anomalies };
+    }, { ttlMs: 60_000, staleMs: 20_000 });
   },
 
   updateAnomalyStatus: async (id: string, status: string, notes?: string) => {
@@ -3319,46 +3428,77 @@ export const api = {
   },
 
   getDisputes: async () => {
-    const [disputesRes, collectorsRes, recyclersRes] = await Promise.all([
-      supabase.from('disputes').select('*').order('created_at', { ascending: false }),
-      supabase.from('collectors').select('id, name, phone'),
-      supabase.from('recyclers').select('id, facility_name, contact_person, contact_phone, district, state')
-    ]);
+    return withSwrCache('disputes_all', async () => {
+      const [disputesRes, collectorsRes, recyclersRes] = await Promise.all([
+        supabase.from('disputes').select('*').order('created_at', { ascending: false }),
+        supabase.from('collectors').select('id, name, phone'),
+        supabase.from('recyclers').select('id, facility_name, contact_person, contact_phone, district, state')
+      ]);
 
-    if (disputesRes.error) throw disputesRes.error;
+      if (disputesRes.error) throw disputesRes.error;
 
-    const collectorsMap = new Map((collectorsRes.data || []).map((c: any) => [c.id, c]));
-    const recyclersMap = new Map((recyclersRes.data || []).map((r: any) => [r.id, r]));
+      const collectorsMap = new Map((collectorsRes.data || []).map((c: any) => [c.id, c]));
+      const recyclersMap = new Map((recyclersRes.data || []).map((r: any) => [r.id, r]));
 
-    const disputes = (disputesRes.data || []).map((d: any) => {
-      const collector = collectorsMap.get(d.collector_id);
-      const recycler = recyclersMap.get(d.recycler_id);
+      const disputes = (disputesRes.data || []).map((d: any) => {
+        const collector = collectorsMap.get(d.collector_id);
+        const recycler = recyclersMap.get(d.recycler_id);
 
-      return {
-        id: d.id,
-        lotId: d.lot_id,
-        raisedByUserId: d.collector_id,
-        raisedByRole: 'COLLECTOR' as UserRole,
-        raisedByName: collector?.name || 'Authorized Collector',
-        collectorName: collector?.name || 'Authorized Collector',
-        collectorPhone: collector?.phone || 'N/A',
-        recyclerId: d.recycler_id,
-        recyclerName: recycler?.facility_name || 'Recycling Facility',
-        recyclerContact: recycler?.contact_person || 'N/A',
-        recyclerPhone: recycler?.contact_phone || 'N/A',
-        recyclerLocation: recycler ? `${recycler.district}, ${recycler.state}` : 'N/A',
-        reason: d.reason,
-        details: d.description,
-        status: (d.status as DisputeStatus) || 'OPEN',
-        createdAt: d.created_at,
-        resolvedAt: d.resolved_at,
-        resolutionNotes: d.resolution_notes,
-        adminNotes: d.resolution_notes,
-        resolution: d.resolution_notes
-      };
-    });
+        return {
+          id: d.id,
+          lotId: d.lot_id,
+          raisedByUserId: d.collector_id,
+          raisedByRole: 'COLLECTOR' as UserRole,
+          raisedByName: collector?.name || 'Authorized Collector',
+          collectorName: collector?.name || 'Authorized Collector',
+          collectorPhone: collector?.phone || 'N/A',
+          recyclerId: d.recycler_id,
+          recyclerName: recycler?.facility_name || 'Recycling Facility',
+          recyclerContact: recycler?.contact_person || 'N/A',
+          recyclerPhone: recycler?.contact_phone || 'N/A',
+          recyclerLocation: recycler ? `${recycler.district}, ${recycler.state}` : 'N/A',
+          reason: d.reason,
+          details: d.description,
+          status: (d.status as DisputeStatus) || 'OPEN',
+          createdAt: d.created_at,
+          resolvedAt: d.resolved_at,
+          resolutionNotes: d.resolution_notes,
+          adminNotes: d.resolution_notes,
+          resolution: d.resolution_notes
+        };
+      });
 
-    return { success: true, count: disputes.length, disputes };
+      return { success: true, count: disputes.length, disputes };
+    }, { ttlMs: 60_000, staleMs: 20_000 });
+  },
+
+  getDatasetStats: async () => {
+    return withSwrCache('dataset_counts', async () => {
+      const tables = [
+        { id: 'transactions', table: 'payments' },
+        { id: 'materials', table: 'lots' },
+        { id: 'prices', table: 'prices' },
+        { id: 'recyclers', table: 'recyclers' },
+        { id: 'traceability', table: 'traceability_logs' },
+        { id: 'collectors', table: 'collectors' },
+        { id: 'anomalies', table: 'anomalies' },
+        { id: 'disputes', table: 'disputes' },
+        { id: 'ml_training', table: 'ml_training_samples' }
+      ];
+
+      const results = await Promise.all(
+        tables.map(async ({ id, table }) => {
+          try {
+            const res = await supabase.from(table).select('*', { count: 'exact', head: true });
+            return [id, res.count || 0];
+          } catch {
+            return [id, 0];
+          }
+        })
+      );
+
+      return { success: true, counts: Object.fromEntries(results) as Record<string, number> };
+    }, { ttlMs: 120_000, staleMs: 45_000 });
   },
 
   updateDisputeStatus: async (id: string, data: any) => {

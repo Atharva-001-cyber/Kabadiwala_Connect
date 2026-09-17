@@ -209,17 +209,10 @@ export const DatasetManagerPage: React.FC = () => {
   const fetchAllLiveCounts = async () => {
     setLoadingCounts(true);
     try {
-      const results = await Promise.all(
-        datasets.map(async (d) => {
-          try {
-            const res = await supabase.from(d.table).select('*', { count: 'exact', head: true });
-            return [d.id, res.count || 0];
-          } catch {
-            return [d.id, 0];
-          }
-        })
-      );
-      setCounts(Object.fromEntries(results));
+      const res = await api.getDatasetStats();
+      if (res.success && res.counts) {
+        setCounts(res.counts);
+      }
     } catch (err) {
       console.warn('Could not fetch dynamic dataset counts from Supabase:', err);
     } finally {
@@ -333,29 +326,29 @@ export const DatasetManagerPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
-      {/* Executive Header Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
+      {/* Executive Header */}
+      <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-emerald-500/10 via-cyan-500/5 to-transparent pointer-events-none" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
                 <Database className="w-5 h-5" />
               </span>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 {language === 'hi'
                   ? 'राष्ट्रीय ई-कचरा डेटासेट प्रबंधन एवं ओपन डेटा रजिस्ट्री'
                   : language === 'mr'
                   ? 'राष्ट्रीय ई-कचरा डेटासेट व्यवस्थापन व ओपन डेटा'
                   : 'National E-Waste Dynamic Dataset Registry & Open Data'}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 uppercase">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 CENTRAL DATA PIPELINE ACTIVE
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-2xl leading-relaxed">
               {language === 'hi'
                 ? 'ईपीआर (EPR) क्रेडिट सत्यापन, नीति निर्धारण, शैक्षणिक अनुसंधान एवं एआई मॉडल प्रशिक्षण हेतु 100% रीयल-टाइम सिंक्रोनाइज़्ड डेटासेट।'
                 : language === 'mr'
@@ -368,9 +361,9 @@ export const DatasetManagerPage: React.FC = () => {
             <button
               onClick={fetchAllLiveCounts}
               disabled={loadingCounts}
-              className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-bold border border-slate-700 shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 shadow-sm transition-all"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loadingCounts ? 'animate-spin text-emerald-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingCounts ? 'animate-spin text-emerald-500' : ''}`} />
               <span>{language === 'hi' ? 'रीफ्रेश' : language === 'mr' ? 'ताजे करा' : 'Refresh Counts'}</span>
             </button>
           </div>
@@ -380,92 +373,92 @@ export const DatasetManagerPage: React.FC = () => {
       {/* 5 KPI Executive Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {/* Total Datasets Available */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 shadow-lg hover:border-slate-700 transition-all">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {language === 'hi' ? 'उपलब्ध डेटासेट' : language === 'mr' ? 'एकूण डेटासेट' : 'Available Datasets'}
             </span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+            <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <Layers className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white">{datasets.length}</div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{datasets.length}</div>
           <div className="text-[10px] text-slate-500 mt-1 font-medium">
             9 Statutory Schemas
           </div>
         </div>
 
         {/* Total Records Indexed */}
-        <div className="bg-slate-900 border border-emerald-900/40 rounded-2xl p-4 shadow-lg hover:border-emerald-700/60 transition-all bg-gradient-to-br from-emerald-950/20 to-transparent">
-          <div className="flex items-center justify-between text-emerald-300 mb-2">
+        <div className="bg-emerald-50/40 dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700/60 transition-all">
+          <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {language === 'hi' ? 'कुल रिकॉर्ड्स' : language === 'mr' ? 'एकूण नोंदी' : 'Total Records'}
             </span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+            <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <Database className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400">
+          <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
             {loadingCounts ? '...' : totalRecordsSum.toLocaleString('en-IN')}
           </div>
-          <div className="text-[10px] text-emerald-400/80 mt-1 font-medium">
+          <div className="text-[10px] text-emerald-700 dark:text-emerald-400/80 mt-1 font-medium">
             100% Live Supabase Cloud
           </div>
         </div>
 
         {/* AI Vision Samples */}
-        <div className="bg-slate-900 border border-purple-900/40 rounded-2xl p-4 shadow-lg hover:border-purple-700/60 transition-all bg-gradient-to-br from-purple-950/20 to-transparent">
-          <div className="flex items-center justify-between text-purple-300 mb-2">
+        <div className="bg-purple-50/40 dark:bg-slate-900 border border-purple-200 dark:border-purple-900/40 rounded-2xl p-4 shadow-sm hover:border-purple-300 dark:hover:border-purple-700/60 transition-all">
+          <div className="flex items-center justify-between text-purple-800 dark:text-purple-300 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {language === 'hi' ? 'एआई विजन सैंपल्स' : language === 'mr' ? 'एआय व्हिजन सॅम्पल्स' : 'AI Vision Ground-Truth'}
             </span>
-            <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
+            <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
               <Cpu className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-purple-400">
+          <div className="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400">
             {loadingCounts ? '...' : counts['ml_training'] || 73}
           </div>
-          <div className="text-[10px] text-purple-400/80 mt-1 font-medium">
+          <div className="text-[10px] text-purple-700 dark:text-purple-400/80 mt-1 font-medium">
             Human-in-the-loop Verified
           </div>
         </div>
 
         {/* Formats Supported */}
-        <div className="bg-slate-900 border border-blue-900/40 rounded-2xl p-4 shadow-lg hover:border-blue-700/60 transition-all bg-gradient-to-br from-blue-950/20 to-transparent">
-          <div className="flex items-center justify-between text-blue-300 mb-2">
+        <div className="bg-blue-50/40 dark:bg-slate-900 border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4 shadow-sm hover:border-blue-300 dark:hover:border-blue-700/60 transition-all">
+          <div className="flex items-center justify-between text-blue-800 dark:text-blue-300 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {language === 'hi' ? 'प्रारूप (Formats)' : language === 'mr' ? 'स्वरूप' : 'Export Standards'}
             </span>
-            <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400">
+            <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
               <FileSpreadsheet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-blue-400">JSON + CSV</div>
-          <div className="text-[10px] text-blue-400/80 mt-1 font-medium">
+          <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">JSON + CSV</div>
+          <div className="text-[10px] text-blue-700 dark:text-blue-400/80 mt-1 font-medium">
             UTF-8 & YOLO Manifests
           </div>
         </div>
 
         {/* Cloud Sync Status */}
-        <div className="bg-slate-900 border border-cyan-900/40 rounded-2xl p-4 shadow-lg hover:border-cyan-700/60 transition-all col-span-2 lg:col-span-1 bg-gradient-to-br from-cyan-950/20 to-transparent">
-          <div className="flex items-center justify-between text-cyan-300 mb-2">
+        <div className="bg-cyan-50/40 dark:bg-slate-900 border border-cyan-200 dark:border-cyan-900/40 rounded-2xl p-4 shadow-sm hover:border-cyan-300 dark:hover:border-cyan-700/60 transition-all col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between text-cyan-800 dark:text-cyan-300 mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider">
               {language === 'hi' ? 'सिंक विलंबता' : language === 'mr' ? 'सिंक लेटन्सी' : 'Cloud Latency'}
             </span>
-            <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
+            <div className="p-1.5 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400">
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-cyan-400">&lt; 15 ms</div>
-          <div className="text-[10px] text-cyan-400/80 mt-1 font-medium">
+          <div className="text-2xl sm:text-3xl font-black text-cyan-700 dark:text-cyan-400">&lt; 15 ms</div>
+          <div className="text-[10px] text-cyan-700 dark:text-cyan-400/80 mt-1 font-medium">
             Realtime REST & Webhooks
           </div>
         </div>
       </div>
 
       {/* Search & Category Filter Controls */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl space-y-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search Bar */}
           <div className="relative flex-1">
@@ -481,12 +474,12 @@ export const DatasetManagerPage: React.FC = () => {
                   ? 'डेटासेट नाव, स्कीमा किंवा माहितीवरून शोधा...'
                   : 'Search datasets by name, schema attributes, or description...'
               }
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -508,7 +501,7 @@ export const DatasetManagerPage: React.FC = () => {
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   categoryFilter === tab.id
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                    : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                    : 'bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 {tab.label}
@@ -528,7 +521,7 @@ export const DatasetManagerPage: React.FC = () => {
           return (
             <div
               key={ds.id}
-              className="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-5 shadow-xl space-y-4 transition-all flex flex-col justify-between"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 rounded-3xl p-5 shadow-sm space-y-4 transition-all flex flex-col justify-between"
             >
               <div className="space-y-3">
                 {/* Header Row */}
@@ -537,12 +530,12 @@ export const DatasetManagerPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
                         ds.category === 'TRADE'
-                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                          ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30'
                           : ds.category === 'LOGISTICS'
-                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                          ? 'bg-cyan-50 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30'
                           : ds.category === 'REGULATORY'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          ? 'bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30'
+                          : 'bg-purple-50 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30'
                       }`}>
                         {ds.category}
                       </span>
@@ -550,24 +543,24 @@ export const DatasetManagerPage: React.FC = () => {
                         table: {ds.table}
                       </span>
                     </div>
-                    <h3 className="text-base font-black text-white">
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
                       {ds.name[language] || ds.name.en}
                     </h3>
                   </div>
 
                   {/* Live Record Count Badge */}
-                  <span className="px-3 py-1 rounded-xl bg-emerald-950/80 text-emerald-300 font-mono font-bold text-xs border border-emerald-800/80 shrink-0">
+                  <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-xs border border-emerald-200 dark:border-emerald-800/80 shrink-0">
                     {loadingCounts ? '...' : (recCount !== undefined ? `${recCount.toLocaleString('en-IN')} rows` : 'Active')}
                   </span>
                 </div>
 
                 {/* Description */}
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   {ds.desc[language] || ds.desc.en}
                 </p>
 
                 {/* Schema Field Tags */}
-                <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
                     {language === 'hi' ? 'स्कीमा फील्ड्स (Schema Attributes):' : 'Schema Attributes:'}
                   </span>
@@ -575,7 +568,7 @@ export const DatasetManagerPage: React.FC = () => {
                     {ds.fields.map((f) => (
                       <span
                         key={f}
-                        className="px-2 py-0.5 rounded-md bg-slate-950 text-slate-300 text-[10px] font-mono border border-slate-800/80"
+                        className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-[10px] font-mono border border-slate-200 dark:border-slate-800/80"
                       >
                         {f}
                       </span>
@@ -585,15 +578,15 @@ export const DatasetManagerPage: React.FC = () => {
               </div>
 
               {/* Action Toolbar: Preview + JSON + CSV */}
-              <div className="flex items-center gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                 {/* Preview Sample Button */}
                 <button
                   type="button"
                   onClick={() => handlePreview(ds)}
-                  className="px-3 py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-800 shadow transition-all"
+                  className="px-3 py-2 bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-800 shadow transition-all"
                   title="Preview first 5 live records"
                 >
-                  <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                  <Eye className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                   <span>{language === 'hi' ? 'पूर्वावलोकन' : language === 'mr' ? 'पूर्वावलोकन' : 'Preview'}</span>
                 </button>
 
@@ -602,9 +595,9 @@ export const DatasetManagerPage: React.FC = () => {
                   type="button"
                   onClick={() => handleDownload(ds, 'json')}
                   disabled={isExportingJson}
-                  className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-700 shadow transition-all"
+                  className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow transition-all"
                 >
-                  <FileCode className={`w-3.5 h-3.5 ${isExportingJson ? 'animate-spin text-blue-400' : 'text-blue-400'}`} />
+                  <FileCode className={`w-3.5 h-3.5 ${isExportingJson ? 'animate-spin text-blue-600 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400'}`} />
                   <span>{isExportingJson ? 'Exporting...' : 'JSON'}</span>
                 </button>
 
@@ -613,7 +606,7 @@ export const DatasetManagerPage: React.FC = () => {
                   type="button"
                   onClick={() => handleDownload(ds, 'csv')}
                   disabled={isExportingCsv}
-                  className="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all"
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all"
                 >
                   <FileSpreadsheet className={`w-3.5 h-3.5 ${isExportingCsv ? 'animate-spin' : ''}`} />
                   <span>{isExportingCsv ? 'Exporting...' : 'CSV'}</span>
@@ -624,12 +617,12 @@ export const DatasetManagerPage: React.FC = () => {
         })}
 
         {/* Dedicated Computer Vision ML Training Manifest Card */}
-        <div className="bg-slate-900 border border-emerald-500/60 rounded-3xl p-6 shadow-2xl space-y-4 md:col-span-2 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/30">
+        <div className="bg-gradient-to-br from-emerald-50/50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/30 border-2 border-emerald-500/60 rounded-3xl p-6 shadow-sm dark:shadow-2xl space-y-4 md:col-span-2 relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🤖</span>
-                <h3 className="text-base sm:text-lg font-black text-white">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                   {language === 'hi'
                     ? 'एआई विजन मॉडल प्रशिक्षण डेटासेट मैनिफेस्ट (YOLOv8 / MobileNet प्रारूप)'
                     : language === 'mr'
@@ -637,7 +630,7 @@ export const DatasetManagerPage: React.FC = () => {
                     : 'AI Vision Model Training Dataset Manifest (YOLOv8 / MobileNet Format)'}
                 </h3>
               </div>
-              <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
                 {language === 'hi'
                   ? 'कलेक्टरों द्वारा जमीनी स्तर पर कैप्चर किए गए वास्तविक ई-कचरा फोटो, वास्तविक मोबाइलनेट अनुमान, एवं मानवीय पुष्टि पर आधारित सुपरवाइज्ड कंप्यूटर विजन प्रशिक्षण डेटासेट।'
                   : language === 'mr'
@@ -647,27 +640,27 @@ export const DatasetManagerPage: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
-              <span className="px-3 py-1 rounded-xl bg-emerald-950 text-emerald-300 font-bold text-xs border border-emerald-800">
+              <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800">
                 {counts['ml_training'] || 73} Verified Samples
               </span>
-              <span className="px-3 py-1 rounded-xl bg-purple-950 text-purple-300 font-bold text-xs border border-purple-800">
+              <span className="px-3 py-1 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800">
                 YOLOv8 & Pascal VOC Ready
               </span>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2 text-xs pt-1">
-            <span className="px-2.5 py-1 bg-slate-950 rounded-lg text-slate-300 font-mono text-[11px] border border-slate-800">
+            <span className="px-2.5 py-1 bg-white dark:bg-slate-950 rounded-lg text-slate-700 dark:text-slate-300 font-mono text-[11px] border border-slate-200 dark:border-slate-800">
               8 Standard Classes: PCB, BATTERY, CRT, LCD, CABLE, MOTOR, MAGNET, MIXED_PLASTIC
             </span>
-            <span className="px-2.5 py-1 bg-slate-950 rounded-lg text-emerald-400 font-mono text-[11px] border border-slate-800">
+            <span className="px-2.5 py-1 bg-white dark:bg-slate-950 rounded-lg text-emerald-700 dark:text-emerald-400 font-mono text-[11px] border border-slate-200 dark:border-slate-800">
               Human Override Auditing Included
             </span>
           </div>
 
-          <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-500" />
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
               <span>Includes image metadata, confidence scores, and bounding annotations.</span>
             </div>
 
@@ -695,7 +688,7 @@ export const DatasetManagerPage: React.FC = () => {
                   showToast(err.message || 'Export failed', 'error');
                 }
               }}
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all self-end sm:self-auto"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 transition-all self-end sm:self-auto"
             >
               <Download className="w-4 h-4" />
               <span>
@@ -712,19 +705,19 @@ export const DatasetManagerPage: React.FC = () => {
 
       {/* Live Data Preview Modal */}
       {previewDataset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-4 relative max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-4 relative max-h-[85vh] flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
                   <Eye className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-black text-white text-base">
+                  <h3 className="font-black text-slate-900 dark:text-white text-base">
                     {previewDataset.name[language] || previewDataset.name.en}
                   </h3>
-                  <div className="text-[11px] font-mono text-slate-400">
+                  <div className="text-[11px] font-mono text-slate-500">
                     Live Supabase Sample (First 5 Rows from `{previewDataset.table}`)
                   </div>
                 </div>
@@ -732,11 +725,11 @@ export const DatasetManagerPage: React.FC = () => {
 
               <div className="flex items-center gap-2">
                 {/* Mode Toggle */}
-                <div className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+                <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-0.5 rounded-xl border border-slate-200 dark:border-slate-800">
                   <button
                     onClick={() => setPreviewMode('TABLE')}
                     className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                      previewMode === 'TABLE' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                      previewMode === 'TABLE' ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     TABLE
@@ -744,7 +737,7 @@ export const DatasetManagerPage: React.FC = () => {
                   <button
                     onClick={() => setPreviewMode('JSON')}
                     className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                      previewMode === 'JSON' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                      previewMode === 'JSON' ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     RAW JSON
@@ -753,7 +746,7 @@ export const DatasetManagerPage: React.FC = () => {
 
                 <button
                   onClick={() => setPreviewDataset(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition-all"
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -761,10 +754,10 @@ export const DatasetManagerPage: React.FC = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 overflow-auto rounded-2xl bg-slate-950 border border-slate-800 p-3 text-xs">
+            <div className="flex-1 overflow-auto rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3 text-xs">
               {previewLoading ? (
-                <div className="flex items-center justify-center py-12 text-slate-400 gap-2">
-                  <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin" />
+                <div className="flex items-center justify-center py-12 text-slate-500 gap-2">
+                  <RefreshCw className="w-5 h-5 text-emerald-500 animate-spin" />
                   <span>Fetching live sample rows from Supabase Cloud...</span>
                 </div>
               ) : previewRows.length === 0 ? (
@@ -775,22 +768,22 @@ export const DatasetManagerPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-800 text-slate-400 font-mono text-[10px] uppercase">
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-mono text-[10px] uppercase">
                         {Object.keys(previewRows[0]).map((col) => (
-                          <th key={col} className="p-2.5 font-bold whitespace-nowrap bg-slate-900/60">
+                          <th key={col} className="p-2.5 font-bold whitespace-nowrap bg-slate-100 dark:bg-slate-900/60">
                             {col}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-mono text-[11px]">
                       {previewRows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-slate-900/40 text-slate-300">
+                        <tr key={idx} className="hover:bg-slate-100/80 dark:hover:bg-slate-900/40 text-slate-800 dark:text-slate-300">
                           {Object.keys(previewRows[0]).map((col) => {
                             const val = row[col];
                             const formatted = typeof val === 'object' ? JSON.stringify(val) : String(val ?? 'null');
                             return (
-                              <td key={col} className="p-2.5 whitespace-nowrap max-w-xs truncate text-slate-200">
+                              <td key={col} className="p-2.5 whitespace-nowrap max-w-xs truncate text-slate-900 dark:text-slate-200">
                                 {formatted}
                               </td>
                             );
@@ -801,14 +794,14 @@ export const DatasetManagerPage: React.FC = () => {
                   </table>
                 </div>
               ) : (
-                <pre className="text-emerald-400 font-mono text-[11px] leading-relaxed overflow-auto p-2">
+                <pre className="text-emerald-700 dark:text-emerald-400 font-mono text-[11px] leading-relaxed overflow-auto p-2">
                   {JSON.stringify(previewRows, null, 2)}
                 </pre>
               )}
             </div>
 
             {/* Modal Footer */}
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
               <span className="text-[11px] text-slate-500">
                 Viewing sample. Use export buttons to download complete data.
               </span>
@@ -817,15 +810,15 @@ export const DatasetManagerPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleDownload(previewDataset, 'json')}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-700"
+                  className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
                 >
-                  <FileCode className="w-3.5 h-3.5 text-blue-400" />
+                  <FileCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>Download Full JSON</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDownload(previewDataset, 'csv')}
-                  className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
                   <span>Download Full CSV</span>
@@ -838,3 +831,4 @@ export const DatasetManagerPage: React.FC = () => {
     </div>
   );
 };
+

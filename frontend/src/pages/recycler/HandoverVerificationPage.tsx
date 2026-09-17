@@ -135,7 +135,7 @@ export const HandoverVerificationPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots({ limit: '100' });
+      const res = await api.getLots();
       if (res.success) {
         // Filter lots in ACCEPTED or PICKUP_SCHEDULED status ready for physical handover
         const pending = res.lots.filter((l: Lot) => 
@@ -355,45 +355,64 @@ export const HandoverVerificationPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-16">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl">
-        <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-          <span>⚖️</span>
-          <span>{t.handoverVerificationTitle}</span>
-        </h1>
-        <p className="text-xs text-slate-400 font-medium mt-0.5">
-          {t.handoverSubtitle}
-        </p>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                CPCB Rule 19 & Legal Metrology Certified
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <Scale className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <span>{t.handoverVerificationTitle}</span>
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+              {t.handoverSubtitle}
+            </p>
+          </div>
+
+          <div className="self-start sm:self-auto flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>
+              {locationData 
+                ? `${locationData.latitude.toFixed(4)}°N, ${locationData.longitude.toFixed(4)}°E` 
+                : (language === 'hi' ? 'GPS प्राप्त किया जा रहा है...' : 'Fetching GPS...')}
+            </span>
+          </div>
+        </div>
       </div>
 
       {successResult ? (
-        <div className="bg-slate-900 border border-emerald-500 rounded-3xl p-6 sm:p-8 text-center space-y-5 shadow-2xl">
-          <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+        <div className="bg-white dark:bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-sm">
+          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
           <div>
-            <h2 className="text-xl font-black text-white">{t.handoverSuccessTitle}</h2>
-            <p className="text-xs text-emerald-400 font-mono mt-1">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">{t.handoverSuccessTitle}</h2>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono mt-1 font-bold">
               Handover Ref: {successResult.handover.id} • Lot: {successResult.lot.id}
             </p>
           </div>
 
-          <div className="bg-slate-950 p-4 rounded-2xl text-xs text-left space-y-2.5 border border-slate-800">
-            <div className="flex justify-between">
-              <span className="text-slate-400">{t.handoverVerifiedWeight}</span>
-              <span className="font-bold text-white text-sm">{successResult.handover.actualWeight} kg</span>
+          <div className="bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 rounded-2xl text-xs text-left space-y-3 border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">{t.handoverVerifiedWeight}</span>
+              <span className="font-bold text-slate-900 dark:text-white text-sm font-mono">{successResult.handover.actualWeight} kg</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">{t.handoverVariance}</span>
-              <span className={`font-bold ${successResult.handover.weightDifference >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">{t.handoverVariance}</span>
+              <span className={`font-bold font-mono ${successResult.handover.weightDifference >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                 {successResult.handover.weightDifference} kg ({successResult.handover.weightDiffPercentage}%)
               </span>
             </div>
-            <div className="flex justify-between border-t border-slate-800/80 pt-2">
-              <span className="text-slate-400">{t.handoverTotalSettled}</span>
-              <span className="font-black text-emerald-400 text-base">₹{successResult.handover.finalPaymentAmount.toLocaleString('en-IN')}</span>
+            <div className="flex justify-between items-center border-t border-slate-200 dark:border-slate-800 pt-3">
+              <span className="text-slate-600 dark:text-slate-400 font-bold">{t.handoverTotalSettled}</span>
+              <span className="font-black text-emerald-600 dark:text-emerald-400 text-lg font-mono">₹{successResult.handover.finalPaymentAmount.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -401,7 +420,7 @@ export const HandoverVerificationPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <Link
               to={`/recycler/inventory?lotId=${successResult.lot.id}`}
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black rounded-2xl text-xs shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl text-xs shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
               <Factory className="w-4 h-4" />
               <span>Proceed to Factory Processing →</span>
@@ -409,9 +428,9 @@ export const HandoverVerificationPage: React.FC = () => {
 
             <Link
               to="/recycler/transactions"
-              className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-2xl text-xs border border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition-all"
+              className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-2xl text-xs border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
-              <FileText className="w-4 h-4 text-emerald-400" />
+              <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>View Ledger Voucher & Manifest</span>
             </Link>
           </div>
@@ -421,17 +440,18 @@ export const HandoverVerificationPage: React.FC = () => {
               setSuccessResult(null);
               fetchLots();
             }}
-            className="w-full py-2.5 text-slate-400 hover:text-white font-bold text-xs"
+            className="w-full py-2.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-bold text-xs transition-colors"
           >
             + {t.handoverNextBtn}
           </button>
         </div>
       ) : (
-        <form onSubmit={handleVerify} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+        <form onSubmit={handleVerify} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
           {/* Step 1: Select Lot */}
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">
-              {t.handoverSelectLot}
+          <div className="space-y-2">
+            <label className="block text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-black flex items-center justify-center">1</span>
+              <span>{t.handoverSelectLot}</span>
             </label>
             <select
               value={selectedLotId}
@@ -443,7 +463,7 @@ export const HandoverVerificationPage: React.FC = () => {
                   setHandoverOtp(''); // Blank for authentic verification
                 }
               }}
-              className="w-full p-3 bg-slate-950 border border-slate-700 rounded-2xl text-white font-bold text-sm focus:outline-none focus:border-emerald-500"
+              className="w-full p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               required
             >
               {lots.length === 0 ? (
@@ -458,28 +478,29 @@ export const HandoverVerificationPage: React.FC = () => {
             </select>
 
             {scheduledPickup && (
-              <div className="mt-2 text-[11px] text-slate-300 flex items-center gap-2 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
-                <Truck className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                <span>Assigned Driver: <b className="text-white">{driverName}</b> • Vehicle: <b className="text-white font-mono">{scheduledPickup.vehicleNumber}</b></span>
+              <div className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2 bg-slate-50 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                <Truck className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                <span>Assigned Driver: <b className="text-slate-900 dark:text-white">{driverName}</b> • Vehicle: <b className="text-slate-900 dark:text-white font-mono">{scheduledPickup.vehicleNumber}</b></span>
               </div>
             )}
           </div>
 
           {/* Step 2: Weight Verification & Automatic Variance Calculation */}
-          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <div className="bg-slate-50 dark:bg-slate-950/70 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-300">
-                {t.handoverActualWeight}
+              <label className="block text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-black flex items-center justify-center">2</span>
+                <span>{t.handoverActualWeight}</span>
               </label>
-              <span className="text-[11px] font-bold text-emerald-400 font-mono">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 font-mono bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
                 Agreed Rate: ₹{ratePerKg}/kg
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 items-center">
-              <div>
-                <span className="text-[10px] text-slate-500 block">{t.handoverCollectorWeight}</span>
-                <span className="text-base font-bold text-slate-300 font-mono">{approx} kg</span>
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">{t.handoverCollectorWeight}</span>
+                <span className="text-lg font-black text-slate-800 dark:text-slate-200 font-mono">{approx} kg</span>
               </div>
 
               <div className="relative">
@@ -489,26 +510,26 @@ export const HandoverVerificationPage: React.FC = () => {
                   value={actualWeight}
                   onChange={(e) => setActualWeight(e.target.value)}
                   placeholder="10"
-                  className="w-full pl-3 pr-10 py-2.5 bg-slate-900 border border-emerald-500 rounded-xl text-white font-mono text-xl font-black focus:outline-none"
+                  className="w-full pl-3.5 pr-12 py-3 bg-white dark:bg-slate-900 border-2 border-emerald-500 rounded-xl text-slate-900 dark:text-white font-mono text-xl font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/20 shadow-sm"
                   required
                 />
-                <span className="absolute right-3 top-3 text-xs font-bold text-slate-400">kg</span>
+                <span className="absolute right-3.5 top-3.5 text-xs font-black text-slate-500 dark:text-slate-400">kg</span>
               </div>
             </div>
 
             {/* Difference Indicator */}
-            <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between font-bold ${
+            <div className={`p-3 rounded-xl border text-xs flex items-center justify-between font-bold ${
               isHighVariance
-                ? 'bg-red-950/80 border-red-700 text-red-300'
-                : 'bg-slate-900 border-slate-800 text-slate-300'
+                ? 'bg-red-50 dark:bg-red-950/80 border-red-200 dark:border-red-700 text-red-700 dark:text-red-300'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
             }`}>
               <span>{t.handoverVariance}</span>
-              <span>{diff >= 0 ? `+${diff}` : `${diff}`} kg ({diffPercent}%)</span>
+              <span className="font-mono">{diff >= 0 ? `+${diff}` : `${diff}`} kg ({diffPercent}%)</span>
             </div>
 
             {isHighVariance && (
-              <p className="text-[11px] text-red-400 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5 font-medium">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{t.handoverVarianceWarning}</span>
               </p>
             )}
@@ -516,9 +537,10 @@ export const HandoverVerificationPage: React.FC = () => {
 
           {/* Step 3: Enter Collector OTP & Payment Settlement */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1.5">
-                {t.handoverEnterOtp}
+            <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+              <label className="block font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-black flex items-center justify-center">3</span>
+                <span>{t.handoverEnterOtp}</span>
               </label>
               <input
                 type="text"
@@ -526,26 +548,27 @@ export const HandoverVerificationPage: React.FC = () => {
                 value={handoverOtp}
                 onChange={(e) => setHandoverOtp(e.target.value)}
                 placeholder="----"
-                className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-center text-lg font-black tracking-widest focus:outline-none focus:border-emerald-500"
+                className="w-full p-3 bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-mono text-center text-2xl font-black tracking-[0.5em] focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 required
               />
-              <div className="mt-1 flex items-center justify-between text-[10px]">
-                <span className="text-slate-500">{t.handoverOtpDesc}</span>
+              <div className="flex items-center justify-between text-[11px] pt-1">
+                <span className="text-slate-500 dark:text-slate-400">{t.handoverOtpDesc}</span>
                 {selectedLot?.handoverOtp && (
                   <button
                     type="button"
                     onClick={() => setHandoverOtp(selectedLot.handoverOtp || '')}
-                    className="text-emerald-400 hover:text-emerald-300 font-mono font-bold bg-emerald-950/70 px-2 py-0.5 rounded-md border border-emerald-800 active:scale-95"
+                    className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 font-mono font-bold bg-emerald-50 dark:bg-emerald-950/70 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 active:scale-95 transition-all"
                   >
-                    Demo OTP: {selectedLot.handoverOtp} <span className="underline">(Fill)</span>
+                    Demo: {selectedLot.handoverOtp} <span className="underline">(Fill)</span>
                   </button>
                 )}
               </div>
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-300 mb-1.5">
-                {t.handoverPaymentMethod}
+            <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+              <label className="block font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-black flex items-center justify-center">4</span>
+                <span>{t.handoverPaymentMethod}</span>
               </label>
               <select
                 value={paymentMethod}
@@ -553,49 +576,49 @@ export const HandoverVerificationPage: React.FC = () => {
                   setPaymentMethod(e.target.value as any);
                   setRazorpayPaymentId('');
                 }}
-                className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-500"
+                className="w-full p-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold text-sm focus:outline-none focus:border-emerald-500 transition-all"
               >
                 <option value="CASH">{t.handoverCash}</option>
                 <option value="UPI">{t.handoverUpi}</option>
               </select>
-              <span className="text-[10px] text-emerald-400 mt-0.5 block font-bold">
+              <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold block pt-1">
                 {t.handoverTotalPayable} ₹{finalAmount.toLocaleString('en-IN')} (@ ₹{ratePerKg}/kg)
               </span>
             </div>
           </div>
 
           {/* Step 4: Electronic Scale Photo Reading Proof (CPCB Rule 19 Compliant) */}
-          <div className="bg-slate-950 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          <div className="bg-slate-50 dark:bg-slate-950/70 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800/80 pb-3">
               <div>
-                <label className="text-xs font-black text-white flex items-center gap-1.5">
-                  <Camera className="w-4 h-4 text-emerald-400" />
+                <label className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Physical Scale Photo Proof (CPCB Rule 19)</span>
                 </label>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Must photograph the calibrated electronic weighing scale displaying {actualWeight || '10'} kg
                 </p>
               </div>
 
-              <span className="self-start sm:self-auto text-[10px] text-emerald-300 font-mono font-bold bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-800 flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="self-start sm:self-auto text-[10px] text-emerald-800 dark:text-emerald-300 font-mono font-bold bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Legal Metrology Calibrated</span>
               </span>
             </div>
 
             {/* Scale Image Card with Metadata Badge */}
-            <div className="relative rounded-2xl border-2 border-slate-800 overflow-hidden bg-slate-900 group">
+            <div className="relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950 group">
               <img 
                 src={proofImage} 
                 alt="Calibrated Scale Display" 
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = DEFAULT_SCALE_IMAGE;
                 }}
-                className="w-full h-48 sm:h-64 object-cover transition-transform duration-300 group-hover:scale-[1.01]" 
+                className="w-full h-56 sm:h-72 object-contain bg-slate-950 transition-transform duration-300 group-hover:scale-[1.01]" 
               />
 
               {/* Overlay Badges */}
-              <div className="absolute top-2.5 left-2.5 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-xl border border-slate-700/80 text-[10px] text-white flex items-center gap-2">
+              <div className="absolute top-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md px-3 py-1 rounded-xl border border-slate-700/80 text-[10px] text-white flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span className="font-mono font-black text-emerald-400">NET STABLE: {actualWeight || '10.0'} kg</span>
               </div>
@@ -629,7 +652,7 @@ export const HandoverVerificationPage: React.FC = () => {
               <button
                 type="button"
                 onClick={startCamera}
-                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center gap-1.5 shadow active:scale-95 transition-all text-xs"
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all text-xs"
               >
                 <Camera className="w-4 h-4" />
                 <span>Live Camera Snap</span>
@@ -644,9 +667,9 @@ export const HandoverVerificationPage: React.FC = () => {
               />
               <label
                 htmlFor="scale-photo-input"
-                className="cursor-pointer px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold border border-slate-700 flex items-center gap-1.5 shadow active:scale-95 transition-all text-xs"
+                className="cursor-pointer px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl font-bold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all text-xs"
               >
-                <Upload className="w-4 h-4 text-emerald-400" />
+                <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Upload from Device</span>
               </label>
 
@@ -657,7 +680,7 @@ export const HandoverVerificationPage: React.FC = () => {
                   setSelectedPresetId('avery-zm510');
                   showToast('Reset to certified Avery ZM510-SD scale reading', 'info');
                 }}
-                className="px-3 py-2 text-slate-400 hover:text-white rounded-xl font-medium text-[11px] flex items-center gap-1 ml-auto"
+                className="px-3 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl font-medium text-[11px] flex items-center gap-1 ml-auto transition-colors"
                 title="Reset to default certified scale"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -667,7 +690,7 @@ export const HandoverVerificationPage: React.FC = () => {
 
             {/* Quick Demo Presets (Crucial for SIH Presentations) */}
             <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between text-[10px] text-slate-400">
+              <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
                 <span className="font-bold uppercase tracking-wider">SIH Stage Demo Scale Presets:</span>
                 <span>Click to switch scale photo instantly</span>
               </div>
@@ -679,14 +702,14 @@ export const HandoverVerificationPage: React.FC = () => {
                       key={preset.id}
                       type="button"
                       onClick={() => handleSelectPreset(preset)}
-                      className={`p-2 rounded-xl text-left border transition-all text-xs ${
+                      className={`p-2.5 rounded-xl text-left border transition-all text-xs ${
                         isSelected
-                          ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200 shadow-md'
-                          : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 text-slate-300'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/70 border-2 border-emerald-600 dark:border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-sm'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <div className="font-bold truncate text-[11px]">{preset.name}</div>
-                      <div className="text-[9px] text-slate-400 truncate">{preset.badge}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{preset.badge}</div>
                     </button>
                   );
                 })}
@@ -696,64 +719,64 @@ export const HandoverVerificationPage: React.FC = () => {
 
           {/* Dynamic Payment Rail Helper & Razorpay Gateway */}
           {paymentMethod === 'UPI' ? (
-            <div className="bg-gradient-to-r from-blue-950/60 to-slate-950 p-4 rounded-2xl border border-blue-800/80 space-y-3">
+            <div className="bg-gradient-to-br from-blue-50/80 via-white to-slate-50 dark:from-blue-950/40 dark:via-slate-900 dark:to-slate-950 p-4 sm:p-5 rounded-2xl border border-blue-200 dark:border-blue-900/60 space-y-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                  <span className="text-[10px] font-black uppercase text-blue-400 tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-[10px] font-black uppercase text-blue-700 dark:text-blue-400 tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                     <span>NPCI UPI Instant Payout Rail & Razorpay Gateway</span>
                   </span>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    Pay directly to Collector's registered UPI VPA: <b className="text-white font-mono">{selectedLot?.collectorPhone ? `${selectedLot.collectorPhone}@upi` : '9876543210@upi'}</b>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
+                    Pay directly to Collector's registered UPI VPA: <b className="text-slate-900 dark:text-white font-mono">{selectedLot?.collectorPhone ? `${selectedLot.collectorPhone}@upi` : '9876543210@upi'}</b>
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleOpenRazorpay}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow active:scale-95 shrink-0"
+                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0 transition-all"
                 >
                   <span>💳 Launch Razorpay Gateway</span>
                 </button>
               </div>
 
               {razorpayPaymentId ? (
-                <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500 text-xs font-mono text-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-500 text-xs font-mono text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Razorpay Payment Verified: <b>{razorpayPaymentId}</b></span>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-                  <QrCode className="w-10 h-10 text-blue-400 shrink-0" />
-                  <div className="text-[11px] text-slate-400">
-                    <span className="text-white font-bold block">Dynamic UPI QR Code Generated</span>
+                <div className="flex items-center gap-3 bg-white dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <QrCode className="w-10 h-10 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div className="text-xs text-slate-600 dark:text-slate-400">
+                    <span className="text-slate-900 dark:text-white font-bold block">Dynamic UPI QR Code Generated</span>
                     <span>Amount ₹{finalAmount.toLocaleString('en-IN')} will be digitally stamped into CPCB Double-Entry Ledger.</span>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-800/60 text-xs text-slate-300 flex items-center gap-2.5">
-              <Wallet className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 text-xs text-slate-700 dark:text-slate-300 flex items-center gap-3">
+              <Wallet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
-                <span className="font-bold text-emerald-300 block">CPCB Spot Cash Disbursal (Rule 19 Compliant)</span>
-                <span className="text-[11px] text-slate-400">Collector OTP & digital signature required. Verifiable Digital Cash Voucher (CSH-LKO-2026-XXXX) will be generated.</span>
+                <span className="font-bold text-emerald-900 dark:text-emerald-300 block">CPCB Spot Cash Disbursal (Rule 19 Compliant)</span>
+                <span className="text-[11px] text-slate-600 dark:text-slate-400">Collector OTP & digital signature required. Verifiable Digital Cash Voucher (CSH-LKO-2026-XXXX) will be generated.</span>
               </div>
             </div>
           )}
 
           {/* Location & GPS Provenance */}
-          <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
+          <div className="bg-slate-50 dark:bg-slate-950/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 block uppercase">{t.handoverLocationSource}</span>
-              <span className="font-mono text-white font-bold">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block uppercase">{t.handoverLocationSource}</span>
+              <span className="font-mono text-slate-900 dark:text-white font-bold">
                 {locationData ? `${locationData.latitude}° N, ${locationData.longitude}° E` : (language === 'hi' ? 'GPS प्राप्त किया जा रहा है...' : language === 'mr' ? 'GPS मिळवत आहे...' : 'Fetching GPS...')}
               </span>
             </div>
             <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${
               locationData?.locationSource === 'DEVICE_GPS'
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                : 'bg-slate-800 text-slate-300 border-slate-700'
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
+                : 'bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
             }`}>
               {locationData?.locationSource === 'DEVICE_GPS'
                 ? (language === 'hi' ? `📍 डिवाइस GPS (±${locationData.accuracyMeters}m)` : language === 'mr' ? `📍 डिव्हाइस GPS (±${locationData.accuracyMeters}m)` : `📍 Device GPS (±${locationData.accuracyMeters}m)`)
@@ -762,16 +785,17 @@ export const HandoverVerificationPage: React.FC = () => {
           </div>
 
           {/* Step 5: Collector Digital Finger Signature Pad */}
-          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+          <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-300 block">
-                {t.handoverSignatureTitle}
+              <label className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-black flex items-center justify-center">5</span>
+                <span>{t.handoverSignatureTitle}</span>
               </label>
               {hasSignature && (
                 <button
                   type="button"
                   onClick={clearSignature}
-                  className="text-[10px] text-red-400 hover:text-red-300 font-bold"
+                  className="text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold"
                 >
                   {t.handoverClearSig}
                 </button>
@@ -780,19 +804,19 @@ export const HandoverVerificationPage: React.FC = () => {
             <canvas
               ref={canvasRef}
               width={400}
-              height={90}
+              height={100}
               onPointerDown={startDrawing}
               onPointerMove={draw}
               onPointerUp={stopDrawing}
               onPointerLeave={stopDrawing}
-              className="w-full h-[90px] bg-slate-900 border border-dashed border-slate-700 rounded-xl cursor-crosshair touch-none"
+              className="w-full h-[100px] bg-white dark:bg-slate-900 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-crosshair touch-none shadow-inner"
             />
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
               {t.handoverSigDesc}
             </span>
           </div>
 
-          <p className="text-[10px] text-slate-400 italic">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
             {t.handoverDisclaimer}
           </p>
 
@@ -800,7 +824,7 @@ export const HandoverVerificationPage: React.FC = () => {
           <button
             type="submit"
             disabled={submitting || lots.length === 0}
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-base rounded-2xl shadow-xl flex items-center justify-center gap-2"
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-base rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckCircle2 className="w-5 h-5" />
             <span>{submitting ? t.handoverSubmitting : t.handoverSubmitBtn}</span>
@@ -810,26 +834,26 @@ export const HandoverVerificationPage: React.FC = () => {
 
       {/* LIVE CAMERA MODAL VIEW */}
       {isCameraOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-5 max-w-lg w-full space-y-4 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 max-w-lg w-full space-y-4 shadow-2xl relative">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
-                <Video className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-sm">
+                <Video className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Live Scale Camera Viewfinder</span>
               </div>
               <button
                 type="button"
                 onClick={stopCamera}
-                className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {cameraError ? (
-              <div className="p-4 bg-red-950/80 border border-red-800 rounded-2xl text-xs text-red-300 space-y-2">
+              <div className="p-4 bg-red-50 dark:bg-red-950/80 border border-red-200 dark:border-red-800 rounded-2xl text-xs text-red-700 dark:text-red-300 space-y-2">
                 <p className="font-bold flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400" />
                   <span>Camera Access Error</span>
                 </p>
                 <p className="text-[11px]">{cameraError}</p>
@@ -837,15 +861,15 @@ export const HandoverVerificationPage: React.FC = () => {
                   <label
                     htmlFor="scale-photo-input"
                     onClick={stopCamera}
-                    className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-slate-200 rounded-xl text-xs font-bold border border-slate-700"
+                    className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700"
                   >
-                    <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                    <Upload className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Upload File Instead</span>
                   </label>
                 </div>
               </div>
             ) : (
-              <div className="relative rounded-2xl overflow-hidden bg-black aspect-video border border-slate-700">
+              <div className="relative rounded-2xl overflow-hidden bg-black aspect-video border border-slate-200 dark:border-slate-700">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -854,7 +878,7 @@ export const HandoverVerificationPage: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 {/* Visual Reticle / Framing Guide */}
-                <div className="absolute inset-6 border-2 border-dashed border-emerald-400/70 rounded-xl pointer-events-none flex items-center justify-center">
+                <div className="absolute inset-6 border-2 border-dashed border-emerald-400/80 rounded-xl pointer-events-none flex items-center justify-center">
                   <span className="bg-slate-950/80 text-[10px] text-emerald-300 px-2 py-0.5 rounded font-mono">
                     Align Scale Screen Inside Box
                   </span>
@@ -867,14 +891,14 @@ export const HandoverVerificationPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={stopCamera}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={captureFromCamera}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold flex items-center gap-2 shadow-lg active:scale-95"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-2 shadow-sm active:scale-95 transition-all"
                 >
                   <Camera className="w-4 h-4" />
                   <span>Snap Scale Reading</span>
@@ -887,29 +911,29 @@ export const HandoverVerificationPage: React.FC = () => {
 
       {/* FULL RESOLUTION INSPECT MODAL */}
       {showFullProofModal && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-2xl w-full space-y-3 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 max-w-2xl w-full space-y-3 shadow-2xl relative">
             <div className="flex items-center justify-between">
-              <span className="text-white font-bold text-sm flex items-center gap-2">
-                <Scale className="w-4 h-4 text-emerald-400" />
+              <span className="text-slate-900 dark:text-white font-bold text-sm flex items-center gap-2">
+                <Scale className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Certified Electronic Scale Display (High-Res Inspection)</span>
               </span>
               <button
                 type="button"
                 onClick={() => setShowFullProofModal(false)}
-                className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300"
+                className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="rounded-2xl overflow-hidden border border-slate-800 max-h-[70vh] flex items-center justify-center bg-black">
+            <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-[70vh] flex items-center justify-center bg-black">
               <img src={proofImage} alt="Scale Inspect" className="max-h-[70vh] w-auto object-contain" />
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-mono">
               <span>Lot: {selectedLotId || 'EW-LUC-2026-489900'}</span>
-              <span className="text-emerald-400">Verified Stamp: Legal Metrology WSM-2024</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Verified Stamp: Legal Metrology WSM-2024</span>
             </div>
           </div>
         </div>

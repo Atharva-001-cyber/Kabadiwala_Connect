@@ -105,7 +105,7 @@ export const InventoryProcessingPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots({ limit: '150' });
+      const res = await api.getLots();
       if (res.success) {
         setLots(res.lots);
       }
@@ -333,46 +333,52 @@ export const InventoryProcessingPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 text-xs font-black uppercase tracking-wider mb-2">
+              <Factory className="w-3.5 h-3.5" />
+              <span>Plant Processing & Refining</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <span>⚙️</span>
               <span>{t.inventoryProcessingTitle}</span>
             </h1>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">
-              Facility: <b className="text-emerald-400">{recyclerProfile?.facilityName || 'ABC E-Waste Recycling Pvt Ltd'}</b> • CPCB EPR Rule 19 Compliant
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+              Facility: <b className="text-emerald-700 dark:text-emerald-400">{recyclerProfile?.facilityName || 'ABC E-Waste Recycling Pvt Ltd'}</b> • CPCB EPR Rule 19 Compliant
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-emerald-950 text-emerald-300 rounded-xl text-xs font-mono font-bold border border-emerald-800">
-              Active Lots: {facilityLots.filter(l => l.status !== 'RECYCLED').length}
+            <span className="px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-mono font-black border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Active: {facilityLots.filter(l => l.status !== 'RECYCLED').length}</span>
             </span>
-            <span className="px-3 py-1 bg-blue-950 text-blue-300 rounded-xl text-xs font-mono font-bold border border-blue-800">
-              Recycled: {facilityLots.filter(l => l.status === 'RECYCLED').length}
+            <span className="px-3.5 py-1.5 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-300 rounded-xl text-xs font-mono font-black border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Recycled: {facilityLots.filter(l => l.status === 'RECYCLED').length}</span>
             </span>
           </div>
         </div>
       </div>
 
       {/* Material Inventory Stock Grid */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-3">
-        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <Layers className="w-4 h-4 text-emerald-400" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>{t.materialStockTitle} ({recyclerProfile?.facilityName || 'My Facility Stock'})</span>
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           {Object.entries(inventoryWeights).map(([cat, weight]) => (
-            <div key={cat} className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex items-center justify-between">
+            <div key={cat} className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
               <div>
-                <span className="font-bold text-slate-400 block">{cat}</span>
-                <span className="text-lg font-black text-white">{weight} kg</span>
+                <span className="font-bold text-slate-500 dark:text-slate-400 block">{cat}</span>
+                <span className="text-lg font-black text-slate-900 dark:text-white">{weight} kg</span>
               </div>
-              <span className="text-xl">
+              <span className="text-2xl p-2 rounded-xl bg-white dark:bg-slate-900 shadow-2xs border border-slate-100 dark:border-slate-800">
                 {cat === 'PCB' && '📟'}
                 {cat === 'BATTERY' && '🔋'}
                 {cat === 'CABLE' && '🔌'}
@@ -389,18 +395,18 @@ export const InventoryProcessingPage: React.FC = () => {
 
       {/* INTERACTIVE 5-STAGE VISUAL LIFECYCLE STEPPER */}
       {currentLot && (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span>Lifecycle Pipeline Progress: <b className="text-emerald-400 font-mono">{currentLot.id}</b></span>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Lifecycle Pipeline Progress: <b className="text-emerald-700 dark:text-emerald-400 font-mono">{currentLot.id}</b></span>
             </span>
-            <span className="text-[11px] font-bold text-slate-400">
-              {getCategoryLabel(currentLot.materialCategory, language)} ({currentLot.actualWeight || currentLot.approxWeight} kg)
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-700">
+              {getCategoryLabel(currentLot.materialCategory, language)} • {currentLot.actualWeight || currentLot.approxWeight} kg
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
             {PIPELINE_STEPS.map((step, idx) => {
               const isPast = isLotFullyRecycled ? idx <= currentStepIdx : idx < currentStepIdx;
               const isCurrent = !isLotFullyRecycled && idx === currentStepIdx;
@@ -409,37 +415,37 @@ export const InventoryProcessingPage: React.FC = () => {
               return (
                 <div 
                   key={step.stage}
-                  className={`p-3 rounded-2xl border transition-all text-xs relative ${
+                  className={`p-3.5 rounded-2xl border transition-all text-xs relative ${
                     isPast 
-                      ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 shadow-2xs'
                       : isCurrent
-                      ? 'bg-gradient-to-br from-emerald-950 to-slate-950 border-2 border-emerald-500 text-white shadow-lg ring-2 ring-emerald-500/20'
-                      : 'bg-slate-950 border-slate-800 text-slate-500'
+                      ? 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-slate-950 border-2 border-emerald-600 dark:border-emerald-500 text-slate-900 dark:text-white shadow-md ring-2 ring-emerald-500/20'
+                      : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-[10px] ${
                       isPast 
-                        ? 'bg-emerald-500 text-slate-950'
+                        ? 'bg-emerald-600 text-white'
                         : isCurrent
-                        ? 'bg-emerald-400 text-slate-950 animate-pulse'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-emerald-500 text-white animate-pulse'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}>
                       {isPast ? '✓' : step.num}
                     </span>
                     {isCurrent && (
-                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">
+                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold tracking-wider">
                         ACTIVE
                       </span>
                     )}
                     {isLotFullyRecycled && idx === 4 && (
-                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black animate-pulse">
                         DONE
                       </span>
                     )}
                   </div>
-                  <div className="font-bold text-xs truncate">{step.title}</div>
-                  <div className="text-[10px] opacity-80 truncate">{step.desc}</div>
+                  <div className="font-extrabold text-xs truncate text-slate-900 dark:text-white">{step.title}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{step.desc}</div>
                 </div>
               );
             })}
@@ -448,24 +454,24 @@ export const InventoryProcessingPage: React.FC = () => {
       )}
 
       {/* STAGE PROGRESSION & LOT MANAGEMENT */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800/80 pb-4">
           <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-200">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               {t.advanceStageTitle}
             </h2>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Advance material batches through legal recycling checkpoints and generate CPCB Form-6 proofs
             </p>
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
             <button
               type="button"
               onClick={() => handleTabChange('ALL')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                filterTab === 'ALL' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                filterTab === 'ALL' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               All ({facilityLots.length})
@@ -473,8 +479,8 @@ export const InventoryProcessingPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleTabChange('IN_PROCESS')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                filterTab === 'IN_PROCESS' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                filterTab === 'IN_PROCESS' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               In-Process ({facilityLots.filter(l => l.status !== 'RECYCLED').length})
@@ -482,8 +488,8 @@ export const InventoryProcessingPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleTabChange('COMPLETED')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                filterTab === 'COMPLETED' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                filterTab === 'COMPLETED' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Completed ({facilityLots.filter(l => l.status === 'RECYCLED').length})
@@ -492,9 +498,9 @@ export const InventoryProcessingPage: React.FC = () => {
         </div>
 
         {displayedLots.length === 0 ? (
-          <div className="bg-slate-950 rounded-2xl p-8 text-center space-y-3 border border-slate-800">
-            <Factory className="w-10 h-10 text-slate-600 mx-auto" />
-            <p className="text-xs text-slate-400 font-medium">
+          <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-8 text-center space-y-3 border border-slate-200 dark:border-slate-800">
+            <Factory className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               No lots found matching the selected filter in your facility inventory.
             </p>
           </div>
@@ -502,11 +508,11 @@ export const InventoryProcessingPage: React.FC = () => {
           <form onSubmit={handleUpdateStage} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-bold text-slate-300 mb-1.5">{t.selectLotPrompt}</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t.selectLotPrompt}</label>
                 <select
                   value={selectedLotId}
                   onChange={(e) => handleLotSelect(e.target.value)}
-                  className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-500 text-xs"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs"
                   required
                 >
                   {displayedLots.map((l) => (
@@ -519,11 +525,11 @@ export const InventoryProcessingPage: React.FC = () => {
 
               {!isLotFullyRecycled ? (
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1.5">{t.nextStagePrompt}</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">{t.nextStagePrompt}</label>
                   <select
                     value={targetStage}
                     onChange={(e) => handleStageChange(e.target.value)}
-                    className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-emerald-500 text-xs"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs"
                   >
                     {validNextStages.map(s => (
                       <option key={s.value} value={s.value}>
@@ -533,11 +539,11 @@ export const InventoryProcessingPage: React.FC = () => {
                   </select>
                 </div>
               ) : (
-                <div className="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800 text-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <div>
                     <span className="font-bold text-xs block">100% Formally Recycled</span>
-                    <span className="text-[10px] text-slate-400">Terminal lifecycle state reached. Certificate ready below.</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Terminal lifecycle state reached. Certificate ready below.</span>
                   </div>
                 </div>
               )}
@@ -545,13 +551,13 @@ export const InventoryProcessingPage: React.FC = () => {
 
             {/* If lot is already recycled, show Certificate card instead of Advance button */}
             {isLotFullyRecycled ? (
-              <div className="bg-gradient-to-r from-emerald-950/80 to-teal-950/60 border-2 border-emerald-500/80 rounded-2xl p-6 text-center space-y-3 shadow-xl">
-                <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/80 dark:to-teal-950/60 border-2 border-emerald-500/80 rounded-2xl p-6 text-center space-y-3 shadow-md">
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
                   <Award className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">This Consignment is 100% Formally Recycled!</h3>
-                  <p className="text-xs text-slate-300 mt-1 max-w-md mx-auto">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">This Consignment is 100% Formally Recycled!</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
                     All hazardous materials neutralized, valuable secondary raw materials extracted, and CPCB Form-6 manifest generated.
                   </p>
                 </div>
@@ -559,7 +565,7 @@ export const InventoryProcessingPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowCertModal(true)}
-                    className="px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black shadow-lg inline-flex items-center gap-2 active:scale-95 transition-all"
+                    className="px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-black shadow-lg inline-flex items-center gap-2 active:scale-95 transition-all"
                   >
                     <Award className="w-4 h-4" />
                     <span>View CPCB Form-6 Certificate (Green Certificate)</span>
@@ -570,10 +576,10 @@ export const InventoryProcessingPage: React.FC = () => {
               <>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="font-bold text-slate-300">
+                    <label className="font-bold text-slate-700 dark:text-slate-300">
                       {t.recoveredDetailsLabel}
                     </label>
-                    <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-bold">
                       CPCB Rule 2022 Recovery Standards
                     </span>
                   </div>
@@ -582,10 +588,10 @@ export const InventoryProcessingPage: React.FC = () => {
                     value={recoveredDetails}
                     onChange={(e) => setRecoveredDetails(e.target.value)}
                     placeholder="Recovered fractions..."
-                    className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500 text-xs font-mono"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-mono font-medium"
                     required
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 block">
                     * Logged into immutable double-entry traceability audit trail.
                   </span>
                 </div>
@@ -593,7 +599,7 @@ export const InventoryProcessingPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting || !selectedLotId || isLotFullyRecycled}
-                  className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold rounded-2xl shadow-xl flex items-center justify-center gap-2 text-sm transition-all"
+                  className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-2xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all"
                 >
                   {submitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

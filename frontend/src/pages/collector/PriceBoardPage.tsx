@@ -247,7 +247,7 @@ export const PriceBoardPage: React.FC = () => {
   const selectedPriceRecord = prices.find(p => p.materialCategory === selectedCategory) || prices[0];
 
   return (
-    <div className="space-y-6 pb-24 max-w-5xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
       {/* Top Header & District Switcher */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -361,11 +361,11 @@ export const PriceBoardPage: React.FC = () => {
       {/* 8 Pictorial Material Rate Cards (Mandatory PS Categories) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
             <span>{language === 'hi' ? 'मंडी खरीद भाव' : language === 'mr' ? 'बाजार खरेदी दर' : 'Mandi Buy Rates'} ({formatLocationString(currentLocation.district, currentLocation.state, language)})</span>
-            <span className="text-[10px] text-slate-400 font-normal">{t.heroPriceTag}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">{t.heroPriceTag}</span>
           </h2>
-          <span className="text-[11px] text-slate-400">{language === 'hi' ? 'कार्ड पर टैप करके कैलकुलेटर में जांचें ⬇️' : language === 'mr' ? 'कार्डवर टॅप करून कॅल्क्युलेटरमध्ये तपासा ⬇️' : 'Tap card to test in calculator ⬇️'}</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{language === 'hi' ? 'कार्ड पर टैप करके कैलकुलेटर में जांचें ⬇️' : language === 'mr' ? 'कार्डवर टॅप करून कॅल्क्युलेटरमध्ये तपासा ⬇️' : 'Tap card to test in calculator ⬇️'}</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -380,17 +380,17 @@ export const PriceBoardPage: React.FC = () => {
               <div
                 key={price.id}
                 onClick={() => setSelectedCategory(price.materialCategory)}
-                className={`bg-slate-900 border-2 rounded-3xl p-5 flex flex-col justify-between shadow-xl transition-all hover:scale-[1.01] cursor-pointer ${
+                className={`bg-white dark:bg-slate-900 border-2 rounded-3xl p-5 flex flex-col justify-between shadow-sm dark:shadow-xl transition-all hover:scale-[1.01] cursor-pointer ${
                   isSelected
-                    ? 'border-emerald-500 ring-2 ring-emerald-500/40 shadow-emerald-950/50 bg-slate-900/90'
-                    : 'border-slate-800 hover:border-slate-700'
+                    ? 'border-emerald-600 ring-2 ring-emerald-500/30 bg-emerald-50/40 dark:bg-slate-900/90 shadow-md'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div>
                   {/* Category Header with Icon & Voice Button */}
                   <div className="flex items-start justify-between mb-2.5">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-3xl p-2 bg-slate-950 rounded-2xl border border-slate-800 shrink-0">
+                      <span className="text-3xl p-2 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shrink-0 shadow-2xs">
                         {price.materialCategory === 'PCB' && '📟'}
                         {price.materialCategory === 'BATTERY' && '🔋'}
                         {price.materialCategory === 'CABLE' && '🔌'}
@@ -401,10 +401,10 @@ export const PriceBoardPage: React.FC = () => {
                         {price.materialCategory === 'MIXED_PLASTIC' && '♻️'}
                       </span>
                       <div>
-                        <h3 className="font-black text-base text-white leading-tight">
+                        <h3 className="font-black text-base text-slate-900 dark:text-white leading-tight">
                           {catInfo?.[language] || price.materialCategory}
                         </h3>
-                        <span className="text-[11px] text-slate-400 block line-clamp-1 mt-0.5 font-medium">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block line-clamp-1 mt-0.5 font-medium">
                           {price.subCategory}
                         </span>
                       </div>
@@ -416,7 +416,7 @@ export const PriceBoardPage: React.FC = () => {
                         e.stopPropagation();
                         speakCategoryRate(price);
                       }}
-                      className="p-2.5 rounded-2xl bg-slate-800 hover:bg-emerald-950/80 border border-slate-700 hover:border-emerald-600 text-emerald-300 transition-all shrink-0 active:scale-90"
+                      className="p-2.5 rounded-2xl bg-slate-100 hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-emerald-950/80 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600 text-emerald-700 dark:text-emerald-300 transition-all shrink-0 active:scale-90 shadow-2xs"
                       title={t.listenPrice}
                     >
                       <Volume2 className="w-4 h-4" />
@@ -424,18 +424,18 @@ export const PriceBoardPage: React.FC = () => {
                   </div>
 
                   {/* Price Box with Provenance Badge */}
-                  <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 my-2 shadow-inner space-y-1.5">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 my-2 space-y-1.5 shadow-2xs">
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold uppercase tracking-wider text-slate-400">
+                      <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         {t.prevailingRate}
                       </span>
                       {/* Strictly distinguish LIVE vs BENCHMARK vs SEED */}
                       <span className={`font-black px-2 py-0.5 rounded-full border ${
                         price.dataSource === 'LIVE'
-                          ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                           : price.sourceType === 'ADMIN_BENCHMARK'
-                          ? 'bg-amber-950/80 text-amber-300 border-amber-800'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                          ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-800'
+                          : 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                       }`}>
                         {price.dataSource === 'LIVE'
                           ? '🟢 LIVE OBSERVATION'
@@ -447,25 +447,25 @@ export const PriceBoardPage: React.FC = () => {
 
                     {/* Giant Price Number */}
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight">
+                      <span className="text-3xl sm:text-4xl font-black text-emerald-700 dark:text-emerald-400 font-mono tracking-tight">
                         ₹{price.prevailingBuyPrice}
                       </span>
-                      <span className="text-xs font-bold text-slate-400">/ {price.unit ? String(price.unit).replace('₹/', '') : 'kg'}</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">/ {price.unit ? String(price.unit).replace('₹/', '') : 'kg'}</span>
                     </div>
 
-                    <div className="text-[11px] text-slate-400 flex justify-between pt-1 border-t border-slate-900">
-                      <span>{language === 'hi' ? 'मंडी रेंज' : language === 'mr' ? 'बाजार मर्यादा' : 'Mandi Range'}: <b className="text-slate-200 font-mono">₹{price.minPrice} – ₹{price.maxPrice}</b></span>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 flex justify-between pt-1 border-t border-slate-200 dark:border-slate-900">
+                      <span>{language === 'hi' ? 'मंडी रेंज' : language === 'mr' ? 'बाजार मर्यादा' : 'Mandi Range'}: <b className="text-slate-800 dark:text-slate-200 font-mono">₹{price.minPrice} – ₹{price.maxPrice}</b></span>
                       <span className="text-slate-500">📍 {formatLocationString(currentLocation.district, currentLocation.state, language)}</span>
                     </div>
                   </div>
 
                   {/* Recycler Live Offer Indicator (if available) */}
-                  <div className="bg-slate-950/60 px-3 py-2 rounded-xl border border-slate-800/80 text-[11px] mb-2.5">
+                  <div className="bg-slate-100/70 dark:bg-slate-950/60 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/80 text-[11px] mb-2.5">
                     {recBid ? (
-                      <div className="flex items-center justify-between text-emerald-400 font-bold gap-1">
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wide shrink-0">{t.recycOffer}:</span>
-                        <span className="font-mono text-emerald-300 text-xs font-black truncate text-right">
-                          ₹{recBid.rate}/kg • <span className="text-[10px] text-slate-300 font-medium">{recBid.recName.split(' ')[0]}</span>
+                      <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400 font-bold gap-1">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide shrink-0">{t.recycOffer}:</span>
+                        <span className="font-mono text-emerald-800 dark:text-emerald-300 text-xs font-black truncate text-right">
+                          ₹{recBid.rate}/kg • <span className="text-[10px] text-slate-600 dark:text-slate-300 font-medium">{recBid.recName.split(' ')[0]}</span>
                         </span>
                       </div>
                     ) : (
@@ -478,19 +478,19 @@ export const PriceBoardPage: React.FC = () => {
                 </div>
 
                 {/* 7-Day Trend Badge */}
-                <div className="flex items-center justify-between pt-2.5 border-t border-slate-800/80 text-xs">
-                  <span className="text-slate-400 text-[11px] font-medium">{t.trend7Days}:</span>
+                <div className="flex items-center justify-between pt-2.5 border-t border-slate-200 dark:border-slate-800/80 text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">{t.trend7Days}:</span>
                   <span
                     className={`inline-flex items-center gap-1 font-black text-[11px] px-2.5 py-1 rounded-full ${
                       isUp
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                         : isDown
-                        ? 'bg-red-950 text-red-300 border border-red-800'
-                        : 'bg-slate-800 text-slate-300'
+                        ? 'bg-red-50 text-red-800 border border-red-300 dark:bg-red-950 dark:text-red-300 dark:border-red-800'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300'
                     }`}
                   >
-                    {isUp && <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />}
-                    {isDown && <TrendingDown className="w-3.5 h-3.5 text-red-400" />}
+                    {isUp && <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
+                    {isDown && <TrendingDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
                     {!isUp && !isDown && <Minus className="w-3.5 h-3.5" />}
                     <span>{price.priceChange7DaysPercent > 0 ? `+${price.priceChange7DaysPercent}%` : `${price.priceChange7DaysPercent}%`}</span>
                   </span>
@@ -502,17 +502,17 @@ export const PriceBoardPage: React.FC = () => {
       </div>
 
       {/* Transparent Valuation Calculator (Low-Literacy Friendly) */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-950 border border-emerald-800 rounded-2xl">
-              <Calculator className="w-6 h-6 text-emerald-400" />
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-2xl shadow-2xs">
+              <Calculator className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black text-white">
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                 {t.calculatorTitle || (language === 'hi' ? 'पारदर्शी भाव कैलकुलेटर' : language === 'mr' ? 'पारदर्शक दर कॅल्क्युलेटर' : 'Value Estimator')}
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {categoryLabels[selectedCategory]?.[language] || selectedCategory} • {t.calcSubtitle || 'वजन और स्थिति के अनुसार तत्काल अनुमानित कमाई'}
               </p>
             </div>
@@ -527,10 +527,10 @@ export const PriceBoardPage: React.FC = () => {
                 speakCalculatedValue();
               }
             }}
-            className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 border self-start sm:self-auto active:scale-95 transition-all ${
+            className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 border self-start sm:self-auto active:scale-95 transition-all shadow-2xs ${
               isSpeaking
                 ? 'bg-amber-500 text-slate-950 border-amber-400 ring-2 ring-amber-300'
-                : 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border-slate-700'
+                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border-slate-200 dark:border-slate-700'
             }`}
           >
             {isSpeaking ? (
@@ -552,7 +552,7 @@ export const PriceBoardPage: React.FC = () => {
           <div className="space-y-4">
             {/* Weight Input + Steppers */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                 {t.enterWeight || (language === 'hi' ? 'वजन (किलो / KG):' : language === 'mr' ? 'वजन (किलो / KG):' : 'Weight (KG):')}
               </label>
               <div className="flex items-center gap-2">
@@ -562,9 +562,9 @@ export const PriceBoardPage: React.FC = () => {
                   step="0.5"
                   value={calcWeight}
                   onChange={(e) => setCalcWeight(e.target.value)}
-                  className="w-full min-h-[48px] px-4 py-2 bg-slate-950 border-2 border-emerald-600/60 rounded-2xl text-white font-mono font-black text-2xl focus:outline-none focus:border-emerald-400"
+                  className="w-full min-h-[48px] px-4 py-2 bg-slate-50 dark:bg-slate-950 border-2 border-emerald-500/60 rounded-2xl text-slate-900 dark:text-white font-mono font-black text-2xl focus:outline-none focus:border-emerald-500"
                 />
-                <span className="px-4 py-3 bg-slate-800 text-slate-200 font-bold rounded-2xl text-sm border border-slate-700">
+                <span className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-2xl text-sm border border-slate-200 dark:border-slate-700">
                   KG
                 </span>
               </div>
@@ -579,7 +579,7 @@ export const PriceBoardPage: React.FC = () => {
                       const cur = parseFloat(calcWeight) || 0;
                       setCalcWeight((cur + step).toString());
                     }}
-                    className="min-h-[40px] py-1.5 bg-slate-950 hover:bg-slate-800 active:scale-95 text-emerald-400 font-bold text-xs rounded-xl border border-slate-800"
+                    className="min-h-[40px] py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-800 active:scale-95 text-emerald-700 dark:text-emerald-400 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-800"
                   >
                     +{step} kg
                   </button>
@@ -587,7 +587,7 @@ export const PriceBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCalcWeight('5')}
-                  className="min-h-[40px] py-1.5 bg-slate-950 hover:bg-slate-800 active:scale-95 text-slate-400 font-bold text-xs rounded-xl border border-slate-800"
+                  className="min-h-[40px] py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 dark:hover:bg-slate-800 active:scale-95 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-800"
                 >
                   Reset
                 </button>
@@ -596,7 +596,7 @@ export const PriceBoardPage: React.FC = () => {
 
             {/* Condition Selection Cards */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                 {t.selectCondition || (language === 'hi' ? 'सामान की स्थिति:' : language === 'mr' ? 'मालाची स्थिती:' : 'Condition:')}
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -611,12 +611,12 @@ export const PriceBoardPage: React.FC = () => {
                     onClick={() => setCalcCondition(c.id as any)}
                     className={`min-h-[44px] p-2.5 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center transition-all active:scale-95 ${
                       calcCondition === c.id
-                        ? 'bg-emerald-950 text-emerald-300 border-emerald-600 shadow-md'
-                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <span>{c.label}</span>
-                    <span className="text-[10px] text-slate-500 mt-0.5">{c.factor}</span>
+                    <span className="text-[10px] opacity-80 mt-0.5">{c.factor}</span>
                   </button>
                 ))}
               </div>
@@ -624,13 +624,13 @@ export const PriceBoardPage: React.FC = () => {
           </div>
 
           {/* Value Calculation Output Box */}
-          <div className="bg-slate-950 p-5 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 shadow-inner">
+          <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-4 shadow-2xs">
             <div>
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-400 uppercase tracking-wider">
+                <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   {t.estEarnings || (language === 'hi' ? 'अनुमानित कमाई' : language === 'mr' ? 'अंदाजे कमाई' : 'Estimated Range')}
                 </span>
-                <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800 font-bold">
+                <span className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full border dark:border-emerald-800 font-bold">
                   {selectedDistrict} {language === 'hi' ? 'मंडी दर आधार' : language === 'mr' ? 'बाजार दर आधार' : 'Mandi Baseline'}
                 </span>
               </div>
@@ -646,20 +646,20 @@ export const PriceBoardPage: React.FC = () => {
 
                 return (
                   <>
-                    <div className="mt-2 text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight flex items-baseline gap-2 flex-wrap">
+                    <div className="mt-2 text-3xl sm:text-4xl font-black text-emerald-700 dark:text-emerald-400 font-mono tracking-tight flex items-baseline gap-2 flex-wrap">
                       <span>₹{exactVal.toLocaleString('en-IN')}</span>
-                      <span className="text-xs font-bold text-slate-400 font-sans">
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 font-sans">
                         ({language === 'hi' ? 'अनुमानित रेंज:' : 'Range:'} ₹{minVal} – ₹{maxVal})
                       </span>
                     </div>
 
                     {/* Formula breakdown */}
-                    <div className="mt-3 p-3 bg-slate-900 rounded-2xl border border-slate-800/80 space-y-1 text-xs">
+                    <div className="mt-3 p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800/80 space-y-1 text-xs">
                       <span className="text-[10px] text-slate-500 uppercase tracking-wide block font-bold">
                         {t.estFormula || (language === 'hi' ? 'पारदर्शी गणना सूत्र' : language === 'mr' ? 'पारदर्शक सूत्र' : 'Formula Breakdown')}:
                       </span>
-                      <p className="font-mono text-slate-300 text-xs">
-                        {calcWeight} kg × ₹{rate}/kg × {factor} = <b className="text-emerald-400">₹{exactVal}</b> ({calcCondition === 'INTACT' ? '100% Intact' : calcCondition === 'DAMAGED' ? '85% Damaged' : '75% Dismantled'})
+                      <p className="font-mono text-slate-700 dark:text-slate-300 text-xs">
+                        {calcWeight} kg × ₹{rate}/kg × {factor} = <b className="text-emerald-700 dark:text-emerald-400 font-black">₹{exactVal}</b> ({calcCondition === 'INTACT' ? '100% Intact' : calcCondition === 'DAMAGED' ? '85% Damaged' : '75% Dismantled'})
                       </p>
                     </div>
                   </>
@@ -668,8 +668,8 @@ export const PriceBoardPage: React.FC = () => {
             </div>
 
             {/* Prominent Low-Literacy Disclaimer */}
-            <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-2xl flex items-start gap-2.5 text-xs text-amber-300/90 leading-relaxed">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-300/90 leading-relaxed">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <span>
                 {t.estDisclaimer || (language === 'hi'
                   ? 'यह केवल प्रारंभिक अनुमानित मूल्य है, अंतिम बिक्री कीमत नहीं। अंतिम भुगतान अधिकृत रीसाइक्लर के डिजिटल कांटे पर वास्तविक वजन के बाद होगा।'
@@ -683,10 +683,10 @@ export const PriceBoardPage: React.FC = () => {
       </div>
 
       {/* Distinction of Three Price Concepts (PS Requirement) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-3">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-          <Info className="w-5 h-5 text-emerald-400" />
-          <h3 className="font-black text-white text-sm sm:text-base">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+          <Info className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base">
             {t.threePriceStagesTitle || (language === 'hi' ? 'भाव के 3 स्पष्ट चरण समझें' : language === 'mr' ? 'दरांचे ३ टप्पे समजून घ्या' : 'Three Price Stages')}
           </h3>
         </div>
@@ -704,19 +704,19 @@ export const PriceBoardPage: React.FC = () => {
             return (
               <>
                 {/* Stage A */}
-                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-slate-300">
+                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">
                       {t.stageEstTitle || (language === 'hi' ? '1. प्रारंभिक मंडी अनुमान' : language === 'mr' ? '1. अंदाजे मूल्य' : '1. Mandi Baseline')}
                     </span>
-                    <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold">
                       {language === 'hi' ? 'कलेक्टर खरीद दर' : 'Spot Baseline'}
                     </span>
                   </div>
-                  <div className="text-xl font-black text-emerald-400 font-mono">
+                  <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
                     ₹{exactMandiEst.toLocaleString('en-IN')}
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-tight">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                     {language === 'hi'
                       ? `${selectedDistrict} स्थानीय मंडी खरीद दर (₹${rate}/kg) पर आधारित प्रारंभिक मूल्य।`
                       : 'Initial estimate based on local doorstep collection benchmark rate.'}
@@ -724,21 +724,21 @@ export const PriceBoardPage: React.FC = () => {
                 </div>
 
                 {/* Stage B */}
-                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-slate-300">
+                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">
                       {t.stageQuoteTitle || (language === 'hi' ? '2. अधिकृत खरीदार की बोली' : language === 'mr' ? '2. खरेदीदाराची बोली' : '2. Recycler Quoted Bid')}
                     </span>
-                    <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-800 font-bold">
+                    <span className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full border dark:border-emerald-800 font-bold">
                       {quotedTotal ? (language === 'hi' ? 'सर्वोत्तम ऑफर' : 'Best Offer') : (language === 'hi' ? 'प्रतीक्षारत' : 'Pending')}
                     </span>
                   </div>
-                  <div className="text-xl font-black text-amber-400 font-mono">
+                  <div className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono">
                     {quotedTotal 
                       ? `₹${quotedTotal.toLocaleString('en-IN')} (₹${activeBid?.rate}/kg)` 
                       : (language === 'hi' ? 'अभी कोई बोली नहीं' : language === 'mr' ? 'सध्या कोणतीही बोली नाही' : 'No quote yet')}
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-tight">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                     {activeBid 
                       ? `${activeBid.recName} द्वारा औपचारिक फैक्ट्री बोली (${margin && margin > 0 ? `मुनाफा: +₹${margin}` : 'सत्यापित रीसाइक्लर'})`
                       : (t.stageQuoteDesc || 'अधिकृत रीसाइक्लर द्वारा आपके सामान के लिए दिया गया औपचारिक ऑफर।')}
@@ -746,19 +746,19 @@ export const PriceBoardPage: React.FC = () => {
                 </div>
 
                 {/* Stage C */}
-                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-slate-300">
+                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-300">
                       {t.stageFinalTitle || (language === 'hi' ? '3. अंतिम बिक्री मूल्य' : language === 'mr' ? '3. अंतिम विक्री मूल्य' : '3. Final Sale')}
                     </span>
-                    <span className="text-[10px] bg-teal-950 text-teal-300 border border-teal-800 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950 dark:text-teal-300 border dark:border-teal-800 px-2 py-0.5 rounded-full font-bold">
                       {language === 'hi' ? 'डिजिटल कांटा' : 'Scale Weight'}
                     </span>
                   </div>
-                  <div className="text-xl font-black text-teal-400 font-mono">
+                  <div className="text-xl font-black text-teal-700 dark:text-teal-400 font-mono">
                     {quotedTotal ? `₹${quotedTotal.toLocaleString('en-IN')} (तौल बाद)` : (language === 'hi' ? 'हैंडओवर तौल के बाद' : 'After Scale Handover')}
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-tight">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                     {language === 'hi'
                       ? 'रीसाइक्लिंग केंद्र के इलेक्ट्रॉनिक वेइंग स्केल पर वास्तविक वजन के बाद मिलने वाला सीधा भुगतान।'
                       : 'Settled amount based on calibrated digital scale reading at facility.'}
@@ -771,34 +771,34 @@ export const PriceBoardPage: React.FC = () => {
       </div>
 
       {/* Historical Real Price Trend Inspector (100% Genuine Stored Logs) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-emerald-400 uppercase tracking-wider block">
+              <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
                 {language === 'hi' ? 'ऐतिहासिक भाव विश्लेषण' : language === 'mr' ? 'ऐतिहासिक दर विश्लेषण' : 'Historical Price Analysis'} ({categoryLabels[selectedCategory]?.[language] || selectedCategory})
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                 historyData?.hasSufficientData
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                  : 'bg-slate-800 text-slate-400 border-slate-700'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
+                  : 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
               }`}>
                 {historyData?.hasSufficientData ? (language === 'hi' ? '🟢 100% वास्तविक मंडी लॉग' : language === 'mr' ? '🟢 १००% प्रत्यक्ष बाजार नोंदी' : '🟢 100% Mandi Logs') : (language === 'hi' ? 'डेटा प्रतीक्षारत' : language === 'mr' ? 'डेटा प्रतीक्षेत' : 'Pending Data')}
               </span>
             </div>
-            <h3 className="text-lg font-black text-white mt-1">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">
               {categoryLabels[selectedCategory]?.[language] || selectedCategory} • {selectedDistrict} {language === 'hi' ? 'मंडी' : language === 'mr' ? 'बाजार' : 'Mandi'}
             </h3>
           </div>
 
           {historyData?.observedTrend && historyData.observedTrend !== 'INSUFFICIENT_DATA' && (
-            <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-2xl border border-slate-800 text-xs">
-              <span className="text-slate-400 text-[11px]">{language === 'hi' ? 'देखा गया रुझान:' : language === 'mr' ? 'नोंदवलेला कल:' : 'Observed Trend:'}</span>
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+              <span className="text-slate-500 dark:text-slate-400 text-[11px]">{language === 'hi' ? 'देखा गया रुझान:' : language === 'mr' ? 'नोंदवलेला कल:' : 'Observed Trend:'}</span>
               <span className={`font-black flex items-center gap-1 ${
-                historyData.observedTrend === 'UP' ? 'text-emerald-400' : historyData.observedTrend === 'DOWN' ? 'text-red-400' : 'text-slate-300'
+                historyData.observedTrend === 'UP' ? 'text-emerald-600 dark:text-emerald-400' : historyData.observedTrend === 'DOWN' ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-300'
               }`}>
-                {historyData.observedTrend === 'UP' && <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />}
-                {historyData.observedTrend === 'DOWN' && <TrendingDown className="w-3.5 h-3.5 text-red-400" />}
+                {historyData.observedTrend === 'UP' && <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
+                {historyData.observedTrend === 'DOWN' && <TrendingDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
                 {!['UP', 'DOWN'].includes(historyData.observedTrend) && <Minus className="w-3.5 h-3.5" />}
                 <span>{historyData.trendPercent > 0 ? `+${historyData.trendPercent}%` : `${historyData.trendPercent}%`}</span>
               </span>
@@ -809,7 +809,7 @@ export const PriceBoardPage: React.FC = () => {
         {/* Clean Visual Bar Trend from Genuine Stored Records */}
         {historyData?.hasSufficientData && historyData.history && historyData.history.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-xs text-slate-400">{language === 'hi' ? 'समयरेखा के अनुसार वास्तविक भाव लॉग (₹/kg):' : language === 'mr' ? 'काळानुसार प्रत्यक्ष दर नोंदी (₹/kg):' : 'Observed Price Log Timeline (₹/kg):'}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' ? 'समयरेखा के अनुसार वास्तविक भाव लॉग (₹/kg):' : language === 'mr' ? 'काळानुसार प्रत्यक्ष दर नोंदी (₹/kg):' : 'Observed Price Log Timeline (₹/kg):'}</p>
             <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2">
               {historyData.history.slice(-12).map((point: any, idx: number) => {
                 const priceVal = Number(point.price ?? point.rate ?? 0);
@@ -833,14 +833,14 @@ export const PriceBoardPage: React.FC = () => {
 
                 return (
                   <div key={idx} className="flex flex-col items-center gap-1 group">
-                    <span className="text-[10px] font-bold text-slate-300 font-mono">₹{priceVal}</span>
-                    <div className="w-full bg-slate-950 rounded-xl h-24 flex items-end p-1 border border-slate-800">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 font-mono">₹{priceVal}</span>
+                    <div className="w-full bg-slate-50 dark:bg-slate-950 rounded-xl h-24 flex items-end p-1 border border-slate-200 dark:border-slate-800">
                       <div
                         style={{ height: `${heightPercent}%` }}
-                        className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-lg group-hover:from-emerald-400 group-hover:to-teal-300 transition-all shadow-sm"
+                        className="w-full bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-lg group-hover:from-emerald-500 group-hover:to-teal-400 transition-all shadow-sm"
                       ></div>
                     </div>
-                    <span className="text-[9px] text-slate-400 font-mono truncate w-full text-center" title={String(point.date)}>
+                    <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono truncate w-full text-center" title={String(point.date)}>
                       {formattedDate}
                     </span>
                   </div>
@@ -850,9 +850,9 @@ export const PriceBoardPage: React.FC = () => {
           </div>
         ) : (
           /* Honest Empty State: ZERO mathematical sine wave synthesis */
-          <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center space-y-2">
-            <Info className="w-8 h-8 text-slate-500 mx-auto" />
-            <h4 className="text-sm font-bold text-slate-300">
+          <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-2">
+            <Info className="w-8 h-8 text-slate-400 mx-auto" />
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-300">
               {t.noHistory || (language === 'hi' ? 'अभी पर्याप्त भाव डेटा उपलब्ध नहीं है' : language === 'mr' ? 'अद्याप पुरेसा दर इतिहास उपलब्ध नाही' : 'Not enough price history yet')}
             </h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
@@ -864,22 +864,22 @@ export const PriceBoardPage: React.FC = () => {
 
       {/* Record Live Price Modal (Admin/Authorized Mandi Audit) */}
       {showAddPriceModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-extrabold text-sm text-white">{language === 'hi' ? 'नया वास्तविक भाव दर्ज करें' : language === 'mr' ? 'नवीन प्रत्यक्ष दर नोंदवा' : 'Record Live Rate'}</h3>
-              <button onClick={() => setShowAddPriceModal(false)} className="text-slate-400 hover:text-white">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">{language === 'hi' ? 'नया वास्तविक भाव दर्ज करें' : language === 'mr' ? 'नवीन प्रत्यक्ष दर नोंदवा' : 'Record Live Rate'}</h3>
+              <button onClick={() => setShowAddPriceModal(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreatePriceObservation} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-300 mb-1">{language === 'hi' ? 'सामग्री श्रेणी:' : language === 'mr' ? 'सामग्री श्रेणी:' : 'Material Category:'}</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">{language === 'hi' ? 'सामग्री श्रेणी:' : language === 'mr' ? 'सामग्री श्रेणी:' : 'Material Category:'}</label>
                 <select
                   value={inputCategory}
                   onChange={(e) => setInputCategory(e.target.value as MaterialCategory)}
-                  className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold"
                 >
                   {(['PCB', 'BATTERY', 'CABLE', 'MOTOR', 'CRT', 'LCD', 'MAGNET', 'MIXED_PLASTIC'] as MaterialCategory[]).map((cat) => (
                     <option key={cat} value={cat}>
@@ -890,36 +890,36 @@ export const PriceBoardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">{language === 'hi' ? 'दर (₹/किग्रा):' : language === 'mr' ? 'दर (₹/किग्रा):' : 'Rate (₹/kg):'}</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">{language === 'hi' ? 'दर (₹/किग्रा):' : language === 'mr' ? 'दर (₹/किग्रा):' : 'Rate (₹/kg):'}</label>
                 <input
                   type="number"
                   step="0.5"
                   value={inputRate}
                   onChange={(e) => setInputRate(e.target.value)}
-                  className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold text-lg"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold text-lg"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">{language === 'hi' ? 'सूचना स्रोत:' : language === 'mr' ? 'माहिती स्रोत:' : 'Source Description:'}</label>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">{language === 'hi' ? 'सूचना स्रोत:' : language === 'mr' ? 'माहिती स्रोत:' : 'Source Description:'}</label>
                 <input
                   type="text"
                   value={inputSource}
                   onChange={(e) => setInputSource(e.target.value)}
-                  className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-white"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
                   required
                 />
               </div>
 
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-                जिला: <b className="text-white">{selectedDistrict}</b> • सत्यापन: <b className="text-emerald-400">±40% बेंचमार्क गार्ड सक्रिय</b>
+              <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400">
+                जिला: <b className="text-slate-900 dark:text-white">{selectedDistrict}</b> • सत्यापन: <b className="text-emerald-700 dark:text-emerald-400">±40% बेंचमार्क गार्ड सक्रिय</b>
               </div>
 
               <button
                 type="submit"
                 disabled={submittingPrice}
-                className="w-full min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl shadow active:scale-95"
+                className="w-full min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-xl shadow-sm transition-all"
               >
                 {submittingPrice ? (language === 'hi' ? 'दर्ज हो रहा...' : language === 'mr' ? 'नोंद होत आहे...' : 'Submitting...') : (language === 'hi' ? 'लाइव भाव सबमिट करें' : language === 'mr' ? 'थेट दर सबमिट करा' : 'Submit Real Rate')}
               </button>

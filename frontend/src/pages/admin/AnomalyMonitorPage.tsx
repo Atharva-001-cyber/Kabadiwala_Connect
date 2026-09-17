@@ -130,15 +130,15 @@ export const AnomalyMonitorPage: React.FC = () => {
   const getAnomalyTypeLabel = (type: AnomalyType) => {
     switch (type) {
       case 'WEIGHT_MISMATCH':
-        return { label: 'Scale Tare Discrepancy', icon: Scale, color: 'text-amber-300 bg-amber-950/80 border-amber-800' };
+        return { label: 'Scale Tare Discrepancy', icon: Scale, color: 'text-amber-800 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950/80 dark:border-amber-800' };
       case 'PRICE_OUTLIER':
-        return { label: 'Market Rate Outlier', icon: DollarSign, color: 'text-purple-300 bg-purple-950/80 border-purple-800' };
+        return { label: 'Market Rate Outlier', icon: DollarSign, color: 'text-purple-800 bg-purple-50 border-purple-200 dark:text-purple-300 dark:bg-purple-950/80 dark:border-purple-800' };
       case 'REPEATED_SUSPICIOUS':
-        return { label: 'AI Vision Quality Flag', icon: Camera, color: 'text-cyan-300 bg-cyan-950/80 border-cyan-800' };
+        return { label: 'AI Vision Quality Flag', icon: Camera, color: 'text-cyan-800 bg-cyan-50 border-cyan-200 dark:text-cyan-300 dark:bg-cyan-950/80 dark:border-cyan-800' };
       case 'UNVERIFIED_RECYCLER':
-        return { label: 'Compliance Breach', icon: ShieldAlert, color: 'text-red-300 bg-red-950/80 border-red-800' };
+        return { label: 'Compliance Breach', icon: ShieldAlert, color: 'text-red-800 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950/80 dark:border-red-800' };
       default:
-        return { label: type, icon: AlertTriangle, color: 'text-slate-300 bg-slate-900 border-slate-700' };
+        return { label: type, icon: AlertTriangle, color: 'text-slate-700 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-900 dark:border-slate-700' };
     }
   };
 
@@ -148,42 +148,42 @@ export const AnomalyMonitorPage: React.FC = () => {
       return {
         prefix: '🏷️ Price Corridor',
         value: 'PCB Benchmark (Lucknow)',
-        badgeColor: 'text-purple-300 bg-purple-950 border-purple-800'
+        badgeColor: 'text-purple-800 bg-purple-50 border-purple-200 dark:text-purple-300 dark:bg-purple-950 dark:border-purple-800'
       };
     }
     if (type === 'RECYCLER' || item.lotId?.startsWith('rec_')) {
       return {
         prefix: '🏭 Facility',
         value: 'Apex Scrap Dismantlers',
-        badgeColor: 'text-red-300 bg-red-950 border-red-800'
+        badgeColor: 'text-red-800 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-800'
       };
     }
     return {
       prefix: '📦 Lot',
       value: item.lotId,
-      badgeColor: 'text-amber-300 bg-amber-950 border-amber-800'
+      badgeColor: 'text-amber-800 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950 dark:border-amber-800'
     };
   };
 
   return (
-    <div className="space-y-6 pb-16 max-w-7xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 border-2 border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shadow">
-              <AlertTriangle className="w-6 h-6 text-amber-400" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 dark:bg-amber-600/20 dark:text-amber-300 border border-amber-200 dark:border-amber-500/40 flex items-center justify-center shadow-sm">
+              <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-white">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                   {t.adminAnomalyTitle}
                 </h1>
-                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-full bg-amber-900/80 text-amber-300 border border-amber-600/60">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-full bg-amber-50 text-amber-800 dark:bg-amber-900/80 dark:text-amber-300 border border-amber-200 dark:border-amber-600/60">
                   AI INTEGRITY ENGINE
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">
                 {t.adminAnomalySubtitle}
               </p>
             </div>
@@ -194,74 +194,74 @@ export const AnomalyMonitorPage: React.FC = () => {
               type="button"
               onClick={() => fetchAnomalies(false)}
               disabled={isRefreshing}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 shadow active:scale-95"
+              className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-600 dark:text-amber-400' : ''}`} />
               <span>{isRefreshing ? 'Syncing...' : 'Sync Live DB'}</span>
             </button>
-            <span className="px-3 py-2 rounded-xl bg-emerald-950 text-emerald-300 text-xs font-black border border-emerald-800 flex items-center gap-1.5 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-black border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
               <span>CENTRAL AUDIT GATEWAY ACTIVE</span>
             </span>
           </div>
         </div>
 
         {/* 5-Column Executive KPI Summary Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5 pt-4 border-t border-slate-800/80">
-          <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/90 space-y-0.5">
-            <span className="text-slate-400 text-[10px] font-extrabold uppercase block">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5 pt-4 border-t border-slate-200 dark:border-slate-800/80">
+          <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
               {language === 'hi' ? 'कुल विसंगतियां' : 'Total Flags'}
             </span>
-            <span className="text-xl font-black text-white font-mono block">
+            <span className="text-xl font-black text-slate-900 dark:text-white font-mono block">
               {kpis.total}
             </span>
             <span className="text-[10px] text-slate-500 font-medium">All Monitored Events</span>
           </div>
 
-          <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/90 space-y-0.5">
-            <span className="text-slate-400 text-[10px] font-extrabold uppercase block">
+          <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
               {language === 'hi' ? 'गंभीर चेतावनी' : 'Critical Alerts'}
             </span>
-            <span className="text-xl font-black text-red-400 font-mono block">
+            <span className="text-xl font-black text-red-600 dark:text-red-400 font-mono block">
               {kpis.high}
             </span>
-            <span className="text-[10px] text-red-400/80 font-bold">Action Required</span>
+            <span className="text-[10px] text-red-600/80 dark:text-red-400/80 font-bold">Action Required</span>
           </div>
 
-          <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/90 space-y-0.5">
-            <span className="text-slate-400 text-[10px] font-extrabold uppercase block">
+          <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
               {language === 'hi' ? 'वजन विसंगतियां' : 'Tare Variances'}
             </span>
-            <span className="text-xl font-black text-amber-400 font-mono block">
+            <span className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono block">
               {kpis.tare}
             </span>
-            <span className="text-[10px] text-amber-400/80 font-bold">Scale Calibration</span>
+            <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-bold">Scale Calibration</span>
           </div>
 
-          <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800/90 space-y-0.5">
-            <span className="text-slate-400 text-[10px] font-extrabold uppercase block">
+          <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
               {language === 'hi' ? 'जांच जारी' : 'Under Review'}
             </span>
-            <span className="text-xl font-black text-cyan-400 font-mono block">
+            <span className="text-xl font-black text-cyan-600 dark:text-cyan-400 font-mono block">
               {kpis.underReview}
             </span>
-            <span className="text-[10px] text-cyan-400/80 font-bold">Auditor Assigned</span>
+            <span className="text-[10px] text-cyan-600/80 dark:text-cyan-400/80 font-bold">Auditor Assigned</span>
           </div>
 
-          <div className="col-span-2 sm:col-span-1 bg-slate-950/80 p-3 rounded-2xl border border-slate-800/90 space-y-0.5">
-            <span className="text-slate-400 text-[10px] font-extrabold uppercase block">
+          <div className="col-span-2 sm:col-span-1 bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
+            <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
               {language === 'hi' ? 'सुलझाए गए' : 'Resolved & Cleared'}
             </span>
-            <span className="text-xl font-black text-emerald-400 font-mono block">
+            <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono block">
               {kpis.resolved}
             </span>
-            <span className="text-[10px] text-emerald-400/80 font-bold">Audit Completed</span>
+            <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">Audit Completed</span>
           </div>
         </div>
       </div>
 
       {/* Filter Tabs & Search Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-lg">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl shadow-sm">
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {[
@@ -277,8 +277,8 @@ export const AnomalyMonitorPage: React.FC = () => {
               onClick={() => setFilterStatus(tab.value)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
                 filterStatus === tab.value
-                  ? 'bg-amber-600 text-white shadow'
-                  : 'bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-950 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -292,7 +292,7 @@ export const AnomalyMonitorPage: React.FC = () => {
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-300 font-bold focus:outline-none focus:border-amber-500"
+            className="px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-300 font-bold focus:outline-none focus:border-emerald-500"
           >
             <option value="ALL">All Severity</option>
             <option value="HIGH">High Severity</option>
@@ -308,13 +308,13 @@ export const AnomalyMonitorPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={language === 'hi' ? 'लॉट, विसंगति, प्रकार खोजें...' : 'Search lot, type, keyword...'}
-              className="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold"
               >
                 ✕
               </button>
@@ -325,22 +325,22 @@ export const AnomalyMonitorPage: React.FC = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="p-12 text-center text-slate-400 bg-slate-900 border border-slate-800 rounded-3xl">
+        <div className="p-12 text-center text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm">
           <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-xs font-bold text-slate-300">Synchronizing AI Anomaly Detection Feed from Supabase Cloud...</p>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Synchronizing AI Anomaly Detection Feed from Supabase Cloud...</p>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && filtered.length === 0 && (
-        <div className="p-12 text-center text-slate-400 bg-slate-900 border border-slate-800 rounded-3xl space-y-2">
-          <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-          <p className="text-sm font-bold text-white">No anomalies matching selected filters.</p>
-          <p className="text-xs text-slate-400">All electronic scrap transactions conform to CPCB tare and price benchmarks.</p>
+        <div className="p-12 text-center text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm space-y-2">
+          <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+          <p className="text-sm font-bold text-slate-900 dark:text-white">No anomalies matching selected filters.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">All electronic scrap transactions conform to CPCB tare and price benchmarks.</p>
           <button
             type="button"
             onClick={() => { setSearchQuery(''); setFilterStatus('ALL'); setFilterSeverity('ALL'); }}
-            className="mt-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold rounded-xl"
+            className="mt-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-amber-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-amber-300 text-xs font-bold rounded-xl transition-all"
           >
             Reset Filters
           </button>
@@ -361,20 +361,20 @@ export const AnomalyMonitorPage: React.FC = () => {
           return (
             <div
               key={item.id}
-              className={`bg-slate-900 border-2 ${
+              className={`bg-white dark:bg-slate-900 border ${
                 isHigh && !isResolved && !isDismissed
-                  ? 'border-red-800/80 shadow-red-950/20' 
+                  ? 'border-red-300 dark:border-red-800/80 shadow-red-500/10' 
                   : isUnderReview
-                  ? 'border-cyan-800/80'
-                  : 'border-slate-800'
-              } hover:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 text-xs transition-all`}
+                  ? 'border-cyan-300 dark:border-cyan-800/80'
+                  : 'border-slate-200 dark:border-slate-800'
+              } hover:border-emerald-300 dark:hover:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md space-y-4 text-xs transition-all`}
             >
               {/* Card Header: Entity Badge, Severity, Type, Daemon & Timestamp */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* Entity Identifier Pill */}
                   <div className={`px-2.5 py-1 rounded-xl text-xs font-mono font-black border flex items-center gap-1.5 ${entityMeta.badgeColor}`}>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">{entityMeta.prefix}:</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">{entityMeta.prefix}:</span>
                     <span className="tracking-wide">{entityMeta.value}</span>
                   </div>
 
@@ -382,13 +382,13 @@ export const AnomalyMonitorPage: React.FC = () => {
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border flex items-center gap-1 ${
                       item.severity === 'HIGH'
-                        ? 'bg-red-950 text-red-300 border-red-800'
+                        ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800'
                         : item.severity === 'MEDIUM'
-                        ? 'bg-amber-950 text-amber-300 border-amber-800'
-                        : 'bg-blue-950 text-blue-300 border-blue-800'
+                        ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
+                        : 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${item.severity === 'HIGH' ? 'bg-red-400 animate-pulse' : item.severity === 'MEDIUM' ? 'bg-amber-400' : 'bg-blue-400'}`}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${item.severity === 'HIGH' ? 'bg-red-500 animate-pulse' : item.severity === 'MEDIUM' ? 'bg-amber-500' : 'bg-blue-500'}`}></span>
                     <span>{item.severity} SEVERITY</span>
                   </span>
 
@@ -400,7 +400,7 @@ export const AnomalyMonitorPage: React.FC = () => {
 
                   {/* Flagged by Daemon Pill */}
                   {item.flaggedBy && (
-                    <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 font-mono text-[9px] text-slate-400">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-mono text-[9px] text-slate-600 dark:text-slate-400">
                       via {item.flaggedBy}
                     </span>
                   )}
@@ -413,17 +413,17 @@ export const AnomalyMonitorPage: React.FC = () => {
               </div>
 
               {/* Anomaly Description Box */}
-              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
-                <p className="text-sm font-medium text-slate-200 leading-relaxed">
+              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
                   {item.description}
                 </p>
 
                 {/* Resolution Notes (if resolved) */}
                 {item.resolutionNotes && (
-                  <div className="pt-2 mt-2 border-t border-slate-800/80 flex items-start gap-2 text-xs text-emerald-300">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="pt-2 mt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-start gap-2 text-xs text-emerald-800 dark:text-emerald-300">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-white">Resolution Audit Record: </span>
+                      <span className="font-bold text-slate-900 dark:text-white">Resolution Audit Record: </span>
                       <span>{item.resolutionNotes}</span>
                       {item.resolvedAt && (
                         <span className="text-[10px] font-mono text-slate-500 ml-2">
@@ -436,19 +436,19 @@ export const AnomalyMonitorPage: React.FC = () => {
               </div>
 
               {/* Status & Lifecycle Action Controls */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px]">
                     {language === 'hi' ? 'वर्तमान स्थिति:' : 'Current Status:'}
                   </span>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${
                     isResolved
-                      ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                       : isDismissed
-                      ? 'bg-slate-800 text-slate-400 border-slate-700'
+                      ? 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                       : isUnderReview
-                      ? 'bg-cyan-950 text-cyan-300 border-cyan-800'
-                      : 'bg-amber-950 text-amber-300 border-amber-800'
+                      ? 'bg-cyan-50 text-cyan-800 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-800'
+                      : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
                   }`}>
                     {getStatusLabel(item.status, language)}
                   </span>
@@ -461,7 +461,7 @@ export const AnomalyMonitorPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleUpdateStatus(item.id, 'UNDER_REVIEW')}
-                      className="px-3 py-1.5 rounded-xl bg-cyan-950 hover:bg-cyan-900 border border-cyan-700 text-cyan-300 font-bold flex items-center gap-1.5 shadow transition-all active:scale-95"
+                      className="px-3 py-1.5 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-800 dark:bg-cyan-950 dark:hover:bg-cyan-900 dark:border-cyan-700 dark:text-cyan-300 font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Investigate</span>
@@ -473,7 +473,7 @@ export const AnomalyMonitorPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActionModal({ isOpen: true, anomaly: item, targetStatus: 'RESOLVED', notes: '' })}
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow transition-all active:scale-95"
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all active:scale-95"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>{t.resolveAnomalyBtn}</span>
@@ -485,7 +485,7 @@ export const AnomalyMonitorPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActionModal({ isOpen: true, anomaly: item, targetStatus: 'DISMISSED', notes: '' })}
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-all active:scale-95"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-bold transition-all active:scale-95"
                     >
                       <span>{t.dismissAnomalyBtn}</span>
                     </button>
@@ -496,7 +496,7 @@ export const AnomalyMonitorPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleUpdateStatus(item.id, 'OPEN')}
-                      className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white font-bold transition-all text-xs"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 dark:bg-slate-950 dark:hover:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:text-white font-bold transition-all text-xs"
                     >
                       <span>Re-Open Case</span>
                     </button>
@@ -510,30 +510,30 @@ export const AnomalyMonitorPage: React.FC = () => {
 
       {/* Action Notes & Confirmation Modal */}
       {actionModal.isOpen && actionModal.anomaly && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in-50">
-          <div className="bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 dark:bg-black/80 backdrop-blur-sm animate-in fade-in-50">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               {actionModal.targetStatus === 'RESOLVED' ? (
-                <CheckCircle2 className="w-7 h-7 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
               ) : (
-                <XCircle className="w-7 h-7 text-slate-400 shrink-0" />
+                <XCircle className="w-7 h-7 text-slate-500 dark:text-slate-400 shrink-0" />
               )}
               <div>
-                <h3 className="text-base font-black text-white">
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
                   {actionModal.targetStatus === 'RESOLVED' ? 'Resolve & Clear Anomaly' : 'Dismiss Anomaly Flag'}
                 </h3>
-                <span className="text-[11px] text-slate-400 font-mono">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                   {actionModal.anomaly.lotId || actionModal.anomaly.id}
                 </span>
               </div>
             </div>
 
-            <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs text-slate-300">
+            <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
               {actionModal.anomaly.description}
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-400">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">
                 Resolution & Audit Notes (Optional):
               </label>
               <textarea
@@ -545,15 +545,15 @@ export const AnomalyMonitorPage: React.FC = () => {
                     : 'e.g. False positive; verified acceptable market fluctuation.'
                 }
                 rows={3}
-                className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setActionModal({ isOpen: false, anomaly: null, targetStatus: 'RESOLVED', notes: '' })}
-                className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition-all"
+                className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all"
               >
                 {t.cancelBtn}
               </button>
@@ -562,7 +562,7 @@ export const AnomalyMonitorPage: React.FC = () => {
                 onClick={() => handleUpdateStatus(actionModal.anomaly!.id, actionModal.targetStatus, actionModal.notes)}
                 className={`px-4 py-2 text-xs font-bold text-white rounded-xl shadow transition-all active:scale-95 ${
                   actionModal.targetStatus === 'RESOLVED'
-                    ? 'bg-emerald-600 hover:bg-emerald-500'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
                     : 'bg-slate-700 hover:bg-slate-600'
                 }`}
               >

@@ -365,24 +365,24 @@ export const EwasteGeoMapPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 pb-20 max-w-7xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header Banner with Command Center Meta */}
-      <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-slate-950 border-2 border-purple-800/60 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 dark:from-purple-950 dark:via-slate-900 dark:to-slate-950 border border-slate-200 dark:border-purple-800/60 rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-300 shadow">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-purple-600/30 dark:text-purple-300 border border-emerald-200 dark:border-purple-500/40 flex items-center justify-center shadow-sm">
               <Compass className="w-6 h-6 animate-spin-slow" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-white">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                   {language === 'hi' ? 'राष्ट्रीय ई-कचरा जीआईएस मैप' : language === 'mr' ? 'राष्ट्रीय ई-कचरा जीआयएस नकाशा' : 'National E-Waste GIS Activity Map'}
                 </h1>
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-purple-900/80 text-purple-300 border border-purple-600/60">
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-emerald-50 text-emerald-800 dark:bg-purple-900/80 dark:text-purple-300 border border-emerald-200 dark:border-purple-600/60">
                   CPCB TELEMETRY
                 </span>
               </div>
-              <p className="text-xs text-purple-200/80 font-medium mt-0.5">
+              <p className="text-xs text-slate-600 dark:text-purple-200/80 font-medium mt-0.5">
                 {language === 'hi' 
                   ? 'क्षेत्रीय ई-कचरा संग्रह घनत्व, लॉट फ्लो एवं अधिकृत रीसाइक्लिंग हब का रियल-टाइम भौगोलिक विश्लेषण' 
                   : language === 'mr' 
@@ -397,30 +397,30 @@ export const EwasteGeoMapPage: React.FC = () => {
               type="button"
               onClick={() => fetchMap(false)}
               disabled={isRefreshing}
-              className="p-2.5 rounded-xl bg-purple-900/60 hover:bg-purple-800 border border-purple-700 text-purple-200 shadow transition-all active:scale-95 flex items-center gap-1.5 text-xs font-bold"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 dark:bg-purple-900/60 dark:hover:bg-purple-800 dark:border-purple-700 dark:text-purple-200 shadow-sm transition-all active:scale-95 flex items-center gap-1.5 text-xs font-bold"
               title="Refresh Live GIS Feed"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-600 dark:text-emerald-400' : ''}`} />
               <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Live Refresh'}</span>
             </button>
-            <span className="px-3 py-2 rounded-xl bg-emerald-950 text-emerald-300 text-xs font-black border border-emerald-800 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-black border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
               <span>LIVE GIS SATELLITE FEED</span>
             </span>
           </div>
         </div>
 
         {/* Quick-Jump Regional Telemetry Pills */}
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-purple-800/40 overflow-x-auto pb-1 text-xs">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-            <Navigation className="w-3.5 h-3.5 text-purple-400" />
+        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-purple-800/40 overflow-x-auto pb-1 text-xs">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
+            <Navigation className="w-3.5 h-3.5 text-emerald-600 dark:text-purple-400" />
             <span>{language === 'hi' ? 'त्वरित फोकस:' : language === 'mr' ? 'त्वरित फोकस:' : 'Quick Focus:'}</span>
           </span>
 
           <button
             type="button"
             onClick={handleFitIndia}
-            className="px-3 py-1 rounded-xl bg-slate-900 hover:bg-purple-900/50 border border-slate-700 hover:border-purple-500 text-slate-200 font-bold shrink-0 transition-all flex items-center gap-1.5 active:scale-95"
+            className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 dark:bg-slate-900 dark:hover:bg-purple-900/50 dark:border-slate-700 dark:hover:border-purple-500 dark:text-slate-200 font-bold shrink-0 transition-all flex items-center gap-1.5 active:scale-95"
           >
             <span>🇮🇳 All India Overview</span>
           </button>
@@ -429,10 +429,10 @@ export const EwasteGeoMapPage: React.FC = () => {
             type="button"
             onClick={handleGetLiveLocation}
             disabled={locatingUser}
-            className="px-3 py-1 rounded-xl bg-cyan-950 hover:bg-cyan-900 border border-cyan-600 text-cyan-300 font-bold shrink-0 transition-all flex items-center gap-1.5 active:scale-95 shadow-md"
+            className="px-3 py-1 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-800 dark:bg-cyan-950 dark:hover:bg-cyan-900 dark:border-cyan-600 dark:text-cyan-300 font-bold shrink-0 transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
             title="Locate device real live location via GPS"
           >
-            <Crosshair className={`w-3.5 h-3.5 ${locatingUser ? 'animate-spin text-cyan-400' : 'text-cyan-400'}`} />
+            <Crosshair className={`w-3.5 h-3.5 ${locatingUser ? 'animate-spin text-cyan-600 dark:text-cyan-400' : 'text-cyan-600 dark:text-cyan-400'}`} />
             <span>{locatingUser ? 'Locating GPS...' : userLocation ? `📍 My Live GPS (${userLocation.lat.toFixed(2)}°, ${userLocation.lng.toFixed(2)}°)` : '📍 My Live Location'}</span>
           </button>
 
@@ -443,12 +443,12 @@ export const EwasteGeoMapPage: React.FC = () => {
               onClick={() => handleFlyTo(c.lat, c.lng, 10, c)}
               className={`px-3 py-1 rounded-xl border text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 active:scale-95 ${
                 selectedCluster?.district === c.district && !selectedRecycler
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500 shadow-md ring-2 ring-emerald-500/20'
-                  : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm ring-2 ring-emerald-500/20 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-500'
+                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
               }`}
             >
               <span>📍 {c.district}</span>
-              <span className="font-mono text-[10px] text-emerald-400 font-extrabold">({c.totalWeightKg.toLocaleString('en-IN')} kg)</span>
+              <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">({c.totalWeightKg.toLocaleString('en-IN')} kg)</span>
             </button>
           ))}
         </div>
@@ -457,13 +457,13 @@ export const EwasteGeoMapPage: React.FC = () => {
       {/* Main Command Center: Interactive Leaflet Canvas + Live Detail Dossier */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column: Leaflet GIS Map Canvas */}
-        <div className="lg:col-span-8 bg-slate-900 border-2 border-slate-800 rounded-3xl p-4 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-3">
+        <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-3">
           {/* Map Top Bar: Layer Filters, Map Style Toggle & Controls */}
           <div className="flex items-center justify-between z-20 flex-wrap gap-2">
             {/* Layer Toggles */}
-            <div className="flex items-center gap-2 bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-800">
-              <span className="text-[11px] font-black uppercase text-slate-400 flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
+            <div className="flex items-center gap-2 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-[11px] font-black uppercase text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-purple-400" />
                 <span>Layers:</span>
               </span>
 
@@ -472,11 +472,11 @@ export const EwasteGeoMapPage: React.FC = () => {
                 onClick={() => setShowHotspots(!showHotspots)}
                 className={`px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   showHotspots 
-                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' 
-                    : 'bg-slate-800 text-slate-500 line-through'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 line-through'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
                 <span>Hotspots ({mapData?.collectionClusters?.length || 0})</span>
               </button>
 
@@ -485,24 +485,24 @@ export const EwasteGeoMapPage: React.FC = () => {
                 onClick={() => setShowRecyclers(!showRecyclers)}
                 className={`px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   showRecyclers 
-                    ? 'bg-blue-950 text-blue-300 border border-blue-700' 
-                    : 'bg-slate-800 text-slate-500 line-through'
+                    ? 'bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 line-through'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
                 <span>Recyclers ({mapData?.recyclers?.length || 0})</span>
               </button>
             </div>
 
             {/* Map Base Tile Switcher Toggle (100% Watermark-Free Government Standard) */}
-            <div className="flex items-center gap-1 bg-slate-950/90 backdrop-blur-md p-1 rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-1 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <button
                 type="button"
                 onClick={() => setMapStyle('dark')}
                 className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   mapStyle === 'dark' 
-                    ? 'bg-purple-600 text-white shadow' 
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' 
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="ArcGIS Dark Canvas (Watermark-free)"
               >
@@ -514,8 +514,8 @@ export const EwasteGeoMapPage: React.FC = () => {
                 onClick={() => setMapStyle('satellite')}
                 className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   mapStyle === 'satellite' 
-                    ? 'bg-blue-600 text-white shadow' 
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' 
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Esri World Imagery High-Res Satellite"
               >
@@ -527,8 +527,8 @@ export const EwasteGeoMapPage: React.FC = () => {
                 onClick={() => setMapStyle('street')}
                 className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                   mapStyle === 'street' 
-                    ? 'bg-emerald-600 text-white shadow' 
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' 
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="OpenStreetMap Standard"
               >
@@ -538,11 +538,11 @@ export const EwasteGeoMapPage: React.FC = () => {
             </div>
 
             {/* Custom On-Map Zoom Controls */}
-            <div className="flex items-center gap-1 bg-slate-950/90 backdrop-blur-md p-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-1 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <button
                 type="button"
                 onClick={() => mapInstanceRef.current?.zoomIn()}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                 title="Zoom In"
               >
                 <ZoomIn className="w-4 h-4" />
@@ -550,7 +550,7 @@ export const EwasteGeoMapPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => mapInstanceRef.current?.zoomOut()}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                 title="Zoom Out"
               >
                 <ZoomOut className="w-4 h-4" />
@@ -558,7 +558,7 @@ export const EwasteGeoMapPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleFitIndia}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-purple-400 hover:text-purple-300 transition-colors"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-emerald-600 dark:text-purple-400 hover:text-emerald-700 dark:hover:text-purple-300 transition-colors"
                 title="Reset to All India"
               >
                 <Compass className="w-4 h-4" />
@@ -567,7 +567,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 type="button"
                 onClick={handleGetLiveLocation}
                 disabled={locatingUser}
-                className="p-1.5 hover:bg-slate-800 rounded-lg text-cyan-400 hover:text-cyan-300 transition-colors"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors"
                 title="Locate My Device Live GPS Position"
               >
                 <Crosshair className={`w-4 h-4 ${locatingUser ? 'animate-spin' : ''}`} />
@@ -576,105 +576,105 @@ export const EwasteGeoMapPage: React.FC = () => {
           </div>
 
           {/* Leaflet DOM Anchor Container */}
-          <div className="relative w-full h-[520px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-inner">
+          <div className="relative w-full h-[520px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 shadow-inner">
             <div ref={mapContainerRef} className="w-full h-full z-10" />
 
             {/* Loading Overlay */}
             {loading && (
-              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-2">
-                <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-xs font-bold text-slate-300">Synchronizing CPCB Geospatial Coordinates...</span>
+              <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-2">
+                <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Synchronizing CPCB Geospatial Coordinates...</span>
               </div>
             )}
           </div>
 
           {/* Map Footer Legend */}
-          <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800/80 flex-wrap gap-2">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex-wrap gap-2">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-300 shadow-sm animate-pulse"></span>
-                <span className="font-semibold text-slate-300">Collection Hotspot (Live Scrap Aggregation)</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-300">Collection Hotspot (Live Scrap Aggregation)</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-lg bg-blue-500 border border-blue-300 shadow-sm"></span>
-                <span className="font-semibold text-slate-300">CPCB Authorized Recycler Plant</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-300">CPCB Authorized Recycler Plant</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-lg bg-amber-500 border border-amber-300 shadow-sm"></span>
-                <span className="font-semibold text-slate-300">Pending / Suspended Facility</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-300">Pending / Suspended Facility</span>
               </span>
             </div>
-            <span className="text-[11px] font-mono text-emerald-400 font-bold">
+            <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
               {mapStyle === 'satellite' ? '🛰️ Esri High-Resolution Satellite' : mapStyle === 'street' ? '🗺️ OpenStreetMap' : '🌌 ArcGIS World Dark Gray (Zero Watermarks)'}
             </span>
           </div>
         </div>
 
         {/* Right Column: Dynamic Telemetry Dossier (District or Recycler Focus) */}
-        <div className="lg:col-span-4 bg-slate-900 border-2 border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
           {selectedRecycler ? (
             /* Recycler Facility Dossier */
             <div className="space-y-4 text-xs animate-in fade-in-50">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                   <Factory className="w-4 h-4" />
                   <span>Recycler Plant Telemetry</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedRecycler(null)}
-                  className="text-[11px] font-bold text-slate-400 hover:text-white underline"
+                  className="text-[11px] font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white underline"
                 >
                   ← Back to District
                 </button>
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-2xl border border-blue-900/60 space-y-2 shadow-inner">
+              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-blue-200 dark:border-blue-900/60 space-y-2 shadow-inner">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-base font-black text-white">{selectedRecycler.facilityName}</h3>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">{selectedRecycler.facilityName}</h3>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     selectedRecycler.authorizationStatus === 'AUTHORIZED' 
-                      ? 'bg-emerald-950 text-emerald-300 border-emerald-800' 
-                      : 'bg-amber-950 text-amber-300 border-amber-800'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800' 
+                      : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
                   }`}>
                     {selectedRecycler.authorizationStatus === 'AUTHORIZED' ? 'Authorized' : 'Under Review'}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 font-mono">Reg: {selectedRecycler.registrationNo}</p>
-                <p className="text-[11px] text-blue-300 flex items-center gap-1">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Reg: {selectedRecycler.registrationNo}</p>
+                <p className="text-[11px] text-blue-600 dark:text-blue-300 flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{selectedRecycler.address || `${selectedRecycler.district}, ${selectedRecycler.state}`}</span>
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                   <span className="text-slate-500 text-[10px] block font-extrabold uppercase">Tonnage Processed</span>
-                  <span className="font-mono font-black text-emerald-400 text-base">
+                  <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base">
                     {(selectedRecycler.totalProcessedKg || 0).toLocaleString('en-IN')} kg
                   </span>
                 </div>
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                   <span className="text-slate-500 text-[10px] block font-extrabold uppercase">Service Radius</span>
-                  <span className="font-mono font-black text-white text-base">
+                  <span className="font-mono font-black text-slate-900 dark:text-white text-base">
                     {selectedRecycler.serviceRadiusKm || 35} km
                   </span>
                 </div>
               </div>
 
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-                <span className="text-slate-400 text-[10px] font-bold block uppercase">Facility Manager & Telephony</span>
+              <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold block uppercase">Facility Manager & Telephony</span>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-white font-semibold">{selectedRecycler.contactPerson || 'Operations Head'}</span>
-                  <span className="font-mono text-purple-300 font-bold">{selectedRecycler.contactPhone || '+91 98200 98200'}</span>
+                  <span className="text-slate-900 dark:text-white font-semibold">{selectedRecycler.contactPerson || 'Operations Head'}</span>
+                  <span className="font-mono text-emerald-700 dark:text-purple-300 font-bold">{selectedRecycler.contactPhone || '+91 98200 98200'}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-                <span className="text-slate-400 text-[10px] font-bold block uppercase">Accepted E-Waste Streams</span>
+              <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold block uppercase">Accepted E-Waste Streams</span>
                 <div className="flex flex-wrap gap-1">
                   {(selectedRecycler.acceptedMaterials || ['PCB', 'BATTERY', 'CRT', 'CABLE', 'MOTOR']).map((mat: string) => (
-                    <span key={mat} className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300 text-[10px] font-bold">
+                    <span key={mat} className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
                       {getCategoryLabel(mat, language)}
                     </span>
                   ))}
@@ -684,60 +684,60 @@ export const EwasteGeoMapPage: React.FC = () => {
           ) : selectedCluster ? (
             /* District Cluster Dossier */
             <div className="space-y-4 text-xs animate-in fade-in-50">
-              <div className="border-b border-slate-800 pb-3">
-                <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 className="text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                   <MapPin className="w-4 h-4" />
                   <span>{language === 'hi' ? 'जिला गतिविधि विश्लेषण' : language === 'mr' ? 'जिल्हा उपक्रम विश्लेषण' : 'District Activity Analysis'}</span>
                 </h3>
               </div>
 
               {/* District & State Header Card */}
-              <div className="bg-slate-950 p-4 rounded-2xl border border-emerald-900/50 space-y-1 shadow-inner">
+              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 space-y-1 shadow-inner">
                 <span className="text-[10px] text-slate-500 uppercase font-black tracking-wider block">
                   {language === 'hi' ? 'चयनित क्षेत्रीय क्लस्टर' : language === 'mr' ? 'निवडलेला क्लस्टर' : 'Selected Regional Hotspot'}
                 </span>
-                <h4 className="text-xl font-black text-white tracking-tight">{selectedCluster.district}, {selectedCluster.state}</h4>
-                <p className="text-slate-400 font-mono text-[11px] flex items-center gap-1">
-                  <Compass className="w-3.5 h-3.5 text-emerald-400" />
+                <h4 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{selectedCluster.district}, {selectedCluster.state}</h4>
+                <p className="text-slate-500 dark:text-slate-400 font-mono text-[11px] flex items-center gap-1">
+                  <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>GPS: {selectedCluster.lat.toFixed(4)}° N, {selectedCluster.lng.toFixed(4)}° E</span>
                 </p>
               </div>
 
               {/* 3 Core District Real Telemetry Metrics */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] uppercase font-extrabold block">
+                <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-0.5">
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
                     {language === 'hi' ? 'सक्रिय कलेक्टर' : language === 'mr' ? 'सक्रिय संकलक' : 'Active Collectors'}
                   </span>
-                  <span className="font-mono font-black text-white text-lg block">
+                  <span className="font-mono font-black text-slate-900 dark:text-white text-lg block">
                     {selectedCluster.activeCollectors}
                   </span>
-                  <span className="text-[9px] text-emerald-400 font-bold">100% KYC Verified</span>
+                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">100% KYC Verified</span>
                 </div>
 
-                <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] uppercase font-extrabold block">
+                <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-0.5">
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
                     {language === 'hi' ? 'कुल स्क्रैप वजन' : language === 'mr' ? 'एकूण स्क्रॅप वजन' : 'Total Scrap Weight'}
                   </span>
-                  <span className="font-mono font-black text-emerald-400 text-lg block">
+                  <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-lg block">
                     {selectedCluster.totalWeightKg.toLocaleString('en-IN')} kg
                   </span>
-                  <span className="text-[9px] text-slate-400 font-mono">Digital Tare Verified</span>
+                  <span className="text-[9px] text-slate-500 font-mono">Digital Tare Verified</span>
                 </div>
               </div>
 
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+              <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-extrabold block">
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
                     {language === 'hi' ? 'पंजीकृत डिजिटल लॉट्स' : language === 'mr' ? 'नोंदणीकृत डिजिटल लॉट्स' : 'Registered Digital Lots'}
                   </span>
-                  <span className="font-mono font-black text-white text-lg">
+                  <span className="font-mono font-black text-slate-900 dark:text-white text-lg">
                     {selectedCluster.totalLots} Lots
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-slate-400 text-[10px] uppercase font-extrabold block">Recyclers in District</span>
-                  <span className="font-mono font-black text-blue-400 text-lg">
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">Recyclers in District</span>
+                  <span className="font-mono font-black text-blue-600 dark:text-blue-400 text-lg">
                     {selectedCluster.recyclersCount} Plants
                   </span>
                 </div>
@@ -745,8 +745,8 @@ export const EwasteGeoMapPage: React.FC = () => {
 
               {/* Local Material Breakdown in this District */}
               {Object.keys(selectedCluster.topMaterials || {}).length > 0 && (
-                <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
-                  <span className="text-slate-400 text-[10px] uppercase font-extrabold block">
+                <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
                     District Material Stream Volume
                   </span>
                   <div className="space-y-1.5">
@@ -758,10 +758,10 @@ export const EwasteGeoMapPage: React.FC = () => {
                         return (
                           <div key={mat} className="space-y-0.5">
                             <div className="flex justify-between text-[11px]">
-                              <span className="font-bold text-slate-300">{getCategoryLabel(mat, language)}</span>
-                              <span className="font-mono font-bold text-emerald-400">{wt.toLocaleString('en-IN')} kg ({pct}%)</span>
+                              <span className="font-bold text-slate-700 dark:text-slate-300">{getCategoryLabel(mat, language)}</span>
+                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{wt.toLocaleString('en-IN')} kg ({pct}%)</span>
                             </div>
-                            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                               <div style={{ width: `${pct}%` }} className="bg-emerald-500 h-full rounded-full"></div>
                             </div>
                           </div>
@@ -773,7 +773,7 @@ export const EwasteGeoMapPage: React.FC = () => {
 
               {/* Facilities operating in this district */}
               <div className="space-y-1.5">
-                <span className="text-slate-400 text-[10px] uppercase font-extrabold block">
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
                   CPCB Recyclers in {selectedCluster.district}
                 </span>
                 <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
@@ -789,13 +789,13 @@ export const EwasteGeoMapPage: React.FC = () => {
                             mapInstanceRef.current.flyTo([r.latitude, r.longitude], 11, { duration: 1 });
                           }
                         }}
-                        className="w-full p-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/50 flex items-center justify-between text-left transition-all group"
+                        className="w-full p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800 border border-slate-200 hover:border-blue-400 dark:border-slate-800 dark:hover:border-blue-500/50 flex items-center justify-between text-left transition-all group"
                       >
                         <div className="min-w-0">
-                          <span className="text-[11px] font-bold text-white truncate block">{r.facilityName}</span>
+                          <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate block">{r.facilityName}</span>
                           <span className="text-[9px] font-mono text-slate-500">{r.registrationNo}</span>
                         </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-blue-400 shrink-0 ml-2" />
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:text-slate-600 dark:group-hover:text-blue-400 shrink-0 ml-2" />
                       </button>
                     ))}
                 </div>
@@ -810,37 +810,37 @@ export const EwasteGeoMapPage: React.FC = () => {
       </div>
 
       {/* Bottom Command Center High-Level Telemetry Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-        <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-0.5">
-          <span className="text-slate-400 font-extrabold uppercase text-[10px] block">National E-Waste Monitored</span>
-          <span className="text-2xl font-black text-emerald-400 font-mono block">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+        <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">National E-Waste Monitored</span>
+          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono block">
             {(mapData?.summary?.nationalTotalKg || 26749.1).toLocaleString('en-IN')} kg
           </span>
-          <span className="text-[10px] text-slate-400 font-bold">From 669 Verified Lots</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">From 669 Verified Lots</span>
         </div>
 
-        <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-0.5">
-          <span className="text-slate-400 font-extrabold uppercase text-[10px] block">Active Regional Hubs</span>
-          <span className="text-2xl font-black text-white font-mono block">
+        <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">Active Regional Hubs</span>
+          <span className="text-2xl font-black text-slate-900 dark:text-white font-mono block">
             {mapData?.summary?.totalMonitoredDistricts || 3} State Clusters
           </span>
-          <span className="text-[10px] text-emerald-400 font-bold">Lucknow, Mumbai, Pune</span>
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Lucknow, Mumbai, Pune</span>
         </div>
 
-        <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-0.5">
-          <span className="text-slate-400 font-extrabold uppercase text-[10px] block">Gazetted Recyclers Online</span>
-          <span className="text-2xl font-black text-blue-400 font-mono block">
+        <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">Gazetted Recyclers Online</span>
+          <span className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono block">
             {mapData?.summary?.authorizedRecyclersCount || 4} / {mapData?.summary?.totalRecyclersCount || 10}
           </span>
-          <span className="text-[10px] text-blue-300 font-bold">CPCB Schedule-I Verified</span>
+          <span className="text-[10px] text-blue-600 dark:text-blue-300 font-bold">CPCB Schedule-I Verified</span>
         </div>
 
-        <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-0.5">
-          <span className="text-slate-400 font-extrabold uppercase text-[10px] block">Traceability Integrity</span>
-          <span className="text-2xl font-black text-purple-400 font-mono block">
+        <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">Traceability Integrity</span>
+          <span className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono block">
             100% SHA-256
           </span>
-          <span className="text-[10px] text-purple-300 font-bold">Merkle Chain Validated</span>
+          <span className="text-[10px] text-purple-600 dark:text-purple-300 font-bold">Merkle Chain Validated</span>
         </div>
       </div>
     </div>

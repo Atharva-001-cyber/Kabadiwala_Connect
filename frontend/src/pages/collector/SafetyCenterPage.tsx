@@ -74,7 +74,7 @@ export const SafetyCenterPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6 pb-20 max-w-4xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header with Statutory Legal Warning */}
       <div className="bg-gradient-to-br from-slate-900 via-orange-950/40 to-slate-950 border-2 border-orange-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -135,15 +135,15 @@ export const SafetyCenterPage: React.FC = () => {
       </div>
 
       {/* Emergency First-Aid & Poison Control Helpline Quick-Bar */}
-      <div className="bg-slate-900 border-2 border-red-500/40 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+      <div className="bg-white dark:bg-slate-900 border-2 border-red-200 dark:border-red-500/40 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <PhoneCall className="w-5 h-5 text-red-400 animate-pulse" />
-            <h2 className="text-sm font-black text-white tracking-wide">
+            <PhoneCall className="w-5 h-5 text-red-500 dark:text-red-400 animate-pulse" />
+            <h2 className="text-sm font-black text-slate-900 dark:text-white tracking-wide">
               {language === 'hi' ? 'आपातकालीन सहायता एवं विष नियंत्रण हेल्पलाइन' : '24x7 Emergency Medical & Poison Control Helpline'}
             </h2>
           </div>
-          <span className="text-[10px] font-bold text-red-300 bg-red-950/80 px-2.5 py-0.5 rounded-full border border-red-800 self-start sm:self-auto">
+          <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 dark:text-red-300 dark:bg-red-950/80 dark:border-red-800 px-2.5 py-0.5 rounded-full self-start sm:self-auto">
             Emergency Hotlines
           </span>
         </div>
@@ -152,63 +152,63 @@ export const SafetyCenterPage: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <a
             href="tel:112"
-            className="p-3 bg-red-950/60 hover:bg-red-900/60 border border-red-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow"
+            className="p-3 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-sm shrink-0">
               112
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-red-300 font-bold uppercase block truncate">National Helpline</span>
-              <span className="text-xs font-black text-white group-hover:text-red-200">Police / Medical</span>
+              <span className="text-[10px] text-red-600 dark:text-red-300 font-bold uppercase block truncate">National Helpline</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-200">Police / Medical</span>
             </div>
           </a>
 
           <a
             href="tel:1800116117"
-            className="p-3 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow"
+            className="p-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-xs shrink-0">
               AIIMS
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-amber-300 font-bold uppercase block truncate">Poison Information</span>
-              <span className="text-xs font-black text-white group-hover:text-amber-200">1800-116-117</span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase block truncate">Poison Information</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-200">1800-116-117</span>
             </div>
           </a>
 
           <a
             href="tel:101"
-            className="p-3 bg-orange-950/60 hover:bg-orange-900/60 border border-orange-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow"
+            className="p-3 bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/60 dark:hover:bg-orange-900/60 border border-orange-200 dark:border-orange-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-8 h-8 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black text-sm shrink-0">
               101
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-orange-300 font-bold uppercase block truncate">Fire Emergency</span>
-              <span className="text-xs font-black text-white group-hover:text-orange-200">Battery Fires</span>
+              <span className="text-[10px] text-orange-700 dark:text-orange-300 font-bold uppercase block truncate">Fire Emergency</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-orange-700 dark:group-hover:text-orange-200">Battery Fires</span>
             </div>
           </a>
 
           <a
             href="tel:18001801717"
-            className="p-3 bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow"
+            className="p-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
             <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shrink-0">
               CPCB
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-emerald-300 font-bold uppercase block truncate">Hazard Control</span>
-              <span className="text-xs font-black text-white group-hover:text-emerald-200">1800-180-1717</span>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase block truncate">Hazard Control</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-200">1800-180-1717</span>
             </div>
           </a>
         </div>
 
         {/* Expandable Instant First-Aid Protocols */}
-        <div className="pt-2 border-t border-slate-800">
+        <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
           <button
             type="button"
             onClick={() => setShowFirstAid(!showFirstAid)}
-            className="text-xs text-red-400 hover:text-red-300 font-bold flex items-center gap-1.5 active:scale-95"
+            className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 font-bold flex items-center gap-1.5 active:scale-95"
           >
             <Droplets className="w-3.5 h-3.5" />
             <span>{showFirstAid ? (language === 'hi' ? 'प्राथमिक उपचार प्रोटोकॉल छिपाएं' : 'Hide Field First-Aid Protocols') : (language === 'hi' ? 'दुर्घटना में तत्काल प्राथमिक उपचार (First Aid) देखें' : 'View Immediate Field First-Aid Protocols')}</span>
@@ -216,33 +216,33 @@ export const SafetyCenterPage: React.FC = () => {
           </button>
 
           {showFirstAid && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-slate-300 animate-fadeIn">
-              <div className="bg-slate-950 p-3 rounded-2xl border border-red-900/60 space-y-1">
-                <span className="font-bold text-red-400 flex items-center gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3 pt-2 border-t border-slate-200 dark:border-slate-800/80 text-[11px] text-slate-700 dark:text-slate-300 animate-fadeIn">
+              <div className="bg-red-50/60 dark:bg-slate-950 p-3 rounded-2xl border border-red-200 dark:border-red-900/60 space-y-1">
+                <span className="font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
                   <span>🧪</span>
                   <span>Acid or Chemical Splash</span>
                 </span>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                   Flush affected skin or eyes with continuous clean running tap water for at least 15 minutes. Do NOT rub, apply oils or soap. Seek medical attention immediately.
                 </p>
               </div>
 
-              <div className="bg-slate-950 p-3 rounded-2xl border border-amber-900/60 space-y-1">
-                <span className="font-bold text-amber-400 flex items-center gap-1">
+              <div className="bg-amber-50/60 dark:bg-slate-950 p-3 rounded-2xl border border-amber-200 dark:border-amber-900/60 space-y-1">
+                <span className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
                   <span>⚡</span>
                   <span>Lithium Battery Thermal Fire</span>
                 </span>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                   Smother fire with dry sand, soil, or Class D dry chemical extinguisher. NEVER pour small amounts of water on burning lithium cells (causes hydrogen explosion)!
                 </p>
               </div>
 
-              <div className="bg-slate-950 p-3 rounded-2xl border border-orange-900/60 space-y-1">
-                <span className="font-bold text-orange-400 flex items-center gap-1">
+              <div className="bg-orange-50/60 dark:bg-slate-950 p-3 rounded-2xl border border-orange-200 dark:border-orange-900/60 space-y-1">
+                <span className="font-bold text-orange-700 dark:text-orange-400 flex items-center gap-1">
                   <span>💨</span>
                   <span>Toxic Wire Fume Inhalation</span>
                 </span>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                   Move patient immediately to open, uncontaminated outdoor air. Keep person upright and loosen tight clothing around neck. Administer oxygen if available.
                 </p>
               </div>
@@ -252,15 +252,15 @@ export const SafetyCenterPage: React.FC = () => {
       </div>
 
       {/* Mandatory Personal Protective Equipment (PPE) Checklist */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2.5">
-            <HardHat className="w-5 h-5 text-emerald-400" />
+            <HardHat className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <h2 className="text-sm sm:text-base font-black text-white">
+              <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
                 {language === 'hi' ? 'अनिवार्य व्यक्तिगत सुरक्षा उपकरण (PPE Kit)' : 'Mandatory PPE Safety Gear Checklist'}
               </h2>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 {language === 'hi' ? 'कचरा उठाने और हैंडल करने से पहले 4 सुरक्षा साधन अवश्य पहनें' : 'Check off your safety equipment before handling hazardous e-waste'}
               </span>
             </div>
@@ -268,8 +268,8 @@ export const SafetyCenterPage: React.FC = () => {
 
           <span className={`px-3 py-1 rounded-full text-xs font-black border transition-all ${
             isAllPpeChecked
-              ? 'bg-emerald-950 text-emerald-300 border-emerald-600 shadow'
-              : 'bg-amber-950 text-amber-300 border-amber-800'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-600 shadow-sm'
+              : 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
           }`}>
             {isAllPpeChecked 
               ? (language === 'hi' ? '🟢 100% सुरक्षा तैयार' : '🟢 100% PPE COMPLIANT')
@@ -314,26 +314,26 @@ export const SafetyCenterPage: React.FC = () => {
               onClick={() => togglePpe(item.id)}
               className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99] ${
                 ppeStatus[item.id]
-                  ? 'bg-emerald-950/60 border-emerald-500 text-white shadow-md'
-                  : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                  ? 'bg-emerald-50/80 border-emerald-500 text-emerald-950 dark:bg-emerald-950/60 dark:border-emerald-500 dark:text-white shadow-sm'
+                  : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-xl shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xl shrink-0 shadow-2xs">
                   {item.icon}
                 </div>
                 <div>
-                  <h4 className="font-black text-sm text-white">
+                  <h4 className="font-black text-sm text-slate-900 dark:text-white">
                     {language === 'hi' ? item.hindi : item.title}
                   </h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{item.desc}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{item.desc}</p>
                 </div>
               </div>
 
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 font-black text-xs ${
                 ppeStatus[item.id]
-                  ? 'bg-emerald-500 border-emerald-400 text-slate-950'
-                  : 'border-slate-600 bg-slate-900 text-transparent'
+                  ? 'bg-emerald-600 border-emerald-500 text-white'
+                  : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-transparent'
               }`}>
                 ✓
               </div>
@@ -346,11 +346,11 @@ export const SafetyCenterPage: React.FC = () => {
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-orange-400" />
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-400">
+            <ShieldCheck className="w-4 h-4 text-orange-500" />
+            <h2 className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">
               {language === 'hi' ? 'विशिष्ट सामग्री सुरक्षा नियम' : 'Consignment Material Safety Protocols'}
             </h2>
-            <span className="text-[10px] font-mono text-orange-400 bg-orange-950 px-2 py-0.5 rounded-full border border-orange-800">
+            <span className="text-[10px] font-mono font-bold text-orange-800 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 px-2 py-0.5 rounded-full border border-orange-200 dark:border-orange-800">
               {filteredGuides.length}
             </span>
           </div>
@@ -362,9 +362,9 @@ export const SafetyCenterPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={language === 'hi' ? 'खतरा, नियम या सामग्री खोजें...' : 'Search hazard, rule or category...'}
-              className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
+              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-orange-500 shadow-2xs"
             />
-            <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
           </div>
         </div>
 
@@ -388,7 +388,7 @@ export const SafetyCenterPage: React.FC = () => {
               className={`px-3 py-1.5 rounded-xl transition-all shrink-0 active:scale-95 ${
                 selectedCategory === cat.key
                   ? 'bg-orange-600 text-white shadow font-black'
-                  : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800'
+                  : 'bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800'
               }`}
             >
               {cat.label}
@@ -398,8 +398,8 @@ export const SafetyCenterPage: React.FC = () => {
       </div>
 
       {loading && (
-        <div className="text-center py-12 text-slate-400 text-xs font-bold flex items-center justify-center gap-2">
-          <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-center py-12 text-slate-500 text-xs font-bold flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           <span>{language === 'hi' ? 'सुरक्षा गाइड लोड हो रही है...' : language === 'mr' ? 'सुरक्षा नियम लोड होत आहेत...' : 'Loading safety guides...'}</span>
         </div>
       )}
@@ -407,8 +407,8 @@ export const SafetyCenterPage: React.FC = () => {
       {/* Safety Guideline Cards */}
       <div className="space-y-6">
         {filteredGuides.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center text-slate-400 space-y-2">
-            <p className="text-sm font-bold text-slate-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center text-slate-500 space-y-2 shadow-sm">
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-300">
               {language === 'hi' ? 'कोई सुरक्षा निर्देश नहीं मिला।' : 'No safety guidelines found matching your filter.'}
             </p>
             <p className="text-xs text-slate-500">
@@ -416,36 +416,37 @@ export const SafetyCenterPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          filteredGuides.map((guide) => {
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {filteredGuides.map((guide) => {
             const categoryIcons: Record<string, { icon: string; border: string; bg: string }> = {
-              CABLE: { icon: '🔥', border: 'border-red-500/40', bg: 'bg-red-950/20' },
-              BATTERY: { icon: '⚡', border: 'border-amber-500/40', bg: 'bg-amber-950/20' },
-              CRT: { icon: '📺', border: 'border-blue-500/40', bg: 'bg-blue-950/20' },
-              PCB: { icon: '🧪', border: 'border-emerald-500/40', bg: 'bg-emerald-950/20' },
-              LCD: { icon: '💻', border: 'border-cyan-500/40', bg: 'bg-cyan-950/20' },
-              MOTOR: { icon: '⚙️', border: 'border-purple-500/40', bg: 'bg-purple-950/20' },
-              MAGNET: { icon: '🧲', border: 'border-rose-500/40', bg: 'bg-rose-950/20' },
-              MIXED_PLASTIC: { icon: '♻️', border: 'border-teal-500/40', bg: 'bg-teal-950/20' }
+              CABLE: { icon: '🔥', border: 'border-red-300 dark:border-red-500/40', bg: 'bg-red-50 dark:bg-red-950/20' },
+              BATTERY: { icon: '⚡', border: 'border-amber-300 dark:border-amber-500/40', bg: 'bg-amber-50 dark:bg-amber-950/20' },
+              CRT: { icon: '📺', border: 'border-blue-300 dark:border-blue-500/40', bg: 'bg-blue-50 dark:bg-blue-950/20' },
+              PCB: { icon: '🧪', border: 'border-emerald-300 dark:border-emerald-500/40', bg: 'bg-emerald-50 dark:bg-emerald-950/20' },
+              LCD: { icon: '💻', border: 'border-cyan-300 dark:border-cyan-500/40', bg: 'bg-cyan-50 dark:bg-cyan-950/20' },
+              MOTOR: { icon: '⚙️', border: 'border-purple-300 dark:border-purple-500/40', bg: 'bg-purple-50 dark:bg-purple-950/20' },
+              MAGNET: { icon: '🧲', border: 'border-rose-300 dark:border-rose-500/40', bg: 'bg-rose-50 dark:bg-rose-950/20' },
+              MIXED_PLASTIC: { icon: '♻️', border: 'border-teal-300 dark:border-teal-500/40', bg: 'bg-teal-50 dark:bg-teal-950/20' }
             };
 
-            const style = categoryIcons[guide.category] || { icon: '⚠️', border: 'border-slate-800', bg: 'bg-slate-900' };
+            const style = categoryIcons[guide.category] || { icon: '⚠️', border: 'border-slate-200 dark:border-slate-800', bg: 'bg-slate-50 dark:bg-slate-900' };
 
             return (
               <div
                 key={guide.id}
-                className={`bg-slate-900 border-2 ${style.border} rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 transition-all`}
+                className={`bg-white dark:bg-slate-900 border-2 ${style.border} rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 transition-all`}
               >
                 {/* Title & Vernacular Voice Button */}
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3.5 gap-2">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3.5 gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-950 flex items-center justify-center font-bold text-2xl border border-slate-800 shadow shrink-0">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center font-bold text-2xl border border-slate-200 dark:border-slate-800 shadow-2xs shrink-0">
                       {style.icon}
                     </div>
                     <div>
-                      <h3 className="font-black text-base sm:text-lg text-white">
+                      <h3 className="font-black text-base sm:text-lg text-slate-900 dark:text-white">
                         {guide.title?.[language] || guide.title?.hi || (typeof guide.title === 'string' ? guide.title : 'सुरक्षा निर्देश')}
                       </h3>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         {language === 'hi' ? 'सामग्री श्रेणी:' : language === 'mr' ? 'प्रकार:' : 'Material Category:'} {guide.category}
                       </span>
                     </div>
@@ -462,12 +463,12 @@ export const SafetyCenterPage: React.FC = () => {
 
                 {/* High-Contrast Hazard Box */}
                 {guide.hazards && (
-                  <div className="bg-red-950/60 border border-red-800/70 rounded-2xl p-4 text-xs space-y-1.5 shadow-inner">
-                    <div className="flex items-center gap-2 text-red-300 font-black text-sm">
-                      <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+                  <div className="bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800/70 rounded-2xl p-4 text-xs space-y-1.5 shadow-inner">
+                    <div className="flex items-center gap-2 text-red-700 dark:text-red-300 font-black text-sm">
+                      <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0" />
                       <span>{language === 'hi' ? 'गंभीर स्वास्थ्य खतरे:' : language === 'mr' ? 'गंभीर आरोग्याचे धोके:' : 'Severe Health Hazards:'}</span>
                     </div>
-                    <ul className="list-disc list-inside text-red-200/90 pl-1 space-y-1 text-xs">
+                    <ul className="list-disc list-inside text-red-900 dark:text-red-200/90 pl-1 space-y-1 text-xs">
                       {(guide.hazards[language] || guide.hazards.hi || guide.hazards.en || []).map((h: string, idx: number) => (
                         <li key={idx} className="font-medium">{h}</li>
                       ))}
@@ -479,15 +480,15 @@ export const SafetyCenterPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                   {/* DOs */}
                   {guide.dos && (
-                    <div className="bg-emerald-950/40 border border-emerald-700/60 rounded-2xl p-4 space-y-2.5">
-                      <span className="text-xs font-black text-emerald-300 flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-700/60 rounded-2xl p-4 space-y-2.5">
+                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         <span>{language === 'hi' ? 'क्या करें (सुरक्षित नियम):' : language === 'mr' ? 'काय करावे (सुरक्षित नियम):' : 'Mandatory Safe DOs:'}</span>
                       </span>
-                      <ul className="space-y-2 text-xs text-emerald-200">
+                      <ul className="space-y-2 text-xs text-emerald-900 dark:text-emerald-200">
                         {(guide.dos[language] || guide.dos.hi || guide.dos.en || []).map((d: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <span className="text-emerald-400 font-bold text-sm">✓</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">✓</span>
                             <span className="font-medium leading-relaxed">{d}</span>
                           </li>
                         ))}
@@ -497,15 +498,15 @@ export const SafetyCenterPage: React.FC = () => {
 
                   {/* DONTs */}
                   {guide.donts && (
-                    <div className="bg-red-950/40 border border-red-700/60 rounded-2xl p-4 space-y-2.5">
-                      <span className="text-xs font-black text-red-300 flex items-center gap-2">
-                        <XCircle className="w-4 h-4 text-red-400" />
+                    <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-700/60 rounded-2xl p-4 space-y-2.5">
+                      <span className="text-xs font-black text-red-800 dark:text-red-300 flex items-center gap-2">
+                        <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                         <span>{language === 'hi' ? 'क्या न करें (सख्त मनाही):' : language === 'mr' ? 'काय करू नये (सक्त मनाई):' : 'Strict Prohibitions (DONTs):'}</span>
                       </span>
-                      <ul className="space-y-2 text-xs text-red-200">
+                      <ul className="space-y-2 text-xs text-red-900 dark:text-red-200">
                         {(guide.donts[language] || guide.donts.hi || guide.donts.en || []).map((d: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <span className="text-red-400 font-bold text-sm">✗</span>
+                            <span className="text-red-600 dark:text-red-400 font-bold text-sm">✗</span>
                             <span className="font-medium leading-relaxed">{d}</span>
                           </li>
                         ))}
@@ -515,7 +516,8 @@ export const SafetyCenterPage: React.FC = () => {
                 </div>
               </div>
             );
-          })
+          })}
+          </div>
         )}
       </div>
     </div>

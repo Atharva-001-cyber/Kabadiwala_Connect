@@ -86,28 +86,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
 
   const navItems = getNavItems(role);
 
-  // Theme accents per role
+  // Theme accents per role (Adaptive Light & Dark - High Contrast)
   const roleTheme = {
     COLLECTOR: {
-      badgeBg: 'bg-emerald-950 border-emerald-800 text-emerald-300',
-      activeItem: 'bg-emerald-950/80 text-emerald-400 border-emerald-500 font-extrabold shadow-sm',
-      hoverItem: 'hover:bg-slate-800/80 hover:text-emerald-300 text-slate-300',
+      badgeBg: 'bg-emerald-100 dark:bg-emerald-950 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 font-extrabold',
+      activeItem: 'bg-emerald-100/90 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-400 border-emerald-600 dark:border-emerald-500 font-black shadow-sm border-r-4',
+      hoverItem: 'hover:bg-emerald-50 dark:hover:bg-slate-800/80 hover:text-emerald-900 dark:hover:text-emerald-300 text-slate-800 dark:text-slate-300 font-bold',
       roleTitle: t.roleCollector,
       roleIcon: '📦',
       accentGradient: 'from-emerald-600 to-teal-500'
     },
     RECYCLER: {
-      badgeBg: 'bg-blue-950 border-blue-800 text-blue-300',
-      activeItem: 'bg-blue-950/80 text-blue-400 border-blue-500 font-extrabold shadow-sm',
-      hoverItem: 'hover:bg-slate-800/80 hover:text-blue-300 text-slate-300',
+      badgeBg: 'bg-blue-100 dark:bg-blue-950 border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-300 font-extrabold',
+      activeItem: 'bg-blue-100/90 dark:bg-blue-950/80 text-blue-950 dark:text-blue-400 border-blue-600 dark:border-blue-500 font-black shadow-sm border-r-4',
+      hoverItem: 'hover:bg-blue-50 dark:hover:bg-slate-800/80 hover:text-blue-900 dark:hover:text-blue-300 text-slate-800 dark:text-slate-300 font-bold',
       roleTitle: t.roleRecycler,
       roleIcon: '🏭',
       accentGradient: 'from-blue-600 to-cyan-500'
     },
     ADMIN: {
-      badgeBg: 'bg-purple-950 border-purple-800 text-purple-300',
-      activeItem: 'bg-purple-950/80 text-purple-400 border-purple-500 font-extrabold shadow-sm',
-      hoverItem: 'hover:bg-slate-800/80 hover:text-purple-300 text-slate-300',
+      badgeBg: 'bg-purple-100 dark:bg-purple-950 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-300 font-extrabold',
+      activeItem: 'bg-purple-100/90 dark:bg-purple-950/80 text-purple-950 dark:text-purple-400 border-purple-600 dark:border-purple-500 font-black shadow-sm border-r-4',
+      hoverItem: 'hover:bg-purple-50 dark:hover:bg-slate-800/80 hover:text-purple-900 dark:hover:text-purple-300 text-slate-800 dark:text-slate-300 font-bold',
       roleTitle: t.roleAdmin,
       roleIcon: '🛡️',
       accentGradient: 'from-purple-600 to-indigo-500'
@@ -131,32 +131,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
 
   return (
     <aside
-      className={`h-full flex flex-col bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out select-none ${
-        isCollapsed ? 'w-20' : 'w-64 sm:w-72'
+      className={`h-full flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out select-none ${
+        isCollapsed ? 'w-20' : 'w-68 sm:w-72'
       }`}
     >
       {/* Brand Header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/40">
+      <div className="h-16 px-3.5 sm:px-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/40 transition-colors">
         <Link
           to={`/${role.toLowerCase()}`}
           onClick={onCloseMobile}
-          className="flex items-center gap-3 overflow-hidden group"
+          className="flex items-center gap-2.5 min-w-0 flex-1 group"
         >
-          <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${roleTheme.accentGradient} flex items-center justify-center text-white shadow-md shadow-emerald-950 shrink-0 group-hover:scale-105 transition-transform`}>
+          <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${roleTheme.accentGradient} flex items-center justify-center text-white shadow-md shrink-0 group-hover:scale-105 transition-transform`}>
             <Recycle className="w-5 h-5 animate-spin-slow" />
           </div>
 
           {!isCollapsed && (
-            <div className="overflow-hidden">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-sm tracking-tight text-white truncate">
+                <span className="font-black text-xs sm:text-sm tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
                   {t.appTitle}
                 </span>
-                <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-slate-800 text-slate-300 border border-slate-700">
+                <span className="px-1.5 py-0.2 text-[8px] font-black uppercase rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 shrink-0">
                   #229
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 truncate">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                 {t.slogan}
               </p>
             </div>
@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
         <button
           type="button"
           onClick={onToggleCollapse}
-          className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           title={isCollapsed ? t.expandSidebar : t.collapseSidebar}
         >
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -175,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
       </div>
 
       {/* Role Pill Banner */}
-      <div className="px-3 py-2.5 bg-slate-950/20 border-b border-slate-800/60">
+      <div className="px-3 py-2.5 bg-slate-50 dark:bg-slate-950/20 border-b border-slate-200 dark:border-slate-800/60 transition-colors">
         <div
           className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-bold ${roleTheme.badgeBg} ${
             isCollapsed ? 'justify-center' : 'justify-between'
@@ -225,19 +225,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
         })}
       </nav>
 
+      {/* CPCB EPR Compliance & National Helpline Card */}
+      {!isCollapsed && (
+        <div className="mx-3 mb-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-emerald-500/30 text-[10px] space-y-1 shadow-sm transition-colors">
+          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">CPCB Schedule-I Certified</span>
+          </div>
+          <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight">
+            Govt. of India • E-Waste Rules 2022
+          </p>
+          <div className="pt-1 flex items-center justify-between text-[9px] text-slate-600 dark:text-slate-300 font-mono border-t border-slate-200 dark:border-slate-800">
+            <span className="text-amber-600 dark:text-amber-400 font-bold">Helpline:</span>
+            <span>1800-E-WASTE</span>
+          </div>
+        </div>
+      )}
+
       {/* User / Session Footer */}
-      <div className="p-3 border-t border-slate-800/80 bg-slate-950/40">
-        <div className={`flex items-center gap-2.5 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60 ${isCollapsed ? 'justify-center' : ''}`}>
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/40 transition-colors">
+        <div className={`flex items-center gap-2.5 p-2 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 shadow-sm ${isCollapsed ? 'justify-center' : ''}`}>
           <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${roleTheme.accentGradient} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
             {userName.charAt(0)}
           </div>
 
           {!isCollapsed && (
             <div className="overflow-hidden flex-1 min-w-0">
-              <span className="font-extrabold text-xs text-white truncate block">
+              <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate block">
                 {userName}
               </span>
-              <span className="text-[10px] text-slate-400 truncate block">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
                 {userSubtext}
               </span>
             </div>
@@ -247,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
             <button
               type="button"
               onClick={logout}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors shrink-0"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
               title={t.signOut}
             >
               <LogOut className="w-4 h-4" />

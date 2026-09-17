@@ -366,23 +366,23 @@ export const FindRecyclerPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
       {/* Active Lot Context Banner (If matching for a specific lot) */}
       {activeLot && (
-        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 border-2 border-emerald-500/60 rounded-3xl p-4 sm:p-5 shadow-2xl space-y-3">
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-white dark:from-emerald-950 dark:via-slate-900 dark:to-slate-900 border-2 border-emerald-500/70 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-900 text-emerald-300 border border-emerald-700">
+              <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                 {t.activeLotBanner}
               </span>
-              <span className="font-mono text-xs text-white font-bold">{activeLot.id}</span>
+              <span className="font-mono text-xs text-slate-800 dark:text-white font-bold">{activeLot.id}</span>
             </div>
             <button
               onClick={() => {
                 setActiveLot(null);
                 setSearchParams({});
               }}
-              className="text-slate-400 hover:text-white text-xs flex items-center gap-1 font-bold"
+              className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xs flex items-center gap-1 font-bold"
             >
               <X className="w-3.5 h-3.5" />
               <span>{language === 'hi' ? 'हटाएं' : language === 'mr' ? 'काढून टाका' : 'Clear'}</span>
@@ -391,14 +391,14 @@ export const FindRecyclerPage: React.FC = () => {
 
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <h2 className="text-lg font-black text-white">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
                 {activeLot.subCategory || activeLot.materialCategory}
               </h2>
-              <p className="text-xs text-slate-300 mt-0.5">
-                {language === 'hi' ? 'वजन:' : language === 'mr' ? 'वजन:' : 'Weight:'} <b className="text-white text-sm">{activeLot.approxWeight} kg</b> • {language === 'hi' ? 'बेंचमार्क अनुमान:' : language === 'mr' ? 'बाजार अंदाज:' : 'Benchmark Est:'} <b className="text-emerald-400 font-bold">₹{activeLot.estimatedValueMin} – ₹{activeLot.estimatedValueMax}</b>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                {language === 'hi' ? 'वजन:' : language === 'mr' ? 'वजन:' : 'Weight:'} <b className="text-slate-900 dark:text-white text-sm">{activeLot.approxWeight} kg</b> • {language === 'hi' ? 'बेंचमार्क अनुमान:' : language === 'mr' ? 'बाजार अंदाज:' : 'Benchmark Est:'} <b className="text-emerald-600 dark:text-emerald-400 font-bold">₹{activeLot.estimatedValueMin} – ₹{activeLot.estimatedValueMax}</b>
               </p>
             </div>
-            <div className="text-xs bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-emerald-300 font-bold">
+            <div className="text-xs bg-white dark:bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-emerald-700 dark:text-emerald-300 font-bold shadow-sm">
               {language === 'hi' ? '🎯 इस लॉट के लिए सबसे उपयुक्त खरीदार नीचे प्रदर्शित हैं' : language === 'mr' ? '🎯 या लॉटसाठी सर्वोत्तम खरेदीदार खाली उपलब्ध आहेत' : '🎯 Best matching recyclers for this lot are listed below'}
             </div>
           </div>
@@ -406,14 +406,14 @@ export const FindRecyclerPage: React.FC = () => {
       )}
 
       {/* Header & Filter Controls */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <span>🏭</span>
               <span>{t.matchingTitle}</span>
             </h1>
-            <p className="text-xs text-slate-400 font-medium mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
               {t.matchingSubtitle}
             </p>
           </div>
@@ -423,13 +423,13 @@ export const FindRecyclerPage: React.FC = () => {
             type="button"
             onClick={handleAcquireGps}
             disabled={gpsLoading}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 shrink-0 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 shrink-0 active:scale-95 shadow-sm ${
               userGps
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
-                : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white border-slate-300 dark:border-slate-700'
             }`}
           >
-            <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin' : 'text-emerald-400'}`} />
+            <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin' : 'text-emerald-600 dark:text-emerald-400'}`} />
             <span>
               {gpsLoading ? (language === 'hi' ? 'स्थान खोज रहे हैं...' : language === 'mr' ? 'स्थान शोधत आहे...' : 'Locating...') : userGps ? (language === 'hi' ? '🟢 GPS सक्रिय' : language === 'mr' ? '🟢 GPS सक्रिय' : '🟢 GPS Active') : (language === 'hi' ? '🛰️ वास्तविक GPS दूरी देखें' : language === 'mr' ? '🛰️ प्रत्यक्ष GPS अंतर पहा' : '🛰️ Calculate GPS Distance')}
             </span>
@@ -437,25 +437,25 @@ export const FindRecyclerPage: React.FC = () => {
         </div>
 
         {/* District & Material Dropdowns */}
-        <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-slate-800 text-xs">
-          <div className="flex items-center gap-1.5 bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-800">
-            <MapPin className="w-4 h-4 text-emerald-400" />
+        <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-900 dark:text-white font-bold focus:outline-none cursor-pointer"
             >
-              <option value="Lucknow" className="bg-slate-900">Lucknow (लखनऊ)</option>
-              <option value="all" className="bg-slate-900">{language === 'hi' ? 'सभी जिले (All Districts)' : language === 'mr' ? 'सर्व जिल्हे (All Districts)' : 'All Districts (सभी जिले)'}</option>
-              <option value="Pune" className="bg-slate-900">Pune (पुणे)</option>
-              <option value="Nagpur" className="bg-slate-900">Nagpur (नागपूर)</option>
-              <option value="Delhi NCR" className="bg-slate-900">Delhi NCR (दिल्ली)</option>
-              <option value="Bengaluru" className="bg-slate-900">Bengaluru</option>
-              <option value="Mumbai" className="bg-slate-900">Mumbai (मुंबई)</option>
+              <option value="Lucknow" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Lucknow (लखनऊ)</option>
+              <option value="all" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{language === 'hi' ? 'सभी जिले (All Districts)' : language === 'mr' ? 'सर्व जिल्हे (All Districts)' : 'All Districts (सभी जिले)'}</option>
+              <option value="Pune" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Pune (पुणे)</option>
+              <option value="Nagpur" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Nagpur (नागपूर)</option>
+              <option value="Delhi NCR" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Delhi NCR (दिल्ली)</option>
+              <option value="Bengaluru" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Bengaluru</option>
+              <option value="Mumbai" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Mumbai (मुंबई)</option>
             </select>
           </div>
 
-          <span className="text-slate-500 text-xs hidden sm:inline">•</span>
+          <span className="text-slate-300 dark:text-slate-600 text-xs hidden sm:inline">•</span>
 
           {/* 8 Mandatory Material Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
@@ -464,10 +464,10 @@ export const FindRecyclerPage: React.FC = () => {
                 key={cat.key}
                 type="button"
                 onClick={() => setSelectedCategory(cat.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all flex items-center gap-1 active:scale-95 shadow-sm ${
                   selectedCategory === cat.key
                     ? 'bg-emerald-600 text-white shadow-md'
-                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-950 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -479,12 +479,12 @@ export const FindRecyclerPage: React.FC = () => {
       </div>
 
       {/* 3 Price Concepts Clarification Banner */}
-      <div className="bg-slate-950 border border-slate-800/80 rounded-2xl p-3.5 text-xs text-slate-400 space-y-1">
-        <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-[11px] uppercase tracking-wider">
-          <Info className="w-3.5 h-3.5" />
+      <div className="bg-emerald-50/70 dark:bg-slate-950 border border-emerald-200/90 dark:border-slate-800 rounded-2xl p-3.5 text-xs text-slate-700 dark:text-slate-400 space-y-1 shadow-sm">
+        <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-extrabold text-[11px] uppercase tracking-wider">
+          <Info className="w-3.5 h-3.5 shrink-0" />
           <span>{language === 'hi' ? 'पारदर्शी भाव नियम' : language === 'mr' ? 'पारदर्शक दर नियम' : 'Transparent Price Rules'}</span>
         </div>
-        <p className="text-[11px] text-slate-300">
+        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
           {language === 'hi'
             ? '1. अनुमानित मूल्य: मंडी का प्रारंभिक अनुमान • 2. रीसाइक्लर ऑफर: कारखाने की औपचारिक बोली • 3. अंतिम भुगतान: डिजिटल कांटे पर सटीक वजन के बाद बैंक/UPI भुगतान।'
             : language === 'mr'
@@ -496,15 +496,15 @@ export const FindRecyclerPage: React.FC = () => {
       {/* Recyclers List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center text-slate-400">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500 dark:text-slate-400 shadow-sm">
             {language === 'hi' ? 'रीसाइक्लर सूची व पारदर्शी भाव लोड हो रहे हैं...' : language === 'mr' ? 'रिसायकलर यादी व दर लोड होत आहेत...' : 'Loading verified recyclers and rates...'}
           </div>
         ) : recyclers.length === 0 ? (
           /* Honest Empty State: Incompatible Recycler Exclusion */
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center text-slate-400 space-y-3">
-            <Building2 className="w-12 h-12 mx-auto text-slate-600" />
-            <h3 className="text-base font-bold text-white">{t.noCompatibleRecycler}</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-10 text-center text-slate-500 dark:text-slate-400 space-y-3 shadow-sm">
+            <Building2 className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-600" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">{t.noCompatibleRecycler}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
               {t.noCompatibleRecyclerDesc}
             </p>
             <div className="pt-2">
@@ -514,14 +514,15 @@ export const FindRecyclerPage: React.FC = () => {
                   setSelectedCategory('ALL');
                   setSelectedDistrict('Lucknow');
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 transition-all shadow-sm"
               >
                 {language === 'hi' ? 'सभी स्वीकृत रीसाइक्लर देखें' : language === 'mr' ? 'सर्व अधिकृत कारखाने पहा' : 'View All Recyclers'}
               </button>
             </div>
           </div>
         ) : (
-          recyclers.map((rec, index) => {
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            {recyclers.map((rec, index) => {
             const isSuspended = rec.authorizationStatus === 'SUSPENDED';
             const isGazetteVerified = rec.authorizationSource === 'CPCB_GAZETTE_VERIFIED';
             const rate = rec.offeredRate || 85;
@@ -532,24 +533,24 @@ export const FindRecyclerPage: React.FC = () => {
             return (
               <div
                 key={rec.id}
-                className={`bg-slate-900 border-2 rounded-3xl p-5 sm:p-6 shadow-xl transition-all space-y-4 ${
+                className={`bg-white dark:bg-slate-900 border-2 rounded-3xl p-5 sm:p-6 shadow-sm transition-all space-y-4 ${
                   isSuspended
-                    ? 'border-rose-900/60 bg-rose-950/10'
+                    ? 'border-rose-300 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/10'
                     : index === 0
-                    ? 'border-emerald-500/80 shadow-emerald-950/20'
-                    : 'border-slate-800 hover:border-slate-700'
+                    ? 'border-emerald-500 dark:border-emerald-500/80 shadow-emerald-500/10'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 {/* Top Row: Facility Header & Badges */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-black text-white">{rec.facilityName}</h3>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white">{rec.facilityName}</h3>
 
                       {/* Best Rate Badge: Only on verified/pending top bidder */}
                       {index === 0 && !isSuspended && rec.verificationRecord?.status !== 'DEMO' && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-300 text-[10px] font-black border border-amber-700 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-black border border-amber-300 dark:border-amber-700 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                           <span>{t.bestRateBadge}</span>
                         </span>
                       )}
@@ -559,39 +560,39 @@ export const FindRecyclerPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedVerificationProof(rec)}
-                          className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/90 text-emerald-300 text-xs font-black border border-emerald-600 hover:bg-emerald-900 transition-all shadow-sm"
+                          className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-300 text-xs font-black border border-emerald-300 dark:border-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-all shadow-sm"
                           title={language === 'hi' ? 'CPCB सरकारी राजपत्र प्रमाण देखने के लिए क्लिक करें' : 'Click to view official CPCB Gazette certificate'}
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>{language === 'hi' ? '🟢 CPCB राजपत्र सत्यापित' : language === 'mr' ? '🟢 CPCB राजपत्र पडताळणी' : '🟢 CPCB Gazette Verified'}</span>
-                          <span className="text-[10px] text-emerald-400 font-normal underline ml-0.5">({language === 'hi' ? 'प्रमाण देखें' : 'Proof'})</span>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal underline ml-0.5">({language === 'hi' ? 'प्रमाण देखें' : 'Proof'})</span>
                         </button>
                       ) : rec.verificationRecord?.status === 'PENDING_VERIFICATION' ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-950/80 text-amber-300 text-xs font-bold border border-amber-700">
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-amber-50 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 text-xs font-bold border border-amber-300 dark:border-amber-700">
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                           <span>{language === 'hi' ? '🟡 सत्यापन प्रक्रियाधीन' : language === 'mr' ? '🟡 पडताळणी प्रलंबित' : '🟡 Verification Pending'}</span>
                         </span>
                       ) : isSuspended ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-rose-950 text-rose-300 text-xs font-black border border-rose-700">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 text-xs font-black border border-rose-300 dark:border-rose-700">
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
                           <span>{language === 'hi' ? '🔴 CPCB निलंबित (अस्वीकृत)' : language === 'mr' ? '🔴 CPCB निलंबित' : '🔴 CPCB Suspended (Barred)'}</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-slate-950 text-slate-400 text-xs font-medium border border-slate-700">
+                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-950 dark:text-slate-400 text-xs font-medium border border-slate-300 dark:border-slate-700">
                           <span>🧪</span>
                           <span>{language === 'hi' ? '⚪ डेमो परीक्षण खाता' : language === 'mr' ? '⚪ डेमो खाते' : '⚪ Demo Simulation'}</span>
                         </span>
                       )}
                     </div>
 
-                    <p className="text-xs text-slate-400 font-mono mt-1">
-                      {language === 'hi' ? 'पंजीकरण:' : language === 'mr' ? 'नोंदणी:' : 'Reg No:'} <b className="text-slate-200">{rec.registrationNo}</b>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">
+                      {language === 'hi' ? 'पंजीकरण:' : language === 'mr' ? 'नोंदणी:' : 'Reg No:'} <b className="text-slate-800 dark:text-slate-200">{rec.registrationNo}</b>
                     </p>
-                    <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 flex-wrap">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1 flex-wrap">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>{rec.address}</span>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-slate-400 italic font-medium">
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                      <span className="text-slate-600 dark:text-slate-400 italic font-medium">
                         {rec.verificationRecord?.evidenceSubtitle[language] || rec.verificationRecord?.evidenceSubtitle.en}
                       </span>
                     </p>
@@ -602,10 +603,10 @@ export const FindRecyclerPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => speakRecycler(rec)}
-                      className={`p-2.5 rounded-xl border transition-all ${
+                      className={`p-2.5 rounded-xl border transition-all active:scale-95 shadow-sm ${
                         isSpeaking && speakingRecId === rec.id
                           ? 'bg-amber-500 text-slate-950 border-amber-400 ring-2 ring-amber-300'
-                          : 'bg-slate-800 hover:bg-emerald-950/80 border-slate-700 text-emerald-300'
+                          : 'bg-slate-100 hover:bg-emerald-50 border-slate-300 dark:bg-slate-800 dark:hover:bg-emerald-950/80 dark:border-slate-700 text-emerald-700 dark:text-emerald-300'
                       }`}
                       title={
                         isSpeaking && speakingRecId === rec.id
@@ -627,19 +628,19 @@ export const FindRecyclerPage: React.FC = () => {
 
                     <div className="text-right">
                       <span className="text-[10px] font-bold uppercase text-slate-400 block">{language === 'hi' ? 'सुझाव स्कोर' : language === 'mr' ? 'शिफारस स्कोअर' : 'Match Score'}</span>
-                      <span className={`text-sm font-black ${isSuspended ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      <span className={`text-sm font-black ${isSuspended ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                         {isSuspended
                           ? (language === 'hi' ? '0% (अयोग्य / निलंबित)' : language === 'mr' ? '०% (अपात्र)' : '0% (Barred)')
                           : `${rec.matchScore ?? 95}% Match`}
                       </span>
                     </div>
 
-                    <div className={`px-2.5 py-1 rounded-2xl flex items-center justify-center font-bold text-xs border shadow ${
-                      isSuspended ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-slate-950 text-slate-300 border-slate-800'
+                    <div className={`px-2.5 py-1 rounded-2xl flex items-center justify-center font-bold text-xs border shadow-sm ${
+                      isSuspended ? 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800' : 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-950 dark:text-slate-300 dark:border-slate-800'
                     }`}>
                       {rec.rating > 0 ? (
-                        <span className="flex items-center gap-1 text-amber-400">
-                          ★ <b className="text-white">{rec.rating}</b>
+                        <span className="flex items-center gap-1 text-amber-500">
+                          ★ <b className="text-slate-900 dark:text-white">{rec.rating}</b>
                         </span>
                       ) : (
                         <span className="text-[10px] text-slate-400 font-normal">
@@ -651,29 +652,29 @@ export const FindRecyclerPage: React.FC = () => {
                 </div>
 
                 {/* Price Display & Economics Card */}
-                <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Left: Quoted Rate */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block">
                       {language === 'hi' ? 'रीसाइक्लर का ऑफर दर' : language === 'mr' ? 'कारखान्याचा खरेदी दर' : 'Recycler Quoted Rate'}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className={`text-3xl font-black ${isSuspended ? 'text-slate-500 line-through' : 'text-emerald-400'}`}>₹{rate}</span>
-                      <span className="text-xs text-slate-400 font-bold">/ kg</span>
+                      <span className={`text-3xl font-black ${isSuspended ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-emerald-600 dark:text-emerald-400'}`}>₹{rate}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">/ kg</span>
                     </div>
-                    <p className="text-xs text-slate-300">
-                      {language === 'hi' ? 'कुल अनुमानित मूल्य' : language === 'mr' ? 'एकूण अंदाजे मूल्य' : 'Total Quoted Value'} ({targetWeight} kg): <b className="text-white font-extrabold text-sm">₹{grossEstimate}</b>
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
+                      {language === 'hi' ? 'कुल अनुमानित मूल्य' : language === 'mr' ? 'एकूण अंदाजे मूल्य' : 'Total Quoted Value'} ({targetWeight} kg): <b className="text-slate-900 dark:text-white font-extrabold text-sm">₹{grossEstimate}</b>
                     </p>
                   </div>
 
                   {/* Right: Doorstep vs Self-Delivery Economics */}
-                  <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-slate-800 pt-2 sm:pt-0 sm:pl-4">
+                  <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-800 pt-2 sm:pt-0 sm:pl-4">
                     <div className="flex items-center justify-between text-xs">
-                      <span className={`font-bold flex items-center gap-1.5 ${rec.pickupAvailable ? 'text-slate-200' : 'text-slate-500'}`}>
-                        <Truck className={`w-3.5 h-3.5 ${rec.pickupAvailable ? 'text-emerald-400' : 'text-slate-600'}`} />
+                      <span className={`font-bold flex items-center gap-1.5 ${rec.pickupAvailable ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                        <Truck className={`w-3.5 h-3.5 ${rec.pickupAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-600'}`} />
                         <span>{language === 'hi' ? 'विकल्प A: गाड़ी पिकअप' : language === 'mr' ? 'पर्याय A: जागेवर पिकअप' : 'Option A: Doorstep Pickup'}</span>
                       </span>
-                      <span className={`font-extrabold text-xs ${rec.pickupAvailable ? 'text-emerald-400' : 'text-slate-500'}`}>
+                      <span className={`font-extrabold text-xs ${rec.pickupAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
                         {rec.pickupAvailable
                           ? (language === 'hi' ? '₹0 कटौती (मुफ्त वाहन)' : language === 'mr' ? '₹० वजावट (मोफत)' : '₹0 Deductions (Free)')
                           : (language === 'hi' ? 'उपलब्ध नहीं' : language === 'mr' ? 'उपलब्ध नाही' : 'Not Offered')}
@@ -681,11 +682,11 @@ export const FindRecyclerPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
-                      <span className={`font-bold flex items-center gap-1.5 ${!rec.pickupAvailable ? 'text-amber-300' : 'text-slate-400'}`}>
+                      <span className={`font-bold flex items-center gap-1.5 ${!rec.pickupAvailable ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'}`}>
                         <span>🚶</span>
                         <span>{language === 'hi' ? 'विकल्प B: स्वयं डिलीवरी' : language === 'mr' ? 'पर्याय B: स्वतः वाहतूक' : 'Option B: Self Delivery'}</span>
                       </span>
-                      <span className={`text-xs ${!rec.pickupAvailable ? 'font-bold text-amber-400' : 'text-slate-400 italic text-[11px]'}`}>
+                      <span className={`text-xs ${!rec.pickupAvailable ? 'font-bold text-amber-600 dark:text-amber-400' : 'text-slate-400 italic text-[11px]'}`}>
                         {!rec.pickupAvailable
                           ? (language === 'hi' ? 'लागू (केंद्र पर जाना होगा)' : language === 'mr' ? 'लागू (केंद्रावर जावे लागेल)' : 'Direct Drop Required')
                           : (language === 'hi' ? 'वैकल्पिक' : language === 'mr' ? 'पर्यायी' : 'Optional')}
@@ -694,12 +695,12 @@ export const FindRecyclerPage: React.FC = () => {
 
                     <div className="text-[11px] font-medium pt-1">
                       {rec.pickupAvailable ? (
-                        <span className="text-emerald-300/90 flex items-center gap-1">
+                        <span className="text-emerald-700 dark:text-emerald-300/90 flex items-center gap-1">
                           <span>✅</span>
                           <span>{language === 'hi' ? 'रीसाइक्लर का वाहन आपके पते पर आकर वजन करेगा।' : language === 'mr' ? 'रिसायकलरचे वाहन तुमच्या पत्त्यावर येऊन वजन करेल.' : 'Verified vehicle will collect & weigh at your location.'}</span>
                         </span>
                       ) : (
-                        <span className="text-amber-300/90 flex items-center gap-1">
+                        <span className="text-amber-700 dark:text-amber-300/90 flex items-center gap-1">
                           <span>⚠️</span>
                           <span>{language === 'hi' ? 'इस केंद्र पर वाहन पिकअप नहीं है, स्वयं माल पहुंचाना होगा।' : language === 'mr' ? 'या केंद्रावर स्वतः माल पोहोचवावा लागेल.' : 'Requires direct facility drop-off (No doorstep vehicle).'}</span>
                         </span>
@@ -710,23 +711,23 @@ export const FindRecyclerPage: React.FC = () => {
 
                 {/* Logistics Badges */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <span className="text-slate-500 text-[10px] block">{language === 'hi' ? 'दूरी' : language === 'mr' ? 'अंतर' : 'Distance'}</span>
-                    <span className="font-extrabold text-slate-200">~{rec.estimatedDistanceKm || 6.5} km</span>
+                    <span className="font-extrabold text-slate-800 dark:text-slate-200">~{rec.estimatedDistanceKm || 6.5} km</span>
                   </div>
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <span className="text-slate-500 text-[10px] block">{language === 'hi' ? 'डोरस्टेप पिकअप' : language === 'mr' ? 'जागेवर पिकअप' : 'Pickup'}</span>
-                    <span className="font-extrabold text-emerald-400">
+                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                       {rec.pickupAvailable ? (language === 'hi' ? '🚚 मुफ्त उपलब्ध' : language === 'mr' ? '🚚 मोफत उपलब्ध' : '🚚 Available') : (language === 'hi' ? 'स्वयं डिलीवरी' : language === 'mr' ? 'स्वतः वाहतूक' : 'Self Drop')}
                     </span>
                   </div>
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <span className="text-slate-500 text-[10px] block">{language === 'hi' ? 'सर्विस दायरा' : language === 'mr' ? 'कार्यक्षेत्र' : 'Service Radius'}</span>
-                    <span className="font-extrabold text-slate-200">{rec.serviceRadiusKm} km</span>
+                    <span className="font-extrabold text-slate-800 dark:text-slate-200">{rec.serviceRadiusKm} km</span>
                   </div>
-                  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <span className="text-slate-500 text-[10px] block">{language === 'hi' ? 'प्रमाणित रीसाइक्लिंग' : 'Verified Recycled'}</span>
-                    <span className="font-extrabold text-slate-200">
+                    <span className="font-extrabold text-slate-800 dark:text-slate-200">
                       {rec.totalProcessedKg > 0
                         ? `${(rec.totalProcessedKg / 1000).toFixed(1)} ${language === 'hi' ? 'टन' : 'tons'}`
                         : (language === 'hi' ? '0 टन (प्रारंभिक)' : '0 tons (New)')}
@@ -736,26 +737,26 @@ export const FindRecyclerPage: React.FC = () => {
 
                 {/* Explainable MCDA Ranking Accordion */}
                 {rec.rankingExplanation && (
-                  <div className="border-t border-slate-800 pt-2">
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-2">
                     <button
                       type="button"
                       onClick={() => setExpandedExplanationId(isExpanded ? null : rec.id)}
-                      className="text-xs font-bold text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition-colors"
+                      className="text-xs font-bold text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 flex items-center gap-1 transition-colors"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>{t.mcdaWhyRanked} ({rec.matchScore}% {language === 'hi' ? 'स्कोर' : language === 'mr' ? 'स्कोअर' : 'Score'})</span>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
 
                     {isExpanded && (
-                      <div className="mt-2.5 bg-slate-950 rounded-xl p-3 border border-slate-800 text-xs space-y-1.5 animate-fadeIn">
-                        <div className="flex items-center justify-between text-slate-400 text-[11px] pb-1 border-b border-slate-800">
+                      <div className="mt-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl p-3 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 animate-fadeIn">
+                        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[11px] pb-1 border-b border-slate-200 dark:border-slate-800">
                           <span>{language === 'hi' ? 'पारदर्शी स्कोरिंग विधि:' : language === 'mr' ? 'पारदर्शक स्कोअरिंग पद्धत:' : 'Algorithmic Basis:'}</span>
-                          <span className="font-mono text-emerald-400">MCDA Algorithmic Score</span>
+                          <span className="font-mono text-emerald-600 dark:text-emerald-400">MCDA Algorithmic Score</span>
                         </div>
                         {rec.rankingExplanation.reasons.map((r, i) => (
-                          <div key={i} className="flex items-center gap-2 text-slate-300 text-xs">
-                            <span className="text-emerald-400 font-bold">•</span>
+                          <div key={i} className="flex items-center gap-2 text-slate-700 dark:text-slate-300 text-xs">
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">•</span>
                             <span>{r[language] || r.en}</span>
                           </div>
                         ))}
@@ -765,18 +766,18 @@ export const FindRecyclerPage: React.FC = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-800 gap-2 flex-wrap">
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 gap-2 flex-wrap">
                   <a
                     href={isSuspended ? '#' : `tel:${rec.contactPhone}`}
                     onClick={(e) => handleCallRecycler(e, rec)}
-                    className={`min-h-[48px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border shadow active:scale-95 transition-all ${
+                    className={`min-h-[48px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border shadow-sm active:scale-95 transition-all ${
                       isSuspended
-                        ? 'bg-rose-950/20 border-rose-900/60 text-rose-300 hover:bg-rose-950/40 cursor-not-allowed'
-                        : 'bg-slate-800 hover:bg-slate-750 text-slate-200 border-slate-700'
+                        ? 'bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/60 dark:text-rose-300 cursor-not-allowed'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-200 dark:border-slate-700'
                     }`}
                     title={isSuspended ? 'निलंबित केंद्र - संपर्क प्रतिबंधित' : 'क्लिक करके कॉल करें या नंबर कॉपी करें'}
                   >
-                    <Phone className={`w-3.5 h-3.5 ${isSuspended ? 'text-rose-400' : 'text-emerald-400'}`} />
+                    <Phone className={`w-3.5 h-3.5 ${isSuspended ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`} />
                     <span>{language === 'hi' ? 'कॉल करें' : language === 'mr' ? 'कॉल करा' : 'Call'} ({rec.contactPhone})</span>
                   </a>
 
@@ -784,16 +785,16 @@ export const FindRecyclerPage: React.FC = () => {
                     <button
                       type="button"
                       disabled={true}
-                      className="min-h-[48px] px-6 py-2.5 bg-rose-950/40 border border-rose-800/80 text-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-not-allowed opacity-85"
+                      className="min-h-[48px] px-6 py-2.5 bg-rose-100 border border-rose-300 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800/80 dark:text-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-not-allowed opacity-85 shadow-sm"
                     >
-                      <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                       <span>{language === 'hi' ? 'लेनदेन प्रतिबंधित (निलंबित केंद्र)' : language === 'mr' ? 'व्यवहार बंदी (निलंबित)' : 'Trading Barred (Suspended)'}</span>
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => setSelectedRecyclerForAction(rec)}
-                      className="min-h-[48px] px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-950 flex items-center gap-2"
+                      className="min-h-[48px] px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-2 transition-all"
                     >
                       <span>{activeLot ? t.requestQuoteBtn : (language === 'hi' ? 'इस खरीदार को बेचें' : language === 'mr' ? 'या खरेदीदारास विका' : 'Sell to Recycler')}</span>
                       <ArrowRight className="w-4 h-4" />
@@ -802,70 +803,71 @@ export const FindRecyclerPage: React.FC = () => {
                 </div>
               </div>
             );
-          })
+          })}
+          </div>
         )}
       </div>
 
       {/* Confirmation & Acceptance Modal */}
       {selectedRecyclerForAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-lg font-black text-white flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <span>🤝</span>
                 <span>{language === 'hi' ? 'सीधा कोटेशन / बोली का अनुरोध' : language === 'mr' ? 'थेट कोटेशन विनंती' : 'Request Direct Purchase Quote'}</span>
               </h3>
               <button
                 onClick={() => setSelectedRecyclerForAction(null)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {actionSuccessMessage ? (
-              <div className="bg-emerald-950/60 border border-emerald-700 rounded-2xl p-6 text-center space-y-3">
-                <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-400 animate-bounce" />
-                <h4 className="text-base font-black text-white">{language === 'hi' ? 'कोटेशन अनुरोध सफल!' : language === 'mr' ? 'कोटेशन विनंती यशस्वी!' : 'Quote Requested Successfully!'}</h4>
-                <p className="text-xs text-emerald-200">{actionSuccessMessage}</p>
-                <p className="text-[11px] text-slate-400 font-mono">{language === 'hi' ? 'My Requests पेज पर ले जाया जा रहा है...' : language === 'mr' ? 'My Requests पृष्ठावर पुनर्निर्देशित करत आहे...' : 'Redirecting to My Requests...'}</p>
+              <div className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 rounded-2xl p-6 text-center space-y-3">
+                <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-600 dark:text-emerald-400 animate-bounce" />
+                <h4 className="text-base font-black text-slate-900 dark:text-white">{language === 'hi' ? 'कोटेशन अनुरोध सफल!' : language === 'mr' ? 'कोटेशन विनंती यशस्वी!' : 'Quote Requested Successfully!'}</h4>
+                <p className="text-xs text-emerald-800 dark:text-emerald-200">{actionSuccessMessage}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{language === 'hi' ? 'My Requests पेज पर ले जाया जा रहा है...' : language === 'mr' ? 'My Requests पृष्ठावर पुनर्निर्देशित करत आहे...' : 'Redirecting to My Requests...'}</p>
               </div>
             ) : (
               <>
-                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3 text-xs">
+                <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">{language === 'hi' ? 'अधिकृत रीसाइक्लर:' : language === 'mr' ? 'अधिकृत रिसायकलर:' : 'Authorized Recycler:'}</span>
-                    <b className="text-white text-right">{selectedRecyclerForAction.facilityName}</b>
+                    <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'अधिकृत रीसाइक्लर:' : language === 'mr' ? 'अधिकृत रिसायकलर:' : 'Authorized Recycler:'}</span>
+                    <b className="text-slate-900 dark:text-white text-right">{selectedRecyclerForAction.facilityName}</b>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">{language === 'hi' ? 'पंजीकरण संख्या:' : language === 'mr' ? 'नोंदणी क्रमांक:' : 'Registration No:'}</span>
-                    <b className="font-mono text-emerald-400">{selectedRecyclerForAction.registrationNo}</b>
+                    <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'पंजीकरण संख्या:' : language === 'mr' ? 'नोंदणी क्रमांक:' : 'Registration No:'}</span>
+                    <b className="font-mono text-emerald-600 dark:text-emerald-400">{selectedRecyclerForAction.registrationNo}</b>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">{language === 'hi' ? 'सामग्री:' : language === 'mr' ? 'साहित्य प्रकार:' : 'Material:'}</span>
-                    <b className="text-white">{activeLot ? activeLot.subCategory || activeLot.materialCategory : selectedCategory}</b>
+                    <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'सामग्री:' : language === 'mr' ? 'साहित्य प्रकार:' : 'Material:'}</span>
+                    <b className="text-slate-900 dark:text-white">{activeLot ? activeLot.subCategory || activeLot.materialCategory : selectedCategory}</b>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">{language === 'hi' ? 'वजन:' : language === 'mr' ? 'वजन:' : 'Weight:'}</span>
-                    <b className="text-white">{activeLot ? activeLot.approxWeight : 15} kg</b>
+                    <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'वजन:' : language === 'mr' ? 'वजन:' : 'Weight:'}</span>
+                    <b className="text-slate-900 dark:text-white">{activeLot ? activeLot.approxWeight : 15} kg</b>
                   </div>
-                  <div className="flex justify-between pt-2 border-t border-slate-800">
-                    <span className="text-slate-400">{language === 'hi' ? 'कोटेड दर:' : language === 'mr' ? 'दर:' : 'Quoted Rate:'}</span>
-                    <b className="text-emerald-400 text-sm">₹{selectedRecyclerForAction.offeredRate || 85} / kg</b>
+                  <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'कोटेड दर:' : language === 'mr' ? 'दर:' : 'Quoted Rate:'}</span>
+                    <b className="text-emerald-600 dark:text-emerald-400 text-sm">₹{selectedRecyclerForAction.offeredRate || 85} / kg</b>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">{language === 'hi' ? 'कुल अनुमानित राशि:' : language === 'mr' ? 'एकूण अंदाजे रक्कम:' : 'Total Estimated Payout:'}</span>
-                    <b className="text-white font-black text-base">
+                    <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'कुल अनुमानित राशि:' : language === 'mr' ? 'एकूण अंदाजे रक्कम:' : 'Total Estimated Payout:'}</span>
+                    <b className="text-slate-900 dark:text-white font-black text-base">
                       ₹{Math.round((selectedRecyclerForAction.offeredRate || 85) * (activeLot ? activeLot.approxWeight : 15))}
                     </b>
                   </div>
-                  <div className="flex justify-between text-emerald-300">
+                  <div className="flex justify-between text-emerald-700 dark:text-emerald-300">
                     <span>{language === 'hi' ? 'डोरस्टेप वाहन पिकअप:' : language === 'mr' ? 'जागेवर पिकअप:' : 'Doorstep Pickup:'}</span>
                     <b>{selectedRecyclerForAction.pickupAvailable ? (language === 'hi' ? 'मुफ्त उपलब्ध (₹0 कटौती)' : language === 'mr' ? 'मोफत उपलब्ध (₹० वजावट)' : 'Free Doorstep Collection') : (language === 'hi' ? 'स्वयं डिलीवरी' : language === 'mr' ? 'स्वतः वाहतूक' : 'Self Drop')}</b>
                   </div>
                 </div>
 
-                <div className="text-[11px] text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80">
                   {language === 'hi'
                     ? 'ℹ️ कोटेशन प्राप्त होने के बाद यह औपचारिक ऑफर आपके "My Requests" पेज पर उपलब्ध होगा। आप वहां विवरण की समीक्षा करके इसे स्वीकार कर सकते हैं। अंतिम भुगतान डिजिटल कांटे पर तौल के बाद सीधे जमा होता है।'
                     : language === 'mr'
@@ -878,7 +880,7 @@ export const FindRecyclerPage: React.FC = () => {
                     type="button"
                     onClick={() => setSelectedRecyclerForAction(null)}
                     disabled={actionProcessing}
-                    className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700"
                   >
                     {language === 'hi' ? 'रद्द करें' : language === 'mr' ? 'रद्द करा' : 'Cancel'}
                   </button>
@@ -886,7 +888,7 @@ export const FindRecyclerPage: React.FC = () => {
                     type="button"
                     onClick={handleConfirmAction}
                     disabled={actionProcessing}
-                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-950 flex items-center gap-1.5"
+                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 transition-all"
                   >
                     {actionProcessing ? (language === 'hi' ? 'कोटेशन तैयार हो रहा है...' : language === 'mr' ? 'कोटेशन तयार होत आहे...' : 'Generating Quote...') : (language === 'hi' ? 'कोटेशन प्राप्त करें' : language === 'mr' ? 'कोटेशन मिळवा' : 'Request Official Quote')}
                   </button>
@@ -900,23 +902,23 @@ export const FindRecyclerPage: React.FC = () => {
       {/* CPCB Gazette Verification Proof Modal */}
       {selectedVerificationProof && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-slate-900 border-2 border-emerald-500/80 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border-2 border-emerald-500/80 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="flex items-start justify-between pb-3 border-b border-slate-800">
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shrink-0 shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/50 flex items-center justify-center shrink-0 shadow-sm">
                   <ShieldCheck className="w-7 h-7" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40">
                       MoEFCC • CPCB Verified
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
                       Schedule I & II
                     </span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5">
                     {language === 'hi'
                       ? 'CPCB सरकारी राजपत्र सत्यापन प्रमाण'
                       : language === 'mr'
@@ -928,7 +930,7 @@ export const FindRecyclerPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedVerificationProof(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="बंद करें"
               >
                 <X className="w-5 h-5" />
@@ -936,11 +938,11 @@ export const FindRecyclerPage: React.FC = () => {
             </div>
 
             {/* Official Gazette Status Banner */}
-            <div className="bg-gradient-to-r from-emerald-950/90 via-emerald-900/60 to-slate-900 border border-emerald-500/60 rounded-2xl p-4 space-y-2">
+            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-white dark:from-emerald-950/90 dark:via-emerald-900/60 dark:to-slate-900 border border-emerald-300 dark:border-emerald-500/60 rounded-2xl p-4 space-y-2 shadow-sm">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span className="text-sm font-black text-emerald-200">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="text-sm font-black text-emerald-900 dark:text-emerald-200">
                     {language === 'hi'
                       ? 'वैधानिक CPCB राजपत्र में पंजीकृत इकाई'
                       : language === 'mr'
@@ -948,65 +950,65 @@ export const FindRecyclerPage: React.FC = () => {
                       : 'Statutory CPCB Gazette Registered Facility'}
                   </span>
                 </div>
-                <span className="font-mono text-xs font-black text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-950 border border-emerald-600/60">
+                <span className="font-mono text-xs font-black text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-600/60">
                   STATUS: ACTIVE / VERIFIED
                 </span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                 {selectedVerificationProof.verificationRecord?.verificationSource ||
                   'Cross-referenced with CPCB Gazette Master Registry (Schedule I & II Authorized E-Waste Recycler, MoEFCC)'}
               </p>
             </div>
 
             {/* Details Table */}
-            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3 text-xs">
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-900">
-                <span className="text-slate-400">{language === 'hi' ? 'राजपत्र में पंजीकृत नाम:' : language === 'mr' ? 'नोंदणीकृत अधिकृत नाव:' : 'Gazetted Facility Name:'}</span>
-                <b className="text-white text-sm font-black">
+            <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-xs">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-900">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'राजपत्र में पंजीकृत नाम:' : language === 'mr' ? 'नोंदणीकृत अधिकृत नाव:' : 'Gazetted Facility Name:'}</span>
+                <b className="text-slate-900 dark:text-white text-sm font-black">
                   {selectedVerificationProof.verificationRecord?.registryDetails?.cpcbFacilityName || selectedVerificationProof.facilityName}
                 </b>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-900">
-                <span className="text-slate-400">{language === 'hi' ? 'CPCB पंजीकरण क्रमांक:' : language === 'mr' ? 'CPCB नोंदणी क्रमांक:' : 'Official CPCB Registration No:'}</span>
-                <b className="font-mono text-emerald-400 text-xs font-black">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-900">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'CPCB पंजीकरण क्रमांक:' : language === 'mr' ? 'CPCB नोंदणी क्रमांक:' : 'Official CPCB Registration No:'}</span>
+                <b className="font-mono text-emerald-600 dark:text-emerald-400 text-xs font-black">
                   {selectedVerificationProof.verificationRecord?.cpcbRegistrationNo || selectedVerificationProof.registrationNo}
                 </b>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-900">
-                <span className="text-slate-400">{language === 'hi' ? 'अधिकृत वार्षिक क्षमता:' : language === 'mr' ? 'अधिकृत वार्षिक क्षमता:' : 'Authorized Processing Capacity:'}</span>
-                <b className="text-slate-200 font-bold">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-900">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'अधिकृत वार्षिक क्षमता:' : language === 'mr' ? 'अधिकृत वार्षिक क्षमता:' : 'Authorized Processing Capacity:'}</span>
+                <b className="text-slate-800 dark:text-slate-200 font-bold">
                   {selectedVerificationProof.verificationRecord?.registryDetails?.authorizedCapacityMTA
                     ? `${selectedVerificationProof.verificationRecord.registryDetails.authorizedCapacityMTA.toLocaleString('en-IN')} MTA (मीट्रिक टन/वर्ष)`
                     : '5,400 MTA (मीट्रिक टन/वर्ष)'}
                 </b>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-900">
-                <span className="text-slate-400">{language === 'hi' ? 'राजपत्र वैधता अवधि:' : language === 'mr' ? 'वैधता मुदत:' : 'Statutory Validity Period:'}</span>
-                <b className="text-emerald-300 font-bold">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-900">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'राजपत्र वैधता अवधि:' : language === 'mr' ? 'वैधता मुदत:' : 'Statutory Validity Period:'}</span>
+                <b className="text-emerald-700 dark:text-emerald-300 font-bold">
                   {selectedVerificationProof.verificationRecord?.registryDetails?.validUntil || '31 Dec 2028'} (सक्रिय / Active)
                 </b>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-900">
-                <span className="text-slate-400">{language === 'hi' ? 'अधिकृत सामग्री श्रेणियां:' : language === 'mr' ? 'अधिकृत ई-कचरा प्रकार:' : 'Authorized E-Waste Categories:'}</span>
-                <span className="text-slate-200 font-medium">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-900">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'अधिकृत सामग्री श्रेणियां:' : language === 'mr' ? 'अधिकृत ई-कचरा प्रकार:' : 'Authorized E-Waste Categories:'}</span>
+                <span className="text-slate-700 dark:text-slate-200 font-medium">
                   {selectedVerificationProof.verificationRecord?.registryDetails?.categoriesAuthorized?.join(', ') || 'PCB, Screens, IT & Telecom, Batteries, Mixed E-Waste'}
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-900">
-                <span className="text-slate-400">{language === 'hi' ? 'संयंत्र का भौतिक पता:' : language === 'mr' ? 'कारखान्याचा पत्ता:' : 'Physical Plant Address:'}</span>
-                <span className="text-slate-300 font-medium">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-1 pb-2 border-b border-slate-200 dark:border-slate-900">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'संयंत्र का भौतिक पता:' : language === 'mr' ? 'कारखान्याचा पत्ता:' : 'Physical Plant Address:'}</span>
+                <span className="text-slate-700 dark:text-slate-300 font-medium">
                   {selectedVerificationProof.address}
                 </span>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
-                <span className="text-slate-400">{language === 'hi' ? 'प्लेटफॉर्म लेजर पर वास्तविक रीसाइक्लिंग:' : language === 'mr' ? 'वास्तविक रीसायकलिंग वजन:' : 'Ledger Verified Tonnage:'}</span>
-                <b className="text-emerald-400 font-black">
+                <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'प्लेटफॉर्म लेजर पर वास्तविक रीसाइक्लिंग:' : language === 'mr' ? 'वास्तविक रीसायकलिंग वजन:' : 'Ledger Verified Tonnage:'}</span>
+                <b className="text-emerald-600 dark:text-emerald-400 font-black">
                   {selectedVerificationProof.totalProcessedKg > 0
                     ? `${(selectedVerificationProof.totalProcessedKg / 1000).toFixed(1)} टन (ऑडिटेड रिकॉर्ड)`
                     : (language === 'hi' ? '0 टन (प्रारंभिक चरण)' : '0 tons (New)')}
@@ -1015,12 +1017,12 @@ export const FindRecyclerPage: React.FC = () => {
             </div>
 
             {/* Informational Guidance for Informal Collector */}
-            <div className="text-xs text-slate-300 bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-1.5">
-              <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
+            <div className="text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/70 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
                 <Info className="w-4 h-4 shrink-0" />
                 <span>{language === 'hi' ? 'कबाड़ीवाला कनेक्ट सत्यता एवं सुरक्षा गारंटी' : language === 'mr' ? 'कबाडीवाला कनेक्ट सुरक्षा हमी' : 'Kabadiwala Connect Verification Guarantee'}</span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                 {language === 'hi'
                   ? 'यह सत्यापन केंद्रीय प्रदूषण नियंत्रण बोर्ड (CPCB) ई-वेस्ट (प्रबंधन) नियम 2022 के अधिकृत मास्टर रजिस्टर से रियल-टाइम जांचा गया है। यहां अपना ई-कचरा बेचने पर आपको डिजिटल तौल रसीद और पूरा पारदर्शी भुगतान मिलता है।'
                   : language === 'mr'
@@ -1034,7 +1036,7 @@ export const FindRecyclerPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedVerificationProof(null)}
-                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-xl text-xs font-bold transition-all"
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-750 dark:text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-slate-700"
               >
                 {language === 'hi' ? 'बंद करें' : language === 'mr' ? 'बंद करा' : 'Close'}
               </button>
@@ -1045,7 +1047,7 @@ export const FindRecyclerPage: React.FC = () => {
                   setSelectedVerificationProof(null);
                   setSelectedRecyclerForAction(target);
                 }}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-950 flex items-center gap-1.5 transition-all"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 transition-all"
               >
                 <span>{language === 'hi' ? 'इस सत्यापित केंद्र को बेचें' : language === 'mr' ? 'या केंद्रास विका' : 'Sell to this Verified Center'}</span>
                 <ArrowRight className="w-4 h-4" />

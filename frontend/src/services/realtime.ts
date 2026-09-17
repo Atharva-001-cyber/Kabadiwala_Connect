@@ -68,6 +68,28 @@ class RealtimeSyncService {
             window.dispatchEvent(new CustomEvent('kb:sync', { detail: { table: 'traceability_logs', payload } }));
           }
         )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'anomalies' },
+          (payload: any) => {
+            invalidateCache('anomalies');
+            invalidateCache('admin_kpis');
+            invalidateCache('dataset_counts');
+            this.notifyListeners({ table: 'anomalies', eventType: payload.eventType, record: payload.new || payload.old });
+            window.dispatchEvent(new CustomEvent('kb:sync', { detail: { table: 'anomalies', payload } }));
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'disputes' },
+          (payload: any) => {
+            invalidateCache('disputes');
+            invalidateCache('admin_kpis');
+            invalidateCache('dataset_counts');
+            this.notifyListeners({ table: 'disputes', eventType: payload.eventType, record: payload.new || payload.old });
+            window.dispatchEvent(new CustomEvent('kb:sync', { detail: { table: 'disputes', payload } }));
+          }
+        )
         .subscribe((status: string, err: any) => {
           if (status === 'SUBSCRIBED') {
             console.log('⚡ [REALTIME SYNC] Connected to Supabase Realtime channel.');
