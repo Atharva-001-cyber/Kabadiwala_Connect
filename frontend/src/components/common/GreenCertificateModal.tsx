@@ -2,7 +2,7 @@ import React from 'react';
 import { X, Award, ShieldCheck, Printer, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Lot, HandoverRecord } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
 
 interface GreenCertificateModalProps {
   lot: Lot;
@@ -87,7 +87,7 @@ export const GreenCertificateModal: React.FC<GreenCertificateModalProps> = ({ lo
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <span className="text-slate-500 text-xs block">{t.certAuthorizedRecycler}</span>
-              <span className="font-semibold text-slate-900">ABC E-Waste Recycling Pvt Ltd</span>
+              <span className="font-semibold text-slate-900">{formatUserDisplayName('ABC E-Waste Recycling Pvt Ltd', 'RECYCLER', language)}</span>
               <span className="text-[10px] text-emerald-700 block">Reg: CPCB/EWR/UP/LKO/8812</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">

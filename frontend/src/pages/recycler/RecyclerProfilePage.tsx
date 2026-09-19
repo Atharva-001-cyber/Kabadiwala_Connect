@@ -26,7 +26,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { MaterialCategory, RecyclerProfile } from '../../types';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName, formatAddressLocation } from '../../i18n/translations';
 
 const ALL_CATEGORIES: MaterialCategory[] = [
   'PCB',
@@ -166,17 +166,33 @@ export const RecyclerProfilePage: React.FC = () => {
             </div>
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{activeProfile.facilityName}</h1>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                  {formatUserDisplayName(activeProfile.facilityName || 'ABC E-Waste Recycling Pvt Ltd', 'RECYCLER', language)}
+                </h1>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-500/30 inline-flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>CPCB Gazette Verified (EPR Compliant)</span>
+                  <span>
+                    {language === 'hi'
+                      ? 'CPCB राजपत्र सत्यापित (EPR अनुपालन)'
+                      : language === 'mr'
+                      ? 'CPCB राजपत्र सत्यापित (EPR अनुपालन)'
+                      : 'CPCB Gazette Verified (EPR Compliant)'}
+                  </span>
                 </span>
               </div>
               <p className="text-xs sm:text-sm font-mono text-blue-700 dark:text-blue-400 font-extrabold tracking-wide">
                 Reg No: {activeProfile.registrationNo || 'CPCB/EWR/UP/LKO/2023/5521'}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Authorized Capacity: <b className="text-emerald-700 dark:text-emerald-400">4,800 MTA</b> • Central Pollution Control Board (CPCB) Rule 13 Registered
+                {language === 'hi' ? 'अधिकृत क्षमता:' : language === 'mr' ? 'अधिकृत क्षमता:' : 'Authorized Capacity:'}{' '}
+                <b className="text-emerald-700 dark:text-emerald-400">
+                  {language === 'hi' ? '4,800 मीट्रिक टन' : language === 'mr' ? '४,८०० मीट्रिक टन' : '4,800 MTA'}
+                </b>{' '}
+                • {language === 'hi'
+                  ? 'केंद्रीय प्रदूषण नियंत्रण बोर्ड (CPCB) नियम 13 पंजीकृत'
+                  : language === 'mr'
+                  ? 'मध्यवर्ती प्रदूषण नियंत्रण मंडळ (CPCB) नियम १३ नोंदणीकृत'
+                  : 'Central Pollution Control Board (CPCB) Rule 13 Registered'}
               </p>
             </div>
           </div>
@@ -185,7 +201,7 @@ export const RecyclerProfilePage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <div className="bg-slate-50 dark:bg-slate-950 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-right">
               <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-                {language === 'hi' ? 'लाइसेंस वैधता' : 'Authorization Valid Until'}
+                {language === 'hi' ? 'लाइसेंस वैधता' : language === 'mr' ? 'परवाना वैधतेचा कालावधी' : 'Authorization Valid Until'}
               </span>
               <span className="text-sm font-mono font-black text-emerald-700 dark:text-emerald-400">
                 {activeProfile.authValidUntil || '2028-12-31'}
@@ -198,7 +214,9 @@ export const RecyclerProfilePage: React.FC = () => {
               className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-800 dark:text-white font-bold rounded-2xl text-xs border border-slate-300 dark:border-slate-700 flex items-center gap-2 shadow-sm transition-all"
             >
               <Edit3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span>Edit Profile & Rates</span>
+              <span>
+                {language === 'hi' ? 'प्रोफ़ाइल एवं दरें बदलें' : language === 'mr' ? 'प्रोफाईल व दर बदला' : 'Edit Profile & Rates'}
+              </span>
             </button>
 
             <button
@@ -207,7 +225,9 @@ export const RecyclerProfilePage: React.FC = () => {
               className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-black rounded-2xl text-xs shadow-md flex items-center gap-2 transition-all"
             >
               <Award className="w-4 h-4 text-emerald-200" />
-              <span>View CPCB Gazette</span>
+              <span>
+                {language === 'hi' ? 'CPCB राजपत्र देखें' : language === 'mr' ? 'CPCB राजपत्र पहा' : 'View CPCB Gazette'}
+              </span>
             </button>
           </div>
         </div>
@@ -218,12 +238,14 @@ export const RecyclerProfilePage: React.FC = () => {
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="font-extrabold uppercase tracking-wider text-[10px]">
-                {language === 'hi' ? 'संपर्क अधिकारी' : 'Contact Officer'}
+                {language === 'hi' ? 'संपर्क अधिकारी' : language === 'mr' ? 'संपर्क अधिकारी' : 'Contact Officer'}
               </span>
               <UserCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <span className="font-black text-slate-900 dark:text-white text-sm block">{activeProfile.contactPerson || 'Arun Bhatia'}</span>
+              <span className="font-black text-slate-900 dark:text-white text-sm block">
+                {formatUserDisplayName(activeProfile.contactPerson || 'Arun Bhatia', 'RECYCLER', language)}
+              </span>
               <span className="text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
                 <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
                 <span>{formatPhone(activeProfile.contactPhone)}</span>
@@ -239,19 +261,19 @@ export const RecyclerProfilePage: React.FC = () => {
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="font-extrabold uppercase tracking-wider text-[10px]">
-                {language === 'hi' ? 'प्लांट स्थान एवं GPS' : 'Facility Location & GPS'}
+                {language === 'hi' ? 'प्लांट स्थान एवं GPS' : language === 'mr' ? 'प्लांटचे ठिकाण व GPS' : 'Facility Location & GPS'}
               </span>
               <MapPin className="w-4 h-4 text-rose-500" />
             </div>
             <div>
               <span className="font-bold text-slate-900 dark:text-white text-xs block line-clamp-2">
-                {activeProfile.address || 'Plot 12, Industrial Area, Amausi, Lucknow, UP 226008'}
+                {formatAddressLocation(activeProfile.address || 'Plot 12, Industrial Area, Amausi, Lucknow, UP 226008', language)}
               </span>
               <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 block mt-1">
                 {activeProfile.latitude}° N, {activeProfile.longitude}° E
               </span>
               <span className="inline-block mt-1 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[9px] font-bold border border-blue-200 dark:border-blue-800">
-                Weighbridge Active
+                {language === 'hi' ? 'धर्मकांटा / डिजिटल कांटा सक्रिय' : language === 'mr' ? 'वजन काटा सक्रिय' : 'Weighbridge Active'}
               </span>
             </div>
           </div>
@@ -260,19 +282,21 @@ export const RecyclerProfilePage: React.FC = () => {
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="font-extrabold uppercase tracking-wider text-[10px]">
-                {language === 'hi' ? 'पिकअप लॉजिस्टिक्स' : 'Doorstep Pickup Logistics'}
+                {language === 'hi' ? 'पिकअप लॉजिस्टिक्स' : language === 'mr' ? 'पिकअप लॉजिस्टिक्स' : 'Doorstep Pickup Logistics'}
               </span>
               <Truck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <span className="font-black text-emerald-700 dark:text-emerald-400 text-sm block">
-                {activeProfile.pickupAvailable ? 'Active Fleet' : 'Self-Delivery Only'}
+                {activeProfile.pickupAvailable 
+                  ? (language === 'hi' ? 'सक्रिय वाहन बेड़ा' : language === 'mr' ? 'सक्रिय वाहने' : 'Active Fleet') 
+                  : (language === 'hi' ? 'केवल स्व-डिलीवरी' : language === 'mr' ? 'केवळ स्व-डिलिव्हरी' : 'Self-Delivery Only')}
               </span>
               <span className="text-xs text-slate-600 dark:text-slate-300 block mt-0.5">
-                Service Radius: <b className="text-slate-900 dark:text-white">{activeProfile.serviceRadiusKm || 50} km</b>
+                {language === 'hi' ? 'सेवा दायरा:' : language === 'mr' ? 'सेवा त्रिज्या:' : 'Service Radius:'} <b className="text-slate-900 dark:text-white">{activeProfile.serviceRadiusKm || 50} {language === 'hi' ? 'किमी' : language === 'mr' ? 'किमी' : 'km'}</b>
               </span>
               <span className="text-[10px] text-slate-500 block mt-1">
-                Lucknow Metro & NCR Industrial Corridors
+                {language === 'hi' ? 'लखनऊ मेट्रो एवं एनसीआर औद्योगिक कॉरिडोर' : language === 'mr' ? 'लखनऊ मेट्रो व एनसीआर औद्योगिक पट्टा' : 'Lucknow Metro & NCR Industrial Corridors'}
               </span>
             </div>
           </div>
@@ -281,19 +305,19 @@ export const RecyclerProfilePage: React.FC = () => {
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 space-y-2">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
               <span className="font-extrabold uppercase tracking-wider text-[10px]">
-                {language === 'hi' ? 'प्रमाणित रीसाइक्लिंग' : 'Total Certified Recycling'}
+                {language === 'hi' ? 'प्रमाणित रीसाइक्लिंग' : language === 'mr' ? 'प्रमाणित रिसायकलिंग' : 'Total Certified Recycling'}
               </span>
               <Award className="w-4 h-4 text-amber-500" />
             </div>
             <div>
               <span className="font-black text-emerald-700 dark:text-emerald-400 text-sm block">
-                {((activeProfile.totalProcessedKg || 42500) / 1000).toFixed(1)} Metric Tons
+                {((activeProfile.totalProcessedKg || 42500) / 1000).toFixed(1)} {language === 'hi' ? 'मीट्रिक टन' : language === 'mr' ? 'मीट्रिक टन' : 'Metric Tons'}
               </span>
               <span className="text-xs text-amber-600 dark:text-amber-300 font-bold block mt-0.5">
-                ★ {activeProfile.rating || 4.9} / 5.0 Rating
+                ★ {activeProfile.rating || 4.9} / 5.0 {language === 'hi' ? 'रेटिंग' : language === 'mr' ? 'रेटिंग' : 'Rating'}
               </span>
               <span className="text-[10px] text-slate-500 block mt-1">
-                211 Verified Settlements & Form-6s
+                {language === 'hi' ? '211 सत्यापित निपटान एवं फॉर्म-6' : language === 'mr' ? '२११ सत्यापित पावत्या व फॉर्म-६' : '211 Verified Settlements & Form-6s'}
               </span>
             </div>
           </div>
@@ -306,10 +330,20 @@ export const RecyclerProfilePage: React.FC = () => {
           <div>
             <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Material Procurement Benchmark Rates (₹ / kg)</span>
+              <span>
+                {language === 'hi'
+                  ? 'सामग्री खरीद बेंचमार्क दरें (₹ / किग्रा)'
+                  : language === 'mr'
+                  ? 'साहित्य खरेदी बेंचमार्क दर (₹ / किग्रॅ)'
+                  : 'Material Procurement Benchmark Rates (₹ / kg)'}
+              </span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              CPCB Rule 2022 standardized rates offered to registered collectors upon physical scale intake
+              {language === 'hi'
+                ? 'CPCB नियम 2022 के तहत भौतिक पैमाने पर आवक पर पंजीकृत कलेक्टरों को दी जाने वाली मानकीकृत दरें'
+                : language === 'mr'
+                ? 'CPCB नियम २०२२ नुसार नोंदणीकृत संकलकांना दिली जाणारी मानकीकृत दर'
+                : 'CPCB Rule 2022 standardized rates offered to registered collectors upon physical scale intake'}
             </p>
           </div>
 
@@ -319,7 +353,9 @@ export const RecyclerProfilePage: React.FC = () => {
             className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all self-start sm:self-auto"
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span>Update Rates</span>
+            <span>
+              {language === 'hi' ? 'दरें अपडेट करें' : language === 'mr' ? 'दर अपडेट करा' : 'Update Rates'}
+            </span>
           </button>
         </div>
 
@@ -350,7 +386,9 @@ export const RecyclerProfilePage: React.FC = () => {
                   <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">
                     ₹{rate}
                   </span>
-                  <span className="text-slate-500 text-[10px] font-bold"> / kg</span>
+                  <span className="text-slate-500 text-[10px] font-bold">
+                    {' '}/ {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
+                  </span>
                 </div>
               </div>
             );
@@ -364,48 +402,72 @@ export const RecyclerProfilePage: React.FC = () => {
           <div>
             <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>CPCB Environmental Impact & ESG Compliance Ledger</span>
+              <span>
+                {language === 'hi'
+                  ? 'CPCB पर्यावरण प्रभाव एवं ESG अनुपालन लेजर'
+                  : language === 'mr'
+                  ? 'CPCB पर्यावरण प्रभाव व ESG अनुपालन लेजर'
+                  : 'CPCB Environmental Impact & ESG Compliance Ledger'}
+              </span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Verified circular economy metrics registered on Government of India EPR Portal
+              {language === 'hi'
+                ? 'भारत सरकार के ईपीआर (EPR) पोर्टल पर पंजीकृत सत्यापित सर्कुलर इकोनॉमी मेट्रिक्स'
+                : language === 'mr'
+                ? 'भारत सरकारच्या EPR पोर्टलवर नोंदणीकृत सत्यापित सर्कुलर इकॉनॉमी मेट्रिक्स'
+                : 'Verified circular economy metrics registered on Government of India EPR Portal'}
             </p>
           </div>
           <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-black rounded-xl border border-emerald-200 dark:border-emerald-800">
-            EPR Grade A
+            {language === 'hi' ? 'EPR ग्रेड A' : language === 'mr' ? 'EPR ग्रेड A' : 'EPR Grade A'}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 space-y-1">
             <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              Annual Capacity (MTA)
+              {language === 'hi' ? 'वार्षिक क्षमता (MTA)' : language === 'mr' ? 'वार्षिक क्षमता (MTA)' : 'Annual Capacity (MTA)'}
             </span>
-            <span className="text-xl font-black text-slate-900 dark:text-white">4,800 MTA</span>
-            <span className="text-[10px] text-slate-500 block">CPCB Gazette Registry</span>
+            <span className="text-xl font-black text-slate-900 dark:text-white">
+              {language === 'hi' ? '4,800 मीट्रिक टन' : language === 'mr' ? '४,८०० मीट्रिक टन' : '4,800 MTA'}
+            </span>
+            <span className="text-[10px] text-slate-500 block">
+              {language === 'hi' ? 'CPCB राजपत्र रजिस्टर' : language === 'mr' ? 'CPCB राजपत्र रजिस्टर' : 'CPCB Gazette Registry'}
+            </span>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 space-y-1">
             <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              CO2 Emissions Averted
+              {language === 'hi' ? 'CO₂ उत्सर्जन बचाव' : language === 'mr' ? 'CO₂ उत्सर्जन बचाव' : 'CO2 Emissions Averted'}
             </span>
-            <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">~85.2 MT CO2e</span>
-            <span className="text-[10px] text-slate-500 block">Avoided Virgin Smelting</span>
+            <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">
+              ~85.2 MT CO2e
+            </span>
+            <span className="text-[10px] text-slate-500 block">
+              {language === 'hi' ? 'कच्ची धातु प्रगलन से बचाव' : language === 'mr' ? 'कच्च्या धातू वितळवण्यापासून बचाव' : 'Avoided Virgin Smelting'}
+            </span>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 space-y-1">
             <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              Landfill Diversion Rate
+              {language === 'hi' ? 'लैंडफिल डंपिंग बचाव दर' : language === 'mr' ? 'लँडफिल डंपिंग बचाव दर' : 'Landfill Diversion Rate'}
             </span>
             <span className="text-xl font-black text-teal-700 dark:text-teal-400">96.4%</span>
-            <span className="text-[10px] text-slate-500 block">Zero Unregulated Dumping</span>
+            <span className="text-[10px] text-slate-500 block">
+              {language === 'hi' ? 'शून्य अनियंत्रित डंपिंग' : language === 'mr' ? 'शून्य अनियंत्रित डंपिंग' : 'Zero Unregulated Dumping'}
+            </span>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 space-y-1">
             <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              CPCB Form-6 Compliance
+              {language === 'hi' ? 'CPCB फॉर्म-6 अनुपालन' : language === 'mr' ? 'CPCB फॉर्म-६ अनुपालन' : 'CPCB Form-6 Compliance'}
             </span>
-            <span className="text-xl font-black text-blue-700 dark:text-blue-400">100% Traceable</span>
-            <span className="text-[10px] text-slate-500 block">SHA-256 Chain of Custody</span>
+            <span className="text-xl font-black text-blue-700 dark:text-blue-400">
+              {language === 'hi' ? '100% ट्रेसेबल' : language === 'mr' ? '१००% ट्रेसेबल' : '100% Traceable'}
+            </span>
+            <span className="text-[10px] text-slate-500 block">
+              {language === 'hi' ? 'SHA-256 कस्टडी की सुरक्षा' : language === 'mr' ? 'SHA-256 कस्टडी सुरक्षा' : 'SHA-256 Chain of Custody'}
+            </span>
           </div>
         </div>
       </div>
@@ -417,7 +479,13 @@ export const RecyclerProfilePage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-base font-black text-slate-900 dark:text-white">Edit Facility Profile & Base Rates</h3>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  {language === 'hi'
+                    ? 'प्लांट प्रोफ़ाइल एवं खरीद दरें अपडेट करें'
+                    : language === 'mr'
+                    ? 'प्लांट प्रोफाइल व खरेदी दर अपडेट करा'
+                    : 'Edit Facility Profile & Base Rates'}
+                </h3>
               </div>
               <button
                 type="button"
@@ -431,7 +499,9 @@ export const RecyclerProfilePage: React.FC = () => {
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contact Officer Name</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {language === 'hi' ? 'संपर्क अधिकारी का नाम' : language === 'mr' ? 'संपर्क अधिकाऱ्याचे नाव' : 'Contact Officer Name'}
+                  </label>
                   <input
                     type="text"
                     value={editPerson}
@@ -442,7 +512,9 @@ export const RecyclerProfilePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {language === 'hi' ? 'संपर्क फ़ोन नंबर' : language === 'mr' ? 'संपर्क फोन नंबर' : 'Contact Phone'}
+                  </label>
                   <input
                     type="text"
                     value={editPhone}
@@ -455,7 +527,9 @@ export const RecyclerProfilePage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Service Radius (km)</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {language === 'hi' ? 'सेवा दायरा (किमी)' : language === 'mr' ? 'सेवा त्रिज्या (किमी)' : 'Service Radius (km)'}
+                  </label>
                   <input
                     type="number"
                     min="5"
@@ -468,21 +542,27 @@ export const RecyclerProfilePage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Doorstep Pickup Available</label>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    {language === 'hi' ? 'डोरस्टेप पिकअप सुविधा' : language === 'mr' ? 'पिकअप सुविधा' : 'Doorstep Pickup Available'}
+                  </label>
                   <select
                     value={editPickup ? 'true' : 'false'}
                     onChange={(e) => setEditPickup(e.target.value === 'true')}
                     className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   >
-                    <option value="true">Active (Doorstep Pickup Provided)</option>
-                    <option value="false">Inactive (Collector Self-Delivery Only)</option>
+                    <option value="true">
+                      {language === 'hi' ? 'सक्रिय (डोरस्टेप पिकअप उपलब्ध)' : language === 'mr' ? 'सक्रिय (पिकअप उपलब्ध)' : 'Active (Doorstep Pickup Provided)'}
+                    </option>
+                    <option value="false">
+                      {language === 'hi' ? 'निष्क्रिय (कलेक्टर स्व-डिलीवरी केवल)' : language === 'mr' ? 'निष्क्रिय (केवळ स्व-डिलिव्हरी)' : 'Inactive (Collector Self-Delivery Only)'}
+                    </option>
                   </select>
                 </div>
               </div>
 
               <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-2">
                 <label className="block font-extrabold text-slate-800 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                  Material Procurement Rates (₹ / kg)
+                  {language === 'hi' ? 'सामग्री खरीद दरें (₹ / किग्रा)' : language === 'mr' ? 'साहित्य खरेदी दर (₹ / किग्रॅ)' : 'Material Procurement Rates (₹ / kg)'}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {ALL_CATEGORIES.map((cat) => (
@@ -513,7 +593,7 @@ export const RecyclerProfilePage: React.FC = () => {
                   onClick={() => setShowEditModal(false)}
                   className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold"
                 >
-                  Cancel
+                  {language === 'hi' ? 'रद्द करें' : language === 'mr' ? 'रद्द करा' : 'Cancel'}
                 </button>
 
                 <button
@@ -526,7 +606,11 @@ export const RecyclerProfilePage: React.FC = () => {
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  <span>{saving ? 'Saving...' : 'Save Profile & Rates'}</span>
+                  <span>
+                    {saving
+                      ? (language === 'hi' ? 'सहेजा जा रहा है...' : language === 'mr' ? 'साठवत आहे...' : 'Saving...')
+                      : (language === 'hi' ? 'प्रोफ़ाइल एवं दरें सहेजें' : language === 'mr' ? 'प्रोफाईल व दर साठवा' : 'Save Profile & Rates')}
+                  </span>
                 </button>
               </div>
             </form>
@@ -545,8 +629,20 @@ export const RecyclerProfilePage: React.FC = () => {
                   🏛️
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base tracking-wide">Government of India • CPCB Master Registry</h3>
-                  <p className="text-xs text-emerald-300">Central Pollution Control Board Authorization (MoEFCC)</p>
+                  <h3 className="font-extrabold text-base tracking-wide">
+                    {language === 'hi'
+                      ? 'भारत सरकार • CPCB मास्टर रजिस्ट्री'
+                      : language === 'mr'
+                      ? 'भारत सरकार • CPCB मास्टर रजिस्ट्री'
+                      : 'Government of India • CPCB Master Registry'}
+                  </h3>
+                  <p className="text-xs text-emerald-300">
+                    {language === 'hi'
+                      ? 'केंद्रीय प्रदूषण नियंत्रण बोर्ड अधिकृतता (पर्यावरण मंत्रालय)'
+                      : language === 'mr'
+                      ? 'मध्यवर्ती प्रदूषण नियंत्रण मंडळ अधिकृतता (पर्यावरण मंत्रालय)'
+                      : 'Central Pollution Control Board Authorization (MoEFCC)'}
+                  </p>
                 </div>
               </div>
               <button
@@ -565,49 +661,77 @@ export const RecyclerProfilePage: React.FC = () => {
                   ♻️
                 </div>
                 <h2 className="text-lg font-black text-slate-900 tracking-tight">
-                  CERTIFICATE OF CPCB AUTHORIZATION & EPR RECYCLER REGISTRATION
+                  {language === 'hi'
+                    ? 'CPCB अधिकृतता एवं ईपीआर (EPR) रीसाइक्लर पंजीकरण प्रमाण पत्र'
+                    : language === 'mr'
+                    ? 'CPCB अधिकृतता व EPR रिसायकल नोंदणी प्रमाणपत्र'
+                    : 'CERTIFICATE OF CPCB AUTHORIZATION & EPR RECYCLER REGISTRATION'}
                 </h2>
                 <p className="text-xs text-slate-600 font-medium">
-                  Issued under Rule 13(3)(i) of E-Waste (Management) Rules, 2022
+                  {language === 'hi'
+                    ? 'ई-कचरा (प्रबंधन) नियम, 2022 के नियम 13(3)(i) के तहत जारी'
+                    : language === 'mr'
+                    ? 'ई-कचरा (व्यवस्थापन) नियम, २०२२ च्या नियम १३(३)(i) अंतर्गत जारी'
+                    : 'Issued under Rule 13(3)(i) of E-Waste (Management) Rules, 2022'}
                 </p>
                 <div className="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-950 font-mono font-bold rounded-full border border-emerald-300">
-                  REGISTRATION NO: CPCB/EWR/UP/LKO/2023/5521
+                  {language === 'hi' ? 'पंजीकरण संख्या:' : language === 'mr' ? 'नोंदणी क्रमांक:' : 'REGISTRATION NO:'} CPCB/EWR/UP/LKO/2023/5521
                 </div>
               </div>
 
               {/* Specs Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                  <span className="text-slate-500 text-[10px] block">Facility Name</span>
-                  <span className="font-bold text-slate-900 text-xs">{activeProfile.facilityName}</span>
-                </div>
-
-                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                  <span className="text-slate-500 text-[10px] block">Authorized Recycling Capacity</span>
-                  <span className="font-black text-emerald-700 text-xs">4,800 Metric Tons / Annum (MTA)</span>
-                </div>
-
-                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                  <span className="text-slate-500 text-[10px] block">Plant Address & Jurisdiction</span>
-                  <span className="font-bold text-slate-800 text-xs">
-                    Plot 12, Industrial Area, Amausi, Lucknow, Uttar Pradesh - 226008
+                  <span className="text-slate-500 text-[10px] block">
+                    {language === 'hi' ? 'प्लांट का नाम' : language === 'mr' ? 'प्लांटचे नाव' : 'Facility Name'}
+                  </span>
+                  <span className="font-bold text-slate-900 text-xs">
+                    {formatUserDisplayName(activeProfile.facilityName || 'ABC E-Waste Recycling Pvt Ltd', 'RECYCLER', language)}
                   </span>
                 </div>
 
                 <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                  <span className="text-slate-500 text-[10px] block">Authorization Validity</span>
-                  <span className="font-bold text-slate-900 text-xs">31st December 2028</span>
-                  <span className="text-[10px] text-emerald-600 font-semibold block">Active & In Good Standing</span>
+                  <span className="text-slate-500 text-[10px] block">
+                    {language === 'hi' ? 'अधिकृत रीसाइक्लिंग क्षमता' : language === 'mr' ? 'अधिकृत रिसायकलिंग क्षमता' : 'Authorized Recycling Capacity'}
+                  </span>
+                  <span className="font-black text-emerald-700 text-xs">
+                    {language === 'hi' ? '4,800 मीट्रिक टन / वर्ष (MTA)' : language === 'mr' ? '४,८०० मीट्रिक टन / वर्ष (MTA)' : '4,800 Metric Tons / Annum (MTA)'}
+                  </span>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                  <span className="text-slate-500 text-[10px] block">
+                    {language === 'hi' ? 'प्लांट का पता एवं अधिकार क्षेत्र' : language === 'mr' ? 'प्लांटचा पत्ता व अधिकार क्षेत्र' : 'Plant Address & Jurisdiction'}
+                  </span>
+                  <span className="font-bold text-slate-800 text-xs">
+                    {formatAddressLocation(activeProfile.address || 'Plot 12, Industrial Area, Amausi, Lucknow, Uttar Pradesh - 226008', language)}
+                  </span>
+                </div>
+
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                  <span className="text-slate-500 text-[10px] block">
+                    {language === 'hi' ? 'अधिकृतता की वैधता' : language === 'mr' ? 'अधिकृततेची वैधता' : 'Authorization Validity'}
+                  </span>
+                  <span className="font-bold text-slate-900 text-xs">
+                    {language === 'hi' ? '31 दिसंबर 2028' : language === 'mr' ? '३१ डिसेंबर २०२८' : '31st December 2028'}
+                  </span>
+                  <span className="text-[10px] text-emerald-600 font-semibold block">
+                    {language === 'hi' ? 'सक्रिय एवं अच्छी स्थिति में' : language === 'mr' ? 'सक्रिय व उत्तम स्थितीत' : 'Active & In Good Standing'}
+                  </span>
                 </div>
               </div>
 
               {/* Authorized Categories */}
               <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200 space-y-1">
                 <span className="font-bold text-emerald-950 text-xs block">
-                  Permitted Hazardous E-Waste Categories:
+                  {language === 'hi' ? 'अनुमत खतरनाक ई-कचरा श्रेणियां:' : language === 'mr' ? 'अनुमत ई-कचरा श्रेणी:' : 'Permitted Hazardous E-Waste Categories:'}
                 </span>
                 <p className="text-[11px] text-emerald-900 font-medium">
-                  Printed Circuit Boards (PCB), Lithium-Ion / Lead Acid Batteries, Insulated Copper Cables, Fractional HP Motors, Liquid Crystal Displays (LCD), Neodymium Rare Earth Magnets, Engineering Grade Polymers.
+                  {language === 'hi'
+                    ? 'प्रिंटेड सर्किट बोर्ड (PCB), लिथियम-आयन / लेड एसिड बैटरियां, इंसुलेटेड कॉपर केबल, मोटर, एलसीडी स्क्रीन (LCD), मैग्नेट, इंजीनियरिंग प्लास्टिक।'
+                    : language === 'mr'
+                    ? 'प्रिंटेड सर्किट बोर्ड (PCB), लिथियम-आयन / लेड ॲसिड बॅटरी, इन्सुलेटेड तांब्याच्या तारा, मोटर, एलसीडी स्क्रीन (LCD), मॅग्नेट, इंजिनिअरिंग प्लास्टिक.'
+                    : 'Printed Circuit Boards (PCB), Lithium-Ion / Lead Acid Batteries, Insulated Copper Cables, Fractional HP Motors, Liquid Crystal Displays (LCD), Neodymium Rare Earth Magnets, Engineering Grade Polymers.'}
                 </p>
               </div>
 
@@ -618,16 +742,22 @@ export const RecyclerProfilePage: React.FC = () => {
                     [CPCB QR]
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Verified by CPCB Directorate</p>
+                    <p className="font-bold text-slate-900">
+                      {language === 'hi' ? 'CPCB निदेशालय द्वारा सत्यापित' : language === 'mr' ? 'CPCB संचालनालयाद्वारे सत्यापित' : 'Verified by CPCB Directorate'}
+                    </p>
                     <p className="text-[10px] text-slate-500 font-mono">Gazette Ref: IND-EWR-2023-UP-0881</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="inline-flex items-center gap-1 text-emerald-700 font-black">
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>CPCB OFFICIAL SEAL</span>
+                    <span>
+                      {language === 'hi' ? 'CPCB आधिकारिक मोहर' : language === 'mr' ? 'CPCB अधिकृत शिक्का' : 'CPCB OFFICIAL SEAL'}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-slate-500">Government of India</p>
+                  <p className="text-[10px] text-slate-500">
+                    {language === 'hi' ? 'भारत सरकार' : language === 'mr' ? 'भारत सरकार' : 'Government of India'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -639,7 +769,7 @@ export const RecyclerProfilePage: React.FC = () => {
                 onClick={() => setShowGazetteModal(false)}
                 className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 rounded-xl"
               >
-                Close
+                {language === 'hi' ? 'बंद करें' : language === 'mr' ? 'बंद करा' : 'Close'}
               </button>
               <button
                 type="button"
@@ -647,7 +777,9 @@ export const RecyclerProfilePage: React.FC = () => {
                 className="px-5 py-2 text-sm font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl shadow flex items-center gap-2"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print Official Certificate</span>
+                <span>
+                  {language === 'hi' ? 'आधिकारिक प्रमाण पत्र प्रिंट करें' : language === 'mr' ? 'अधिकृत प्रमाणपत्र प्रिंट करा' : 'Print Official Certificate'}
+                </span>
               </button>
             </div>
           </div>

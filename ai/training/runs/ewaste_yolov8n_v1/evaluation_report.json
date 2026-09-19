@@ -1,0 +1,1085 @@
+{
+  "checkpoint": "D:\\Sih_229Anti\\ai\\training\\runs\\ewaste_yolov8n_v1\\weights\\best.pt",
+  "data_yaml": "D:\\Sih_229Anti\\ai\\training\\data.yaml",
+  "frozen_classes": {
+    "0": "PCB_Circuit_Board",
+    "1": "Battery",
+    "2": "CRT",
+    "3": "LCD_LED_Display",
+    "4": "Cable_Wire",
+    "5": "Electric_Motor",
+    "6": "Magnet_bearing_Assembly",
+    "7": "Mixed_EWaste"
+  },
+  "targets": {
+    "map50": 0.82,
+    "map50_95": 0.58,
+    "precision": 0.8,
+    "recall": 0.78,
+    "max_pcb_motor_fp_rate": 0.03,
+    "max_motor_pcb_fp_rate": 0.03,
+    "max_background_fp_rate": 0.02
+  },
+  "results_csv_best_epoch": {
+    "total_epochs_recorded": 62,
+    "best_epoch": 53,
+    "best_epoch_map50": 0.60131,
+    "best_epoch_map50_95": 0.2903,
+    "best_epoch_precision": 0.70718,
+    "best_epoch_recall": 0.56014,
+    "best_epoch_val_box_loss": 1.77241,
+    "best_epoch_val_cls_loss": 1.77479
+  },
+  "val_split_metrics": {
+    "overall": {
+      "precision": 0.5246779254603469,
+      "recall": 0.5638120151906917,
+      "map50": 0.4432580026656114,
+      "map50_95": 0.2509402738672707
+    },
+    "per_class": {
+      "PCB_Circuit_Board": {
+        "class_id": 0,
+        "precision": 0.7931034482758621,
+        "recall": 0.7666666666666667,
+        "map50": 0.7562077294685989,
+        "map50_95": 0.40329165059588057
+      },
+      "Battery": {
+        "class_id": 1,
+        "precision": 1.0,
+        "recall": 0.6862745098039216,
+        "map50": 0.685,
+        "map50_95": 0.37279223400924166
+      },
+      "CRT": {
+        "class_id": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "map50": 0.0,
+        "map50_95": 0.0
+      },
+      "LCD_LED_Display": {
+        "class_id": 3,
+        "precision": 0.3333333333333333,
+        "recall": 0.75,
+        "map50": 0.2891666666666667,
+        "map50_95": 0.15241666666666667
+      },
+      "Cable_Wire": {
+        "class_id": 4,
+        "precision": 0.5652173913043478,
+        "recall": 0.8125,
+        "map50": 0.5633536463536466,
+        "map50_95": 0.3128542291042292
+      },
+      "Electric_Motor": {
+        "class_id": 5,
+        "precision": 0.9,
+        "recall": 0.9642857142857143,
+        "map50": 0.9584074074074074,
+        "map50_95": 0.5727531248478617
+      },
+      "Magnet_bearing_Assembly": {
+        "class_id": 6,
+        "precision": 0.375,
+        "recall": 0.23076923076923078,
+        "map50": 0.10607142857142857,
+        "map50_95": 0.0812
+      },
+      "Mixed_EWaste": {
+        "class_id": 7,
+        "precision": 0.23076923076923078,
+        "recall": 0.3,
+        "map50": 0.18785714285714283,
+        "map50_95": 0.11221428571428571
+      }
+    },
+    "confusion": {
+      "pcb_as_motor": {
+        "count": 0.0,
+        "total": 29.0,
+        "rate": 0.0
+      },
+      "motor_as_pcb": {
+        "count": 0.0,
+        "total": 30.0,
+        "rate": 0.0
+      },
+      "crt_as_lcd": {
+        "count": 0.0,
+        "total": 0.0,
+        "rate": 0.0
+      },
+      "lcd_as_crt": {
+        "count": 0.0,
+        "total": 9.0,
+        "rate": 0.0
+      },
+      "background_false_positives": {
+        "count": 64.0,
+        "total": 64.0,
+        "rate": 1.0
+      },
+      "false_alarms_by_class": {
+        "PCB_Circuit_Board": {
+          "predicted_total": 30.0,
+          "false_alarms_from_bg": 6.0,
+          "rate": 0.2
+        },
+        "Battery": {
+          "predicted_total": 51.0,
+          "false_alarms_from_bg": 14.0,
+          "rate": 0.27450980392156865
+        },
+        "CRT": {
+          "predicted_total": 27.0,
+          "false_alarms_from_bg": 27.0,
+          "rate": 1.0
+        },
+        "LCD_LED_Display": {
+          "predicted_total": 4.0,
+          "false_alarms_from_bg": 1.0,
+          "rate": 0.25
+        },
+        "Cable_Wire": {
+          "predicted_total": 16.0,
+          "false_alarms_from_bg": 2.0,
+          "rate": 0.125
+        },
+        "Electric_Motor": {
+          "predicted_total": 28.0,
+          "false_alarms_from_bg": 1.0,
+          "rate": 0.03571428571428571
+        },
+        "Magnet_bearing_Assembly": {
+          "predicted_total": 13.0,
+          "false_alarms_from_bg": 9.0,
+          "rate": 0.6923076923076923
+        },
+        "Mixed_EWaste": {
+          "predicted_total": 10.0,
+          "false_alarms_from_bg": 4.0,
+          "rate": 0.4
+        }
+      },
+      "missed_by_class": {
+        "PCB_Circuit_Board": {
+          "ground_truth_total": 29.0,
+          "missed_as_background": 5.0,
+          "miss_rate": 0.1724137931034483
+        },
+        "Battery": {
+          "ground_truth_total": 35.0,
+          "missed_as_background": 2.0,
+          "miss_rate": 0.05714285714285714
+        },
+        "CRT": {
+          "ground_truth_total": 0.0,
+          "missed_as_background": 0.0,
+          "miss_rate": 0.0
+        },
+        "LCD_LED_Display": {
+          "ground_truth_total": 9.0,
+          "missed_as_background": 6.0,
+          "miss_rate": 0.6666666666666666
+        },
+        "Cable_Wire": {
+          "ground_truth_total": 23.0,
+          "missed_as_background": 7.0,
+          "miss_rate": 0.30434782608695654
+        },
+        "Electric_Motor": {
+          "ground_truth_total": 30.0,
+          "missed_as_background": 3.0,
+          "miss_rate": 0.1
+        },
+        "Magnet_bearing_Assembly": {
+          "ground_truth_total": 8.0,
+          "missed_as_background": 3.0,
+          "miss_rate": 0.375
+        },
+        "Mixed_EWaste": {
+          "ground_truth_total": 13.0,
+          "missed_as_background": 6.0,
+          "miss_rate": 0.46153846153846156
+        }
+      }
+    }
+  },
+  "test_split_metrics": {
+    "overall": {
+      "precision": 0.5674654874310399,
+      "recall": 0.579484175629969,
+      "map50": 0.5104102056676064,
+      "map50_95": 0.308181391681134
+    },
+    "per_class": {
+      "PCB_Circuit_Board": {
+        "class_id": 0,
+        "precision": 0.8877412971396831,
+        "recall": 0.949258541227434,
+        "map50": 0.9472222222222222,
+        "map50_95": 0.5426837788916736
+      },
+      "Battery": {
+        "class_id": 1,
+        "precision": 0.8267405747974488,
+        "recall": 0.7017710886475966,
+        "map50": 0.5977260897852962,
+        "map50_95": 0.2550995913995035
+      },
+      "CRT": {
+        "class_id": 2,
+        "precision": 0.0,
+        "recall": 0.0,
+        "map50": 0.0,
+        "map50_95": 0.0
+      },
+      "LCD_LED_Display": {
+        "class_id": 3,
+        "precision": 0.20505954343681998,
+        "recall": 0.25,
+        "map50": 0.098,
+        "map50_95": 0.035225
+      },
+      "Cable_Wire": {
+        "class_id": 4,
+        "precision": 0.6365379600891823,
+        "recall": 0.7272727272727273,
+        "map50": 0.707,
+        "map50_95": 0.4486
+      },
+      "Electric_Motor": {
+        "class_id": 5,
+        "precision": 0.8248161809642741,
+        "recall": 0.9333333333333333,
+        "map50": 0.9100000000000001,
+        "map50_95": 0.5712708333333334
+      },
+      "Magnet_bearing_Assembly": {
+        "class_id": 6,
+        "precision": 0.6,
+        "recall": 0.6666666666666666,
+        "map50": 0.555,
+        "map50_95": 0.4470666666666667
+      },
+      "Mixed_EWaste": {
+        "class_id": 7,
+        "precision": 0.5588283430209108,
+        "recall": 0.40757104789199416,
+        "map50": 0.2683333333333333,
+        "map50_95": 0.1655052631578947
+      }
+    },
+    "confusion": {
+      "pcb_as_motor": {
+        "count": 0.0,
+        "total": 27.0,
+        "rate": 0.0
+      },
+      "motor_as_pcb": {
+        "count": 0.0,
+        "total": 17.0,
+        "rate": 0.0
+      },
+      "crt_as_lcd": {
+        "count": 0.0,
+        "total": 0.0,
+        "rate": 0.0
+      },
+      "lcd_as_crt": {
+        "count": 0.0,
+        "total": 11.0,
+        "rate": 0.0
+      },
+      "background_false_positives": {
+        "count": 76.0,
+        "total": 76.0,
+        "rate": 1.0
+      },
+      "false_alarms_by_class": {
+        "PCB_Circuit_Board": {
+          "predicted_total": 25.0,
+          "false_alarms_from_bg": 1.0,
+          "rate": 0.04
+        },
+        "Battery": {
+          "predicted_total": 68.0,
+          "false_alarms_from_bg": 20.0,
+          "rate": 0.29411764705882354
+        },
+        "CRT": {
+          "predicted_total": 27.0,
+          "false_alarms_from_bg": 27.0,
+          "rate": 1.0
+        },
+        "LCD_LED_Display": {
+          "predicted_total": 8.0,
+          "false_alarms_from_bg": 6.0,
+          "rate": 0.75
+        },
+        "Cable_Wire": {
+          "predicted_total": 11.0,
+          "false_alarms_from_bg": 3.0,
+          "rate": 0.2727272727272727
+        },
+        "Electric_Motor": {
+          "predicted_total": 15.0,
+          "false_alarms_from_bg": 1.0,
+          "rate": 0.06666666666666667
+        },
+        "Magnet_bearing_Assembly": {
+          "predicted_total": 9.0,
+          "false_alarms_from_bg": 3.0,
+          "rate": 0.3333333333333333
+        },
+        "Mixed_EWaste": {
+          "predicted_total": 28.0,
+          "false_alarms_from_bg": 15.0,
+          "rate": 0.5357142857142857
+        }
+      },
+      "missed_by_class": {
+        "PCB_Circuit_Board": {
+          "ground_truth_total": 27.0,
+          "missed_as_background": 3.0,
+          "miss_rate": 0.1111111111111111
+        },
+        "Battery": {
+          "ground_truth_total": 59.0,
+          "missed_as_background": 13.0,
+          "miss_rate": 0.22033898305084745
+        },
+        "CRT": {
+          "ground_truth_total": 0.0,
+          "missed_as_background": 0.0,
+          "miss_rate": 0.0
+        },
+        "LCD_LED_Display": {
+          "ground_truth_total": 11.0,
+          "missed_as_background": 8.0,
+          "miss_rate": 0.7272727272727273
+        },
+        "Cable_Wire": {
+          "ground_truth_total": 14.0,
+          "missed_as_background": 6.0,
+          "miss_rate": 0.42857142857142855
+        },
+        "Electric_Motor": {
+          "ground_truth_total": 17.0,
+          "missed_as_background": 3.0,
+          "miss_rate": 0.17647058823529413
+        },
+        "Magnet_bearing_Assembly": {
+          "ground_truth_total": 10.0,
+          "missed_as_background": 4.0,
+          "miss_rate": 0.4
+        },
+        "Mixed_EWaste": {
+          "ground_truth_total": 21.0,
+          "missed_as_background": 7.0,
+          "miss_rate": 0.3333333333333333
+        }
+      }
+    }
+  },
+  "visual_predictions": [
+    {
+      "image": "pcb_Zedboard_jpg_0.jpg",
+      "detection_count": 1,
+      "detections": [
+        {
+          "class_id": 0,
+          "class_name": "PCB_Circuit_Board",
+          "confidence": 0.7147,
+          "xyxy": [
+            399.59,
+            199.5,
+            3003.85,
+            3454.42
+          ]
+        }
+      ]
+    },
+    {
+      "image": "pcb_Zedboard_jpg_1.jpg",
+      "detection_count": 2,
+      "detections": [
+        {
+          "class_id": 0,
+          "class_name": "PCB_Circuit_Board",
+          "confidence": 0.4668,
+          "xyxy": [
+            683.15,
+            488.43,
+            1968.85,
+            1893.58
+          ]
+        },
+        {
+          "class_id": 0,
+          "class_name": "PCB_Circuit_Board",
+          "confidence": 0.3212,
+          "xyxy": [
+            675.08,
+            540.63,
+            1652.53,
+            1828.19
+          ]
+        }
+      ]
+    },
+    {
+      "image": "battery_cables_test_001_6ac66a69.jpg",
+      "detection_count": 12,
+      "detections": [
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8686,
+          "xyxy": [
+            323.23,
+            293.1,
+            384.68,
+            390.86
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8354,
+          "xyxy": [
+            149.8,
+            302.72,
+            222.54,
+            419.51
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8336,
+          "xyxy": [
+            167.67,
+            529.07,
+            236.04,
+            623.55
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8245,
+          "xyxy": [
+            161.6,
+            424.57,
+            234.6,
+            533.36
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.82,
+          "xyxy": [
+            269.78,
+            297.55,
+            333.16,
+            397.74
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8196,
+          "xyxy": [
+            224.28,
+            519.77,
+            283.16,
+            608.5
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.811,
+          "xyxy": [
+            213.71,
+            301.96,
+            280.66,
+            411.45
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8086,
+          "xyxy": [
+            226.42,
+            418.36,
+            289.05,
+            513.95
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7739,
+          "xyxy": [
+            318.76,
+            502.89,
+            377.11,
+            588.3
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7144,
+          "xyxy": [
+            274.28,
+            512.73,
+            330.36,
+            590.65
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.6346,
+          "xyxy": [
+            325.47,
+            401.21,
+            390.79,
+            506.44
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.6044,
+          "xyxy": [
+            278.81,
+            412.74,
+            336.35,
+            507.8
+          ]
+        }
+      ]
+    },
+    {
+      "image": "battery_cables_test_002_6aae42d7.jpg",
+      "detection_count": 12,
+      "detections": [
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8776,
+          "xyxy": [
+            369.38,
+            403.99,
+            437.56,
+            483.3
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8711,
+          "xyxy": [
+            307.33,
+            283.77,
+            400.87,
+            416.6
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8706,
+          "xyxy": [
+            306.53,
+            411.55,
+            374.23,
+            491.44
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8169,
+          "xyxy": [
+            221.57,
+            298.6,
+            321.61,
+            429.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8034,
+          "xyxy": [
+            238.28,
+            419.13,
+            311.46,
+            510.24
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7982,
+          "xyxy": [
+            130.94,
+            303.63,
+            241.99,
+            444.98
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7889,
+          "xyxy": [
+            386.46,
+            273.86,
+            485.93,
+            401.79
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.784,
+          "xyxy": [
+            166.98,
+            429.09,
+            249.21,
+            525.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7772,
+          "xyxy": [
+            46.88,
+            53.53,
+            216.95,
+            312.54
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7189,
+          "xyxy": [
+            180.22,
+            51.48,
+            316.56,
+            296.26
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.6194,
+          "xyxy": [
+            304.21,
+            41.05,
+            427.69,
+            276.53
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.4976,
+          "xyxy": [
+            409.29,
+            41.61,
+            549.82,
+            271.19
+          ]
+        }
+      ]
+    },
+    {
+      "image": "crt_rf_test_001_c28745a0.jpg",
+      "detection_count": 0,
+      "detections": []
+    },
+    {
+      "image": "crt_rf_test_002_fe7b50e7.jpg",
+      "detection_count": 0,
+      "detections": []
+    },
+    {
+      "image": "battery_cables_test_001_6ac66a69.jpg",
+      "detection_count": 12,
+      "detections": [
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8686,
+          "xyxy": [
+            323.23,
+            293.1,
+            384.68,
+            390.86
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8354,
+          "xyxy": [
+            149.8,
+            302.72,
+            222.54,
+            419.51
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8336,
+          "xyxy": [
+            167.67,
+            529.07,
+            236.04,
+            623.55
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8245,
+          "xyxy": [
+            161.6,
+            424.57,
+            234.6,
+            533.36
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.82,
+          "xyxy": [
+            269.78,
+            297.55,
+            333.16,
+            397.74
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8196,
+          "xyxy": [
+            224.28,
+            519.77,
+            283.16,
+            608.5
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.811,
+          "xyxy": [
+            213.71,
+            301.96,
+            280.66,
+            411.45
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8086,
+          "xyxy": [
+            226.42,
+            418.36,
+            289.05,
+            513.95
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7739,
+          "xyxy": [
+            318.76,
+            502.89,
+            377.11,
+            588.3
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7144,
+          "xyxy": [
+            274.28,
+            512.73,
+            330.36,
+            590.65
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.6346,
+          "xyxy": [
+            325.47,
+            401.21,
+            390.79,
+            506.44
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.6044,
+          "xyxy": [
+            278.81,
+            412.74,
+            336.35,
+            507.8
+          ]
+        }
+      ]
+    },
+    {
+      "image": "battery_cables_test_002_6aae42d7.jpg",
+      "detection_count": 12,
+      "detections": [
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8776,
+          "xyxy": [
+            369.38,
+            403.99,
+            437.56,
+            483.3
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8711,
+          "xyxy": [
+            307.33,
+            283.77,
+            400.87,
+            416.6
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8706,
+          "xyxy": [
+            306.53,
+            411.55,
+            374.23,
+            491.44
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8169,
+          "xyxy": [
+            221.57,
+            298.6,
+            321.61,
+            429.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.8034,
+          "xyxy": [
+            238.28,
+            419.13,
+            311.46,
+            510.24
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7982,
+          "xyxy": [
+            130.94,
+            303.63,
+            241.99,
+            444.98
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7889,
+          "xyxy": [
+            386.46,
+            273.86,
+            485.93,
+            401.79
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.784,
+          "xyxy": [
+            166.98,
+            429.09,
+            249.21,
+            525.0
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7772,
+          "xyxy": [
+            46.88,
+            53.53,
+            216.95,
+            312.54
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.7189,
+          "xyxy": [
+            180.22,
+            51.48,
+            316.56,
+            296.26
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.6194,
+          "xyxy": [
+            304.21,
+            41.05,
+            427.69,
+            276.53
+          ]
+        },
+        {
+          "class_id": 1,
+          "class_name": "Battery",
+          "confidence": 0.4976,
+          "xyxy": [
+            409.29,
+            41.61,
+            549.82,
+            271.19
+          ]
+        }
+      ]
+    },
+    {
+      "image": "motor_rf_test_001_bbe82820.jpg",
+      "detection_count": 1,
+      "detections": [
+        {
+          "class_id": 5,
+          "class_name": "Electric_Motor",
+          "confidence": 0.7695,
+          "xyxy": [
+            132.16,
+            205.11,
+            266.32,
+            470.83
+          ]
+        }
+      ]
+    },
+    {
+      "image": "motor_rf_test_002_cc09cd88.jpg",
+      "detection_count": 1,
+      "detections": [
+        {
+          "class_id": 5,
+          "class_name": "Electric_Motor",
+          "confidence": 0.9026,
+          "xyxy": [
+            403.3,
+            182.57,
+            594.27,
+            390.18
+          ]
+        }
+      ]
+    },
+    {
+      "image": "magnet_rf_test_001_30b78b09.jpg",
+      "detection_count": 1,
+      "detections": [
+        {
+          "class_id": 6,
+          "class_name": "Magnet_bearing_Assembly",
+          "confidence": 0.4518,
+          "xyxy": [
+            3.59,
+            0.0,
+            1457.15,
+            1274.0
+          ]
+        }
+      ]
+    },
+    {
+      "image": "magnet_rf_test_002_9817c828.jpg",
+      "detection_count": 2,
+      "detections": [
+        {
+          "class_id": 6,
+          "class_name": "Magnet_bearing_Assembly",
+          "confidence": 0.3027,
+          "xyxy": [
+            226.85,
+            26.7,
+            667.74,
+            735.39
+          ]
+        },
+        {
+          "class_id": 7,
+          "class_name": "Mixed_EWaste",
+          "confidence": 0.271,
+          "xyxy": [
+            226.65,
+            24.12,
+            683.01,
+            747.54
+          ]
+        }
+      ]
+    },
+    {
+      "image": "oi_neg_0013ea2087020901.jpg",
+      "detection_count": 0,
+      "detections": []
+    },
+    {
+      "image": "oi_neg_015b32cb4975e12f.jpg",
+      "detection_count": 0,
+      "detections": []
+    }
+  ]
+}

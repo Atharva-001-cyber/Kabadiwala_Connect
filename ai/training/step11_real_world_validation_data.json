@@ -1,0 +1,737 @@
+{
+  "class_evaluation": {
+    "PCB_Circuit_Board": {
+      "class_id": 0,
+      "category": "PCB",
+      "total_images": 25,
+      "high_conf_count": 14,
+      "med_conf_count": 8,
+      "low_conf_count": 3,
+      "no_detection_count": 0,
+      "mean_confidence": 0.6955,
+      "acceptance_rate_pct": 88.0,
+      "samples": [
+        {
+          "image": "pcb_s11_front_0.png",
+          "status": "DETECTED_MEDIUM",
+          "predicted_class": "PCB_Circuit_Board",
+          "assigned_category": "PCB",
+          "confidence": 0.6498,
+          "num_dets": 1
+        },
+        {
+          "image": "pcb_s11_front_1.png",
+          "status": "DETECTED_MEDIUM",
+          "predicted_class": "PCB_Circuit_Board",
+          "assigned_category": "PCB",
+          "confidence": 0.512,
+          "num_dets": 1
+        },
+        {
+          "image": "pcb_s11_front_2.png",
+          "status": "DETECTED_MEDIUM",
+          "predicted_class": "PCB_Circuit_Board",
+          "assigned_category": "PCB",
+          "confidence": 0.5597,
+          "num_dets": 2
+        },
+        {
+          "image": "pcb_s11_front_3.png",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "PCB_Circuit_Board",
+          "assigned_category": "PCB",
+          "confidence": 0.8634,
+          "num_dets": 2
+        },
+        {
+          "image": "pcb_s11_front_4.png",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "PCB_Circuit_Board",
+          "assigned_category": "PCB",
+          "confidence": 0.7528,
+          "num_dets": 1
+        }
+      ]
+    },
+    "Battery": {
+      "class_id": 1,
+      "category": "BATTERY",
+      "total_images": 8,
+      "high_conf_count": 6,
+      "med_conf_count": 0,
+      "low_conf_count": 1,
+      "no_detection_count": 1,
+      "mean_confidence": 0.6787,
+      "acceptance_rate_pct": 75.0,
+      "samples": [
+        {
+          "image": "battery_cables_test_001_6ac66a69.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Battery",
+          "assigned_category": "BATTERY",
+          "confidence": 0.8686,
+          "num_dets": 12
+        },
+        {
+          "image": "battery_cables_test_002_6aae42d7.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Battery",
+          "assigned_category": "BATTERY",
+          "confidence": 0.8776,
+          "num_dets": 12
+        },
+        {
+          "image": "battery_cables_test_003_30724f71.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Battery",
+          "assigned_category": null,
+          "confidence": 0.3379,
+          "num_dets": 1
+        },
+        {
+          "image": "battery_cables_test_004_afe9e125.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Battery",
+          "assigned_category": "BATTERY",
+          "confidence": 0.7291,
+          "num_dets": 8
+        },
+        {
+          "image": "battery_cables_test_005_f70ee804.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        }
+      ]
+    },
+    "CRT": {
+      "class_id": 2,
+      "category": "CRT",
+      "total_images": 8,
+      "high_conf_count": 0,
+      "med_conf_count": 0,
+      "low_conf_count": 1,
+      "no_detection_count": 7,
+      "mean_confidence": 0.0317,
+      "acceptance_rate_pct": 0.0,
+      "samples": [
+        {
+          "image": "crt_rf_test_001_c28745a0.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "crt_rf_test_002_fe7b50e7.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "crt_rf_test_003_05427ce6.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "crt_rf_test_004_10f1a1f5.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "crt_rf_test_005_fb5638b8.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        }
+      ]
+    },
+    "LCD_LED_Display": {
+      "class_id": 3,
+      "category": "LCD",
+      "total_images": 5,
+      "high_conf_count": 2,
+      "med_conf_count": 0,
+      "low_conf_count": 1,
+      "no_detection_count": 2,
+      "mean_confidence": 0.372,
+      "acceptance_rate_pct": 40.0,
+      "samples": [
+        {
+          "image": "oi_4342a7037ea1bdea.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "LCD_LED_Display",
+          "assigned_category": "LCD",
+          "confidence": 0.7057,
+          "num_dets": 1
+        },
+        {
+          "image": "oi_55de29cb9397635f.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Mixed_EWaste",
+          "assigned_category": null,
+          "confidence": 0.4273,
+          "num_dets": 2
+        },
+        {
+          "image": "oi_7408fef212a5d3bc.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "LCD_LED_Display",
+          "assigned_category": "LCD",
+          "confidence": 0.7268,
+          "num_dets": 3
+        },
+        {
+          "image": "oi_766de0978874e4ad.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "oi_a41f62624d4ce3b3.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        }
+      ]
+    },
+    "Cable_Wire": {
+      "class_id": 4,
+      "category": "CABLE",
+      "total_images": 10,
+      "high_conf_count": 2,
+      "med_conf_count": 4,
+      "low_conf_count": 3,
+      "no_detection_count": 1,
+      "mean_confidence": 0.5081,
+      "acceptance_rate_pct": 60.0,
+      "samples": [
+        {
+          "image": "cable_rf_test_001_761d2632.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Cable_Wire",
+          "assigned_category": null,
+          "confidence": 0.3912,
+          "num_dets": 1
+        },
+        {
+          "image": "cable_rf_test_002_4de6c66a.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "cable_rf_test_003_2f646499.jpg",
+          "status": "DETECTED_MEDIUM",
+          "predicted_class": "Cable_Wire",
+          "assigned_category": "CABLE",
+          "confidence": 0.5325,
+          "num_dets": 1
+        },
+        {
+          "image": "cable_rf_test_004_6dfdbc6e.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Cable_Wire",
+          "assigned_category": null,
+          "confidence": 0.2931,
+          "num_dets": 1
+        },
+        {
+          "image": "cable_rf_test_005_ad1417d4.jpg",
+          "status": "DETECTED_MEDIUM",
+          "predicted_class": "Cable_Wire",
+          "assigned_category": "CABLE",
+          "confidence": 0.6998,
+          "num_dets": 1
+        }
+      ]
+    },
+    "Electric_Motor": {
+      "class_id": 5,
+      "category": "MOTOR",
+      "total_images": 15,
+      "high_conf_count": 13,
+      "med_conf_count": 0,
+      "low_conf_count": 2,
+      "no_detection_count": 0,
+      "mean_confidence": 0.7732,
+      "acceptance_rate_pct": 86.67,
+      "samples": [
+        {
+          "image": "motor_rf_test_001_bbe82820.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Electric_Motor",
+          "assigned_category": "MOTOR",
+          "confidence": 0.7695,
+          "num_dets": 1
+        },
+        {
+          "image": "motor_rf_test_002_cc09cd88.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Electric_Motor",
+          "assigned_category": "MOTOR",
+          "confidence": 0.9026,
+          "num_dets": 1
+        },
+        {
+          "image": "motor_rf_test_003_3817b2d3.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Battery",
+          "assigned_category": null,
+          "confidence": 0.2671,
+          "num_dets": 1
+        },
+        {
+          "image": "motor_rf_test_004_cb5fa92b.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Electric_Motor",
+          "assigned_category": null,
+          "confidence": 0.4466,
+          "num_dets": 1
+        },
+        {
+          "image": "motor_rf_test_005_5bf07336.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Electric_Motor",
+          "assigned_category": "MOTOR",
+          "confidence": 0.7529,
+          "num_dets": 3
+        }
+      ]
+    },
+    "Magnet_bearing_Assembly": {
+      "class_id": 6,
+      "category": "MAGNET",
+      "total_images": 8,
+      "high_conf_count": 2,
+      "med_conf_count": 0,
+      "low_conf_count": 6,
+      "no_detection_count": 0,
+      "mean_confidence": 0.4763,
+      "acceptance_rate_pct": 25.0,
+      "samples": [
+        {
+          "image": "magnet_rf_test_001_30b78b09.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Magnet_bearing_Assembly",
+          "assigned_category": null,
+          "confidence": 0.4484,
+          "num_dets": 1
+        },
+        {
+          "image": "magnet_rf_test_002_9817c828.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Magnet_bearing_Assembly",
+          "assigned_category": null,
+          "confidence": 0.3027,
+          "num_dets": 1
+        },
+        {
+          "image": "magnet_rf_test_003_f0f15367.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "LCD_LED_Display",
+          "assigned_category": null,
+          "confidence": 0.3384,
+          "num_dets": 1
+        },
+        {
+          "image": "magnet_rf_test_004_e7b1b010.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Magnet_bearing_Assembly",
+          "assigned_category": "MAGNET",
+          "confidence": 0.7533,
+          "num_dets": 1
+        },
+        {
+          "image": "magnet_rf_test_005_e1cd3ae6.jpg",
+          "status": "DETECTED_HIGH",
+          "predicted_class": "Magnet_bearing_Assembly",
+          "assigned_category": "MAGNET",
+          "confidence": 0.8529,
+          "num_dets": 4
+        }
+      ]
+    },
+    "Mixed_EWaste": {
+      "class_id": 7,
+      "category": "MIXED_PLASTIC",
+      "total_images": 18,
+      "high_conf_count": 1,
+      "med_conf_count": 3,
+      "low_conf_count": 9,
+      "no_detection_count": 5,
+      "mean_confidence": 0.3625,
+      "acceptance_rate_pct": 22.22,
+      "samples": [
+        {
+          "image": "oi_012dc31b561d4214.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Mixed_EWaste",
+          "assigned_category": null,
+          "confidence": 0.4346,
+          "num_dets": 1
+        },
+        {
+          "image": "oi_0908dd33cf950266.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "oi_128f92487d754a0c.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        },
+        {
+          "image": "oi_14be91e9e9170798.jpg",
+          "status": "LOW_CONFIDENCE",
+          "predicted_class": "Magnet_bearing_Assembly",
+          "assigned_category": null,
+          "confidence": 0.2997,
+          "num_dets": 1
+        },
+        {
+          "image": "oi_1eeda2f2e8f31933.jpg",
+          "status": "NO_DETECTION",
+          "predicted_class": null,
+          "assigned_category": null,
+          "confidence": 0.0,
+          "num_dets": 0
+        }
+      ]
+    }
+  },
+  "pcb_vs_motor": {
+    "total_pcb_images": 25,
+    "pcb_correct_as_pcb": 25,
+    "pcb_confused_as_motor": 0,
+    "total_motor_images": 15,
+    "motor_correct_as_motor": 14,
+    "motor_confused_as_pcb": 0
+  },
+  "hard_negatives": {
+    "total_negatives": 24,
+    "safe_rejections": 24,
+    "false_positives": 0,
+    "rejection_rate_pct": 100.0,
+    "samples": [
+      {
+        "image": "oi_neg_0013ea2087020901.jpg",
+        "status": "NO_DETECTION",
+        "top_class": null,
+        "confidence": 0.0
+      },
+      {
+        "image": "oi_neg_015b32cb4975e12f.jpg",
+        "status": "NO_DETECTION",
+        "top_class": null,
+        "confidence": 0.0
+      },
+      {
+        "image": "oi_neg_022c1f420446d118.jpg",
+        "status": "NO_DETECTION",
+        "top_class": null,
+        "confidence": 0.0
+      },
+      {
+        "image": "oi_neg_032827813ff3b2b6.jpg",
+        "status": "NO_DETECTION",
+        "top_class": null,
+        "confidence": 0.0
+      },
+      {
+        "image": "oi_neg_0374141ebf11632e.jpg",
+        "status": "NO_DETECTION",
+        "top_class": null,
+        "confidence": 0.0
+      },
+      {
+        "image": "oi_neg_03abc39ad2c14097.jpg",
+        "status": "NO_DETECTION",
+        "top_class": null,
+        "confidence": 0.0
+      }
+    ]
+  },
+  "quality_perturbations": [
+    {
+      "condition": "Clear Baseline (Motor)",
+      "status": "DETECTED_HIGH",
+      "conf": 0.7695,
+      "class": "Electric_Motor",
+      "assigned": "MOTOR"
+    },
+    {
+      "condition": "Moderate Blur (Motor, k=15)",
+      "status": "DETECTED_HIGH",
+      "conf": 0.8215,
+      "class": "Electric_Motor",
+      "assigned": "MOTOR"
+    },
+    {
+      "condition": "Severe Blur (Motor, k=35)",
+      "status": "NO_DETECTION",
+      "conf": 0.0,
+      "class": null,
+      "assigned": null
+    },
+    {
+      "condition": "Low Light 40% (Motor)",
+      "status": "DETECTED_HIGH",
+      "conf": 0.7619,
+      "class": "Electric_Motor",
+      "assigned": "MOTOR"
+    },
+    {
+      "condition": "Extreme Dark 15% (Motor)",
+      "status": "NO_DETECTION",
+      "conf": 0.0,
+      "class": null,
+      "assigned": null
+    },
+    {
+      "condition": "Overexposed Glare (Motor)",
+      "status": "LOW_CONFIDENCE",
+      "conf": 0.4605,
+      "class": "Electric_Motor",
+      "assigned": null
+    },
+    {
+      "condition": "50% Occlusion (Motor)",
+      "status": "DETECTED_HIGH",
+      "conf": 0.7297,
+      "class": "Electric_Motor",
+      "assigned": "MOTOR"
+    },
+    {
+      "condition": "Low Resolution 180x180 (Battery)",
+      "status": "DETECTED_HIGH",
+      "conf": 0.8741,
+      "class": "Battery",
+      "assigned": "BATTERY"
+    }
+  ],
+  "multi_object_composite": {
+    "status": "DETECTED_HIGH",
+    "total_detected": 13,
+    "objects": [
+      {
+        "class_id": 5,
+        "class_name": "Electric_Motor",
+        "category": "MOTOR",
+        "score": 0.7713,
+        "box_norm": [
+          0.6085000038146973,
+          0.326200008392334,
+          0.09200000017881393,
+          0.38999998569488525
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.7644,
+        "box_norm": [
+          0.16439999639987946,
+          0.4708000123500824,
+          0.05689999833703041,
+          0.1665000021457672
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.7597,
+        "box_norm": [
+          0.1762000024318695,
+          0.8093000054359436,
+          0.04500000178813934,
+          0.14190000295639038
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.7531,
+        "box_norm": [
+          0.21379999816417694,
+          0.4699999988079071,
+          0.046799998730421066,
+          0.15600000321865082
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.7124,
+        "box_norm": [
+          0.13600000739097595,
+          0.828000009059906,
+          0.04699999839067459,
+          0.14869999885559082
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.7076,
+        "box_norm": [
+          0.1145000010728836,
+          0.46889999508857727,
+          0.062300000339746475,
+          0.16949999332427979
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.6916,
+        "box_norm": [
+          0.21610000729560852,
+          0.7922000288963318,
+          0.0430000014603138,
+          0.13600000739097595
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.6765,
+        "box_norm": [
+          0.2506999969482422,
+          0.7810999751091003,
+          0.04659999907016754,
+          0.13930000364780426
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.6759,
+        "box_norm": [
+          0.125900000333786,
+          0.666100025177002,
+          0.057999998331069946,
+          0.15850000083446503
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.6639,
+        "box_norm": [
+          0.21539999544620514,
+          0.6412000060081482,
+          0.0478999987244606,
+          0.1468999981880188
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.649,
+        "box_norm": [
+          0.17839999496936798,
+          0.6507999897003174,
+          0.043299999088048935,
+          0.1462000012397766
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.6213,
+        "box_norm": [
+          0.2515000104904175,
+          0.45190000534057617,
+          0.053599998354911804,
+          0.1655000001192093
+        ]
+      },
+      {
+        "class_id": 1,
+        "class_name": "Battery",
+        "category": "BATTERY",
+        "score": 0.5136,
+        "box_norm": [
+          0.2556000053882599,
+          0.6290000081062317,
+          0.05009999871253967,
+          0.14800000190734863
+        ]
+      }
+    ]
+  },
+  "threshold_calibration": {
+    "0.35": {
+      "threshold": 0.35,
+      "passed_count": 69,
+      "passed_pct": 78.41
+    },
+    "0.4": {
+      "threshold": 0.4,
+      "passed_count": 66,
+      "passed_pct": 75.0
+    },
+    "0.45": {
+      "threshold": 0.45,
+      "passed_count": 61,
+      "passed_pct": 69.32
+    },
+    "0.5": {
+      "threshold": 0.5,
+      "passed_count": 56,
+      "passed_pct": 63.64
+    },
+    "0.55": {
+      "threshold": 0.55,
+      "passed_count": 51,
+      "passed_pct": 57.95
+    },
+    "0.6": {
+      "threshold": 0.6,
+      "passed_count": 48,
+      "passed_pct": 54.55
+    },
+    "0.7": {
+      "threshold": 0.7,
+      "passed_count": 41,
+      "passed_pct": 46.59
+    }
+  }
+}

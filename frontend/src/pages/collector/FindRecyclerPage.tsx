@@ -24,7 +24,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { api } from '../../services/api';
 import { RecyclerProfile, MaterialCategory, Lot, RecyclerRankingExplanation } from '../../types';
-import { categoryLabels } from '../../i18n/translations';
+import { categoryLabels, formatUserDisplayName, formatAddressLocation } from '../../i18n/translations';
 import { useToast } from '../../context/ToastContext';
 
 export const FindRecyclerPage: React.FC = () => {
@@ -545,7 +545,7 @@ export const FindRecyclerPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-black text-slate-900 dark:text-white">{rec.facilityName}</h3>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white">{formatUserDisplayName(rec.facilityName, 'RECYCLER', language)}</h3>
 
                       {/* Best Rate Badge: Only on verified/pending top bidder */}
                       {index === 0 && !isSuspended && rec.verificationRecord?.status !== 'DEMO' && (
@@ -590,7 +590,7 @@ export const FindRecyclerPage: React.FC = () => {
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1 flex-wrap">
                       <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      <span>{rec.address}</span>
+                      <span>{formatAddressLocation(rec.address, language)}</span>
                       <span className="text-slate-300 dark:text-slate-600">•</span>
                       <span className="text-slate-600 dark:text-slate-400 italic font-medium">
                         {rec.verificationRecord?.evidenceSubtitle[language] || rec.verificationRecord?.evidenceSubtitle.en}
@@ -660,10 +660,10 @@ export const FindRecyclerPage: React.FC = () => {
                     </span>
                     <div className="flex items-baseline gap-2">
                       <span className={`text-3xl font-black ${isSuspended ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-emerald-600 dark:text-emerald-400'}`}>₹{rate}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">/ kg</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">/ {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-300">
-                      {language === 'hi' ? 'कुल अनुमानित मूल्य' : language === 'mr' ? 'एकूण अंदाजे मूल्य' : 'Total Quoted Value'} ({targetWeight} kg): <b className="text-slate-900 dark:text-white font-extrabold text-sm">₹{grossEstimate}</b>
+                      {language === 'hi' ? 'कुल अनुमानित मूल्य' : language === 'mr' ? 'एकूण अंदाजे मूल्य' : 'Total Quoted Value'} ({targetWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}): <b className="text-slate-900 dark:text-white font-extrabold text-sm">₹{grossEstimate}</b>
                     </p>
                   </div>
 

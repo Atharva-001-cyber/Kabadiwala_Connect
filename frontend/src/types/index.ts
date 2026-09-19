@@ -427,3 +427,45 @@ export interface PaymentLedgerEntry {
   dataSource: DataSource;
   timestamp: string;
 }
+
+// Smart E-Waste Beacon Types
+export type BeaconStatus = 
+  | 'REQUESTED' 
+  | 'COLLECTOR_ASSIGNED' 
+  | 'IN_TRANSIT' 
+  | 'PICKED_UP' 
+  | 'COMPLETED' 
+  | 'CANCELLED';
+
+export type BeaconQuantityBag = 'SMALL_BAG' | 'MEDIUM_BOX' | 'LARGE_APPLIANCE';
+
+export interface CitizenBeacon {
+  id: string;
+  citizenName: string;
+  citizenPhone: string;
+  address: string;
+  district: string;
+  state: string;
+  latitude?: number;
+  longitude?: number;
+  items: string[];
+  quantityBag: BeaconQuantityBag;
+  imageUrl?: string;
+  estimatedValueMin: number;
+  estimatedValueMax: number;
+  estimatedValueAvg: number;
+  status: BeaconStatus;
+  pickupOtp: string;
+  assignedCollectorId?: string;
+  assignedCollectorName?: string;
+  assignedCollectorPhone?: string;
+  assignedCollectorVehicle?: string;
+  actualWeightKg?: number;
+  finalPaidAmount?: number;
+  paymentMethod?: PaymentMethod;
+  rating?: number;
+  feedback?: string;
+  createdAt: string;
+  updatedAt: string;
+  dataSource?: DataSource;
+}

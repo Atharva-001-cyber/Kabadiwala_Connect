@@ -29,8 +29,10 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
-import { formatUserDisplayName, formatLocationString } from '../../i18n/translations';
+import { formatUserDisplayName, formatLocationString, formatAddressLocation } from '../../i18n/translations';
 import { api } from '../../services/api';
+import { CollectorGamificationCard } from '../../components/common/CollectorGamificationCard';
+import { EprTraceabilityMarketplace } from '../../components/common/EprTraceabilityMarketplace';
 
 export const CollectorProfilePage: React.FC = () => {
   const { user, collectorProfile, logout, updateProfile } = useAuth();
@@ -432,7 +434,7 @@ export const CollectorProfilePage: React.FC = () => {
                 {maskedAadhaar}
               </span>
               <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500 text-slate-950">
-                ACTIVE
+                {language === 'hi' ? 'सक्रिय' : language === 'mr' ? 'सक्रिय' : 'ACTIVE'}
               </span>
             </div>
           </div>
@@ -440,17 +442,19 @@ export const CollectorProfilePage: React.FC = () => {
           <p className="text-[11px] text-emerald-900 dark:text-emerald-100/90 leading-relaxed font-medium">
             {language === 'hi'
               ? 'ई-कचरा (प्रबंधन) नियम 2022 नियम 16 के अंतर्गत पंजीकृत औपचारिक अनौपचारिक कचरा बीनने वाले के रूप में सत्यापित। प्रत्यक्ष बैंक भुगतान और वैध संग्रह हेतु अधिकृत।'
+              : language === 'mr'
+              ? 'ई-कचरा नियम २०२२ नुसार अधिकृत संकलक म्हणून प्रमाणित.'
               : 'Formally accredited under E-Waste (Management) Rules 2022, Rule 16. Authorized for doorstep e-waste aggregation and direct digital escrow bank settlements.'}
           </p>
 
           <div className="pt-1 flex items-center justify-between text-[11px] text-emerald-700 dark:text-emerald-300 font-bold border-t border-emerald-200 dark:border-emerald-900/60">
-            <span>Valid Until: 31-Dec-2028 (CPCB National Registry)</span>
+            <span>{language === 'hi' ? 'वैधता: 31-दिसंबर-2028 (CPCB राष्ट्रीय रजिस्टर)' : language === 'mr' ? 'वैधता: ३१-डिसेंबर-२०२८ (CPCB राष्ट्रीय नोंदणी)' : 'Valid Until: 31-Dec-2028 (CPCB National Registry)'}</span>
             <button
               type="button"
               onClick={() => setShowIdCardModal(true)}
               className="underline hover:text-emerald-950 dark:hover:text-white flex items-center gap-1 text-[11px]"
             >
-              <span>{language === 'hi' ? 'प्रमाणपत्र देखें' : 'View Certificate'}</span>
+              <span>{language === 'hi' ? 'प्रमाणपत्र देखें' : language === 'mr' ? 'प्रमाणपत्र पहा' : 'View Certificate'}</span>
               <ExternalLink className="w-3 h-3" />
             </button>
           </div>
@@ -461,10 +465,10 @@ export const CollectorProfilePage: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-              <span>{language === 'hi' ? 'लाइव कार्य एवं पर्यावरण प्रभाव मेट्रिक्स' : 'Live Operations & Environmental Impact'}</span>
+              <span>{language === 'hi' ? 'लाइव कार्य एवं पर्यावरण प्रभाव मेट्रिक्स' : language === 'mr' ? 'लाइव्ह काम व पर्यावरण प्रभाव' : 'Live Operations & Environmental Impact'}</span>
             </h3>
             {loadingMetrics && (
-              <span className="text-[10px] text-slate-400 animate-pulse">Syncing database...</span>
+              <span className="text-[10px] text-slate-400 animate-pulse">{language === 'hi' ? 'डेटा सिंक हो रहा है...' : 'Syncing database...'}</span>
             )}
           </div>
 
@@ -472,17 +476,17 @@ export const CollectorProfilePage: React.FC = () => {
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
                 <Scale className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                <span>Verified Scrap</span>
+                <span>{language === 'hi' ? 'सत्यापित स्क्रैप' : language === 'mr' ? 'सत्यापित कचरा' : 'Verified Scrap'}</span>
               </span>
               <p className="text-base font-black text-slate-900 dark:text-white font-mono">
-                {liveMetrics.totalWeight.toLocaleString('en-IN')} <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">kg</span>
+                {liveMetrics.totalWeight.toLocaleString('en-IN')} <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
               </p>
             </div>
 
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
                 <Wallet className="w-3 h-3 text-amber-500 dark:text-amber-400" />
-                <span>Total Earnings</span>
+                <span>{language === 'hi' ? 'कुल कमाई' : language === 'mr' ? 'एकूण कमाई' : 'Total Earnings'}</span>
               </span>
               <p className="text-base font-black text-slate-900 dark:text-white font-mono">
                 ₹{liveMetrics.totalEarnings.toLocaleString('en-IN')}
@@ -492,24 +496,35 @@ export const CollectorProfilePage: React.FC = () => {
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
                 <Leaf className="w-3 h-3 text-teal-600 dark:text-teal-400" />
-                <span>CO₂ Diverted</span>
+                <span>{language === 'hi' ? 'CO₂ उत्सर्जन बचाव' : language === 'mr' ? 'CO₂ उत्सर्जन बचाव' : 'CO₂ Diverted'}</span>
               </span>
               <p className="text-base font-black text-slate-900 dark:text-white font-mono">
-                {liveMetrics.co2Diverted} <span className="text-xs font-bold text-teal-600 dark:text-teal-400">kg CO₂e</span>
+                {liveMetrics.co2Diverted} <span className="text-xs font-bold text-teal-600 dark:text-teal-400">{language === 'hi' || language === 'mr' ? 'किग्रा CO₂e' : 'kg CO₂e'}</span>
               </p>
             </div>
 
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-blue-500 dark:text-blue-400" />
-                <span>Lead Prevented</span>
+                <span>{language === 'hi' ? 'सीसा (Lead) प्रदूषण बचाव' : language === 'mr' ? 'शिसे (Lead) प्रदूषण बचाव' : 'Lead Prevented'}</span>
               </span>
               <p className="text-base font-black text-slate-900 dark:text-white font-mono">
-                {liveMetrics.leadPrevented} <span className="text-xs font-bold text-blue-500 dark:text-blue-400">kg</span>
+                {liveMetrics.leadPrevented} <span className="text-xs font-bold text-blue-500 dark:text-blue-400">{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
               </p>
             </div>
           </div>
         </div>
+
+        {/* 🏅 Collector Gamification & Green Badges Section */}
+        <CollectorGamificationCard totalWeight={liveMetrics.totalWeight} />
+
+        {/* 🌿 EPR Material Traceability & Green Dividend Protocol (Proposed Framework) */}
+        <EprTraceabilityMarketplace 
+          lotCategory="PCB"
+          lotWeightKg={liveMetrics.totalWeight}
+          primaryPayoutAmount={liveMetrics.totalEarnings}
+          collectorName={displayName}
+        />
 
         {/* Edit Form or Information Details */}
         {isEditing ? (
@@ -628,18 +643,20 @@ export const CollectorProfilePage: React.FC = () => {
                 <span className="font-medium">{language === 'hi' ? 'कार्य क्षेत्र एवं जिला:' : 'Operating Territory:'}</span>
               </span>
               <span className="font-bold text-slate-900 dark:text-white text-right">
-                {displayAddress}, {editDistrict}, {editState}
+                {formatAddressLocation(`${displayAddress}, ${editDistrict}, ${editState}`, language)}
               </span>
             </div>
 
             <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
               <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="font-medium">{language === 'hi' ? 'UPI पेआउट आईडी:' : 'UPI Payout ID:'}</span>
+                <span className="font-medium">{language === 'hi' ? 'UPI पेआउट आईडी:' : language === 'mr' ? 'UPI पेआउट आयडी:' : 'UPI Payout ID:'}</span>
               </span>
               <div className="text-right">
                 <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm block">{displayUpi}</span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">Razorpay Payouts Active</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                  {language === 'hi' ? 'रेजरपे पेआउट्स सक्रिय' : language === 'mr' ? 'रेझरपे पेआउट्स सक्रिय' : 'Razorpay Payouts Active'}
+                </span>
               </div>
             </div>
 
@@ -793,7 +810,7 @@ export const CollectorProfilePage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-wider">
-                  Official UIDAI / CPCB e-KYC
+                  {language === 'hi' ? 'आधिकारिक UIDAI / CPCB ई-केवाईसी' : language === 'mr' ? 'अधिकृत UIDAI / CPCB ई-केवायसी' : 'Official UIDAI / CPCB e-KYC'}
                 </h3>
               </div>
               <button
@@ -816,7 +833,7 @@ export const CollectorProfilePage: React.FC = () => {
                       kycDocType === 'AADHAAR' ? 'bg-emerald-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    Aadhaar Card (12-digit)
+                    {language === 'hi' ? 'आधार कार्ड (12-अंक)' : language === 'mr' ? 'आधार कार्ड (१२-अंकी)' : 'Aadhaar Card (12-digit)'}
                   </button>
                   <button
                     type="button"
@@ -825,13 +842,15 @@ export const CollectorProfilePage: React.FC = () => {
                       kycDocType === 'PAN' ? 'bg-emerald-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    PAN Card (10-char)
+                    {language === 'hi' ? 'पैन कार्ड (10-अक्षर)' : language === 'mr' ? 'पॅन कार्ड (१०-अक्षरी)' : 'PAN Card (10-char)'}
                   </button>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    {kycDocType === 'AADHAAR' ? 'Enter 12-Digit Aadhaar Number' : 'Enter 10-Character PAN Number'}
+                    {kycDocType === 'AADHAAR' 
+                      ? (language === 'hi' ? '12-अंकों का आधार नंबर दर्ज करें' : language === 'mr' ? '१२-अंकी आधार क्रमांक प्रविष्ट करा' : 'Enter 12-Digit Aadhaar Number')
+                      : (language === 'hi' ? '10-अक्षरों का पैन नंबर दर्ज करें' : language === 'mr' ? '१०-अक्षरी पॅन क्रमांक प्रविष्ट करा' : 'Enter 10-Character PAN Number')}
                   </label>
                   <input
                     type="text"
@@ -843,19 +862,27 @@ export const CollectorProfilePage: React.FC = () => {
                     required
                   />
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                    Direct OTP will be sent to registered mobile +91 {displayPhone}.
+                    {language === 'hi' 
+                      ? `पंजीकृत मोबाइल +91 ${displayPhone} पर सीधा ओटीपी भेजा जाएगा।` 
+                      : language === 'mr' 
+                      ? `नोंदणीकृत मोबाईल +91 ${displayPhone} वर थेट ओटीपी पाठवला जाईल.` 
+                      : `Direct OTP will be sent to registered mobile +91 ${displayPhone}.`}
                   </p>
                 </div>
 
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
-                  🔒 Encrypted with SHA-256 and UIDAI Verhoeff standards. Only masked identification token is retained.
+                  {language === 'hi'
+                    ? '🔒 SHA-256 एवं UIDAI वेरहोफ मानकों से एन्क्रिप्टेड। केवल मास्क्ड पहचान टोकन सहेजा जाता है।'
+                    : language === 'mr'
+                    ? '🔒 SHA-256 आणि UIDAI मानकांनुसार एन्क्रिप्टेड. फक्त सुरक्षित टोकन ठेवले जाते.'
+                    : '🔒 Encrypted with SHA-256 and UIDAI Verhoeff standards. Only masked identification token is retained.'}
                 </div>
 
                 <button
                   type="submit"
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Request Verification OTP</span>
+                  <span>{language === 'hi' ? 'सत्यापन ओटीपी (OTP) अनुरोध करें' : language === 'mr' ? 'सत्यापन ओटीपी (OTP) विनंती करा' : 'Request Verification OTP'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
@@ -865,9 +892,15 @@ export const CollectorProfilePage: React.FC = () => {
             {kycStep === 'OTP' && (
               <form onSubmit={handleConfirmKycOtp} className="space-y-4">
                 <div className="text-center space-y-1">
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">Enter 6-Digit Verification Code</h4>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                    {language === 'hi' ? '6-अंकों का सत्यापन कोड दर्ज करें' : language === 'mr' ? '६-अंकी पडताळणी कोड टाका' : 'Enter 6-Digit Verification Code'}
+                  </h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Dispatched via Government DLT Gateway to +91 {displayPhone}
+                    {language === 'hi'
+                      ? `सरकारी DLT गेटवे द्वारा +91 ${displayPhone} पर भेजा गया`
+                      : language === 'mr'
+                      ? `शासकीय DLT गेटवेद्वारे +91 ${displayPhone} वर पाठवले`
+                      : `Dispatched via Government DLT Gateway to +91 ${displayPhone}`}
                   </p>
                 </div>
 
@@ -895,7 +928,9 @@ export const CollectorProfilePage: React.FC = () => {
 
                 {/* Auto-read helper and Timer */}
                 <div className="flex items-center justify-between text-xs font-bold pt-1">
-                  <span className="text-slate-500 dark:text-slate-400 text-[11px]">Resend in: {otpTimer}s</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-[11px]">
+                    {language === 'hi' ? `पुनः भेजें: ${otpTimer} सेकेण्ड में` : language === 'mr' ? `पुन्हा पाठवा: ${otpTimer} सेकंदात` : `Resend in: ${otpTimer}s`}
+                  </span>
                   {generatedOtp && (
                     <button
                       type="button"
@@ -903,7 +938,7 @@ export const CollectorProfilePage: React.FC = () => {
                       className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-700/60 active:scale-95 transition-all text-[11px]"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>Auto-read SMS ({generatedOtp})</span>
+                      <span>{language === 'hi' ? `ओटीपी स्वतः पढ़ें (${generatedOtp})` : language === 'mr' ? `ओटीपी स्वयंचलित वाचा (${generatedOtp})` : `Auto-read SMS (${generatedOtp})`}</span>
                     </button>
                   )}
                 </div>
@@ -914,7 +949,11 @@ export const CollectorProfilePage: React.FC = () => {
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Check className="w-4 h-4" />
-                  <span>{isVerifyingKyc ? 'Verifying with UIDAI & CPCB...' : 'Verify & Issue Authorization'}</span>
+                  <span>
+                    {isVerifyingKyc 
+                      ? (language === 'hi' ? 'UIDAI एवं CPCB से सत्यापित हो रहा है...' : language === 'mr' ? 'UIDAI व CPCB द्वारे पडताळणी होत आहे...' : 'Verifying with UIDAI & CPCB...') 
+                      : (language === 'hi' ? 'सत्यापित करें एवं अधिकार जारी करें' : language === 'mr' ? 'पडताळणी करा व अधिकार पत्र मिळवा' : 'Verify & Issue Authorization')}
+                  </span>
                 </button>
               </form>
             )}
@@ -925,16 +964,22 @@ export const CollectorProfilePage: React.FC = () => {
                 <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-2 border-emerald-500 flex items-center justify-center mx-auto shadow-lg">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h4 className="text-sm font-black text-slate-900 dark:text-white">e-KYC Successfully Verified!</h4>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                  {language === 'hi' ? 'ई-केवाईसी (e-KYC) सफलतापूर्वक सत्यापित!' : language === 'mr' ? 'ई-केवायसी (e-KYC) यशस्वीरीत्या पडताळले!' : 'e-KYC Successfully Verified!'}
+                </h4>
                 <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                  CPCB E-Waste Harvester License Certificate issued. Your account is now fully authorized for institutional collections.
+                  {language === 'hi'
+                    ? 'CPCB ई-कचरा संग्रहकर्ता लाइसेंस प्रमाणपत्र जारी किया गया। आपका खाता अब संस्थागत संग्रह हेतु पूरी तरह से प्राधिकृत है।'
+                    : language === 'mr'
+                    ? 'CPCB ई-कचरा संकलक परवाना प्रमाणपत्र जारी केले गेले. तुमचे खाते आता संस्थात्मक संकलनासाठी पूर्णपणे अधिकृत आहे.'
+                    : 'CPCB E-Waste Harvester License Certificate issued. Your account is now fully authorized for institutional collections.'}
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowKycModal(false)}
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow active:scale-95 transition-all"
                 >
-                  Done
+                  {language === 'hi' ? 'संपन्न' : language === 'mr' ? 'पूर्ण' : 'Done'}
                 </button>
               </div>
             )}

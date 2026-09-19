@@ -26,7 +26,10 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 
 import { getDeviceLocation, LocationResult } from '../../utils/geolocation';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
+import { DigitalScaleOcrAudit } from '../../components/common/DigitalScaleOcrAudit';
+import { WhatsAppReceiptButton } from '../../components/common/WhatsAppReceiptButton';
+import { EprTraceabilityMarketplace } from '../../components/common/EprTraceabilityMarketplace';
 
 const DEFAULT_SCALE_IMAGE = '/calibrated_scale_reading.jpg';
 
@@ -363,7 +366,7 @@ export const HandoverVerificationPage: React.FC = () => {
             <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                CPCB Rule 19 & Legal Metrology Certified
+                {language === 'hi' ? 'CPCB नियम 19 एवं लीगल मेट्रोलॉजी प्रमाणित' : language === 'mr' ? 'CPCB नियम 19 आणि लीगल मेट्रोलॉजी प्रमाणित' : 'CPCB Rule 19 & Legal Metrology Certified'}
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -380,7 +383,7 @@ export const HandoverVerificationPage: React.FC = () => {
             <span>
               {locationData 
                 ? `${locationData.latitude.toFixed(4)}°N, ${locationData.longitude.toFixed(4)}°E` 
-                : (language === 'hi' ? 'GPS प्राप्त किया जा रहा है...' : 'Fetching GPS...')}
+                : (language === 'hi' ? 'GPS प्राप्त किया जा रहा है...' : language === 'mr' ? 'GPS मिळवत आहे...' : 'Fetching GPS...')}
             </span>
           </div>
         </div>
@@ -395,19 +398,19 @@ export const HandoverVerificationPage: React.FC = () => {
           <div>
             <h2 className="text-xl font-black text-slate-900 dark:text-white">{t.handoverSuccessTitle}</h2>
             <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono mt-1 font-bold">
-              Handover Ref: {successResult.handover.id} • Lot: {successResult.lot.id}
+              {language === 'hi' ? 'हैंडओवर संदर्भ:' : language === 'mr' ? 'हँडओव्हर संदर्भ:' : 'Handover Ref:'} {successResult.handover.id} • {language === 'hi' ? 'लॉट:' : language === 'mr' ? 'लॉट:' : 'Lot:'} {successResult.lot.id}
             </p>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 rounded-2xl text-xs text-left space-y-3 border border-slate-200 dark:border-slate-800">
             <div className="flex justify-between items-center">
               <span className="text-slate-600 dark:text-slate-400 font-medium">{t.handoverVerifiedWeight}</span>
-              <span className="font-bold text-slate-900 dark:text-white text-sm font-mono">{successResult.handover.actualWeight} kg</span>
+              <span className="font-bold text-slate-900 dark:text-white text-sm font-mono">{successResult.handover.actualWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-600 dark:text-slate-400 font-medium">{t.handoverVariance}</span>
               <span className={`font-bold font-mono ${successResult.handover.weightDifference >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                {successResult.handover.weightDifference} kg ({successResult.handover.weightDiffPercentage}%)
+                {successResult.handover.weightDifference} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'} ({successResult.handover.weightDiffPercentage}%)
               </span>
             </div>
             <div className="flex justify-between items-center border-t border-slate-200 dark:border-slate-800 pt-3">
@@ -416,6 +419,21 @@ export const HandoverVerificationPage: React.FC = () => {
             </div>
           </div>
 
+          {/* 📲 1-Tap WhatsApp Vernacular Receipt Slip */}
+          <WhatsAppReceiptButton 
+            lot={successResult.lot} 
+            handover={successResult.handover} 
+            className="w-full"
+          />
+
+          {/* 🌿 EPR Material Traceability & Green Dividend Protocol (Proposed Framework) */}
+          <EprTraceabilityMarketplace 
+            lotCategory={successResult.lot.materialCategory}
+            lotWeightKg={successResult.handover.actualWeight}
+            primaryPayoutAmount={successResult.handover.finalPaymentAmount}
+            collectorName={successResult.lot.collectorName}
+          />
+
           {/* Seamless Next-Stage Navigation Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <Link
@@ -423,7 +441,7 @@ export const HandoverVerificationPage: React.FC = () => {
               className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl text-xs shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
               <Factory className="w-4 h-4" />
-              <span>Proceed to Factory Processing →</span>
+              <span>{language === 'hi' ? 'फैक्ट्री प्रोसेसिंग आगे बढ़ाएं →' : language === 'mr' ? 'फॅक्टरी प्रोसेसिंग पुढे सुरू करा →' : 'Proceed to Factory Processing →'}</span>
             </Link>
 
             <Link
@@ -431,7 +449,7 @@ export const HandoverVerificationPage: React.FC = () => {
               className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-2xl text-xs border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
               <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>View Ledger Voucher & Manifest</span>
+              <span>{language === 'hi' ? 'लेजर वाउचर और मैनिफेस्ट देखें' : language === 'mr' ? 'लेजर व्हाऊचर आणि मॅनिफेस्ट पहा' : 'View Ledger Voucher & Manifest'}</span>
             </Link>
           </div>
 
@@ -471,7 +489,7 @@ export const HandoverVerificationPage: React.FC = () => {
               ) : (
                 lots.map((l) => (
                   <option key={l.id} value={l.id}>
-                    {l.id} - {getCategoryLabel(l.materialCategory, language)} ({l.approxWeight} kg) - {l.collectorName}
+                    {l.id} - {getCategoryLabel(l.materialCategory, language)} ({l.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}) - {formatUserDisplayName(l.collectorName, 'COLLECTOR', language)}
                   </option>
                 ))
               )}
@@ -480,7 +498,7 @@ export const HandoverVerificationPage: React.FC = () => {
             {scheduledPickup && (
               <div className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2 bg-slate-50 dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                 <Truck className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
-                <span>Assigned Driver: <b className="text-slate-900 dark:text-white">{driverName}</b> • Vehicle: <b className="text-slate-900 dark:text-white font-mono">{scheduledPickup.vehicleNumber}</b></span>
+                <span>{language === 'hi' ? 'आवंटित चालक:' : language === 'mr' ? 'नियुक्त चालक:' : 'Assigned Driver:'} <b className="text-slate-900 dark:text-white">{formatUserDisplayName(driverName, 'DRIVER', language)}</b> • {language === 'hi' ? 'वाहन:' : language === 'mr' ? 'वाहन:' : 'Vehicle:'} <b className="text-slate-900 dark:text-white font-mono">{scheduledPickup.vehicleNumber}</b></span>
               </div>
             )}
           </div>
@@ -493,14 +511,14 @@ export const HandoverVerificationPage: React.FC = () => {
                 <span>{t.handoverActualWeight}</span>
               </label>
               <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 font-mono bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                Agreed Rate: ₹{ratePerKg}/kg
+                {language === 'hi' ? 'स्वीकृत दर:' : language === 'mr' ? 'मान्य दर:' : 'Agreed Rate:'} ₹{ratePerKg}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 items-center">
               <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                 <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">{t.handoverCollectorWeight}</span>
-                <span className="text-lg font-black text-slate-800 dark:text-slate-200 font-mono">{approx} kg</span>
+                <span className="text-lg font-black text-slate-800 dark:text-slate-200 font-mono">{approx} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
               </div>
 
               <div className="relative">
@@ -513,7 +531,7 @@ export const HandoverVerificationPage: React.FC = () => {
                   className="w-full pl-3.5 pr-12 py-3 bg-white dark:bg-slate-900 border-2 border-emerald-500 rounded-xl text-slate-900 dark:text-white font-mono text-xl font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/20 shadow-sm"
                   required
                 />
-                <span className="absolute right-3.5 top-3.5 text-xs font-black text-slate-500 dark:text-slate-400">kg</span>
+                <span className="absolute right-3.5 top-3.5 text-xs font-black text-slate-500 dark:text-slate-400">{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
               </div>
             </div>
 
@@ -524,7 +542,7 @@ export const HandoverVerificationPage: React.FC = () => {
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
             }`}>
               <span>{t.handoverVariance}</span>
-              <span className="font-mono">{diff >= 0 ? `+${diff}` : `${diff}`} kg ({diffPercent}%)</span>
+              <span className="font-mono">{diff >= 0 ? `+${diff}` : `${diff}`} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'} ({diffPercent}%)</span>
             </div>
 
             {isHighVariance && (
@@ -559,7 +577,7 @@ export const HandoverVerificationPage: React.FC = () => {
                     onClick={() => setHandoverOtp(selectedLot.handoverOtp || '')}
                     className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 font-mono font-bold bg-emerald-50 dark:bg-emerald-950/70 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 active:scale-95 transition-all"
                   >
-                    Demo: {selectedLot.handoverOtp} <span className="underline">(Fill)</span>
+                    Demo: {selectedLot.handoverOtp} <span className="underline">({language === 'hi' ? 'भरें' : language === 'mr' ? 'भरा' : 'Fill'})</span>
                   </button>
                 )}
               </div>
@@ -582,7 +600,7 @@ export const HandoverVerificationPage: React.FC = () => {
                 <option value="UPI">{t.handoverUpi}</option>
               </select>
               <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold block pt-1">
-                {t.handoverTotalPayable} ₹{finalAmount.toLocaleString('en-IN')} (@ ₹{ratePerKg}/kg)
+                {t.handoverTotalPayable} ₹{finalAmount.toLocaleString('en-IN')} (@ ₹{ratePerKg}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'})
               </span>
             </div>
           </div>
@@ -593,18 +611,25 @@ export const HandoverVerificationPage: React.FC = () => {
               <div>
                 <label className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Physical Scale Photo Proof (CPCB Rule 19)</span>
+                  <span>{language === 'hi' ? 'कांटे का फोटो प्रमाण (CPCB नियम 19)' : language === 'mr' ? 'काट्याचा फोटो पुरावा (CPCB नियम 19)' : 'Physical Scale Photo Proof (CPCB Rule 19)'}</span>
                 </label>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Must photograph the calibrated electronic weighing scale displaying {actualWeight || '10'} kg
+                  {language === 'hi' ? `कैलिब्रेटेड इलेक्ट्रॉनिक वजन कांटा जिसमें ${actualWeight || '10'} किग्रा दिख रहा हो, की फोटो लें` : language === 'mr' ? `कॅलिब्रेटेड इलेक्ट्रॉनिक वजन काटा ज्यावर ${actualWeight || '10'} किग्रा दिसत आहे, त्याचा फोटो घ्या` : `Must photograph the calibrated electronic weighing scale displaying ${actualWeight || '10'} kg`}
                 </p>
               </div>
 
               <span className="self-start sm:self-auto text-[10px] text-emerald-800 dark:text-emerald-300 font-mono font-bold bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Legal Metrology Calibrated</span>
+                <span>{language === 'hi' ? 'लीगल मेट्रोलॉजी कैलिब्रेटेड' : language === 'mr' ? 'लीगल मेट्रोलॉजी कॅलिब्रेटेड' : 'Legal Metrology Calibrated'}</span>
               </span>
             </div>
+
+            {/* 🔍 Feature 1: Digital Scale OCR Weight Audit Engine */}
+            <DigitalScaleOcrAudit 
+              currentWeight={actualWeight}
+              onWeightScanned={(w) => setActualWeight(w)}
+              imageUrl={proofImage}
+            />
 
             {/* Scale Image Card with Metadata Badge */}
             <div className="relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950 group">
@@ -620,7 +645,7 @@ export const HandoverVerificationPage: React.FC = () => {
               {/* Overlay Badges */}
               <div className="absolute top-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md px-3 py-1 rounded-xl border border-slate-700/80 text-[10px] text-white flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="font-mono font-black text-emerald-400">NET STABLE: {actualWeight || '10.0'} kg</span>
+                <span className="font-mono font-black text-emerald-400">{language === 'hi' ? `स्थिर शुद्ध वजन: ${actualWeight || '10.0'} किग्रा` : language === 'mr' ? `स्थिर निव्वळ वजन: ${actualWeight || '10.0'} किग्रा` : `NET STABLE: ${actualWeight || '10.0'} kg`}</span>
               </div>
 
               <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
@@ -631,7 +656,7 @@ export const HandoverVerificationPage: React.FC = () => {
                   title="View Full Resolution"
                 >
                   <Eye className="w-3 h-3 text-blue-400" />
-                  <span>Inspect</span>
+                  <span>{language === 'hi' ? 'जांचें' : language === 'mr' ? 'तपासणी करा' : 'Inspect'}</span>
                 </button>
               </div>
 
@@ -639,10 +664,10 @@ export const HandoverVerificationPage: React.FC = () => {
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-3 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[10px] font-mono">
                 <span className="text-emerald-300 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                  <span>OCR Scale Digitized: <b>{actualWeight || '10'} kg</b> (Zero Variance Stamped)</span>
+                  <span>{language === 'hi' ? `OCR कांटा डिजिटाइज़्ड: ${actualWeight || '10'} किग्रा (शून्य भिन्नता मोहरबंद)` : language === 'mr' ? `OCR काटा डिजिटल: ${actualWeight || '10'} किग्रा (शून्य फरक शिक्का)` : `OCR Scale Digitized: ${actualWeight || '10'} kg (Zero Variance Stamped)`}</span>
                 </span>
                 <span className="text-slate-400 text-[9px]">
-                  Seal ID: WSM-2024-LM003984
+                  {language === 'hi' ? 'सील आईडी: WSM-2024-LM003984' : language === 'mr' ? 'सील आयडी: WSM-2024-LM003984' : 'Seal ID: WSM-2024-LM003984'}
                 </span>
               </div>
             </div>
@@ -655,7 +680,7 @@ export const HandoverVerificationPage: React.FC = () => {
                 className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all text-xs"
               >
                 <Camera className="w-4 h-4" />
-                <span>Live Camera Snap</span>
+                <span>{language === 'hi' ? 'लाइव कैमरा फोटो लें' : language === 'mr' ? 'थेट कॅमेरा फोटो घ्या' : 'Live Camera Snap'}</span>
               </button>
 
               <input
@@ -670,7 +695,7 @@ export const HandoverVerificationPage: React.FC = () => {
                 className="cursor-pointer px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl font-bold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all text-xs"
               >
                 <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Upload from Device</span>
+                <span>{language === 'hi' ? 'डिवाइस से अपलोड करें' : language === 'mr' ? 'डिव्हाइसवरून अपलोड करा' : 'Upload from Device'}</span>
               </label>
 
               <button
@@ -684,19 +709,24 @@ export const HandoverVerificationPage: React.FC = () => {
                 title="Reset to default certified scale"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset Default</span>
+                <span>{language === 'hi' ? 'डिफ़ॉल्ट रीसेट करें' : language === 'mr' ? 'डिफॉल्ट रिसेट करा' : 'Reset Default'}</span>
               </button>
             </div>
 
             {/* Quick Demo Presets (Crucial for SIH Presentations) */}
             <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
-                <span className="font-bold uppercase tracking-wider">SIH Stage Demo Scale Presets:</span>
-                <span>Click to switch scale photo instantly</span>
+                <span className="font-bold uppercase tracking-wider">{language === 'hi' ? 'डेमो स्केल प्रीसेट:' : language === 'mr' ? 'डेमो स्केल प्रीसेट:' : 'SIH Stage Demo Scale Presets:'}</span>
+                <span>{language === 'hi' ? 'तुरंत फोटो बदलने के लिए क्लिक करें' : language === 'mr' ? 'फोटो बदलण्यासाठी क्लिक करा' : 'Click to switch scale photo instantly'}</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {SCALE_PRESETS.map((preset) => {
                   const isSelected = selectedPresetId === preset.id;
+                  const badgeText = language === 'hi'
+                    ? (preset.badge === 'Legal Metrology Hologram' ? 'कानूनी मापविज्ञान होलोग्राम' : preset.badge === 'Industrial Floor Scale' ? 'औद्योगिक फ़्लोर कांटा' : 'इलेक्ट्रॉनिक टेयर डिस्प्ले')
+                    : language === 'mr'
+                      ? (preset.badge === 'Legal Metrology Hologram' ? 'कायदेशीर वजन-मापन होलोग्राम' : preset.badge === 'Industrial Floor Scale' ? 'औद्योगिक फ्लोअर काटा' : 'इलेक्ट्रॉनिक टेअर डिस्प्ले')
+                      : preset.badge;
                   return (
                     <button
                       key={preset.id}
@@ -709,7 +739,7 @@ export const HandoverVerificationPage: React.FC = () => {
                       }`}
                     >
                       <div className="font-bold truncate text-[11px]">{preset.name}</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{preset.badge}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{badgeText}</div>
                     </button>
                   );
                 })}
@@ -724,10 +754,10 @@ export const HandoverVerificationPage: React.FC = () => {
                 <div>
                   <span className="text-[10px] font-black uppercase text-blue-700 dark:text-blue-400 tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                    <span>NPCI UPI Instant Payout Rail & Razorpay Gateway</span>
+                    <span>{language === 'hi' ? 'NPCI UPI त्वरित भुगतान व रेज़रपे गेटवे' : language === 'mr' ? 'NPCI UPI त्वरित पेमेंट व रेझरपे गेटवे' : 'NPCI UPI Instant Payout Rail & Razorpay Gateway'}</span>
                   </span>
                   <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
-                    Pay directly to Collector's registered UPI VPA: <b className="text-slate-900 dark:text-white font-mono">{selectedLot?.collectorPhone ? `${selectedLot.collectorPhone}@upi` : '9876543210@upi'}</b>
+                    {language === 'hi' ? 'संग्राहक के पंजीकृत UPI VPA पर सीधे भुगतान करें:' : language === 'mr' ? 'संकलकाच्या नोंदणीकृत UPI VPA वर थेट पेमेंट करा:' : 'Pay directly to Collector\'s registered UPI VPA:'} <b className="text-slate-900 dark:text-white font-mono">{selectedLot?.collectorPhone ? `${selectedLot.collectorPhone}@upi` : '9876543210@upi'}</b>
                   </p>
                 </div>
 
@@ -736,21 +766,21 @@ export const HandoverVerificationPage: React.FC = () => {
                   onClick={handleOpenRazorpay}
                   className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm active:scale-95 shrink-0 transition-all"
                 >
-                  <span>💳 Launch Razorpay Gateway</span>
+                  <span>{language === 'hi' ? '💳 रेज़रपे गेटवे खोलें' : language === 'mr' ? '💳 रेझरपे गेटवे सुरू करा' : '💳 Launch Razorpay Gateway'}</span>
                 </button>
               </div>
 
               {razorpayPaymentId ? (
                 <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-500 text-xs font-mono text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Razorpay Payment Verified: <b>{razorpayPaymentId}</b></span>
+                  <span>{language === 'hi' ? 'रेज़रपे भुगतान सत्यापित:' : language === 'mr' ? 'रेझरपे पेमेंट सत्यापित:' : 'Razorpay Payment Verified:'} <b>{razorpayPaymentId}</b></span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 bg-white dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                   <QrCode className="w-10 h-10 text-blue-600 dark:text-blue-400 shrink-0" />
                   <div className="text-xs text-slate-600 dark:text-slate-400">
-                    <span className="text-slate-900 dark:text-white font-bold block">Dynamic UPI QR Code Generated</span>
-                    <span>Amount ₹{finalAmount.toLocaleString('en-IN')} will be digitally stamped into CPCB Double-Entry Ledger.</span>
+                    <span className="text-slate-900 dark:text-white font-bold block">{language === 'hi' ? 'डायनेमिक UPI QR कोड जनरेट हुआ' : language === 'mr' ? 'डायनॅमिक UPI QR कोड जनरेट झाला' : 'Dynamic UPI QR Code Generated'}</span>
+                    <span>{language === 'hi' ? `राशि ₹${finalAmount.toLocaleString('en-IN')} CPCB डबल-एंट्री लेजर में डिजिटली अंकित होगी।` : language === 'mr' ? `रक्कम ₹${finalAmount.toLocaleString('en-IN')} CPCB डबल-एंट्री लेजरमध्ये डिजिटल पद्धतीने नोंदवली जाईल.` : `Amount ₹${finalAmount.toLocaleString('en-IN')} will be digitally stamped into CPCB Double-Entry Ledger.`}</span>
                   </div>
                 </div>
               )}
@@ -759,8 +789,8 @@ export const HandoverVerificationPage: React.FC = () => {
             <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 text-xs text-slate-700 dark:text-slate-300 flex items-center gap-3">
               <Wallet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
-                <span className="font-bold text-emerald-900 dark:text-emerald-300 block">CPCB Spot Cash Disbursal (Rule 19 Compliant)</span>
-                <span className="text-[11px] text-slate-600 dark:text-slate-400">Collector OTP & digital signature required. Verifiable Digital Cash Voucher (CSH-LKO-2026-XXXX) will be generated.</span>
+                <span className="font-bold text-emerald-900 dark:text-emerald-300 block">{language === 'hi' ? 'CPCB नकद भुगतान वितरण (नियम 19 अनुपालित)' : language === 'mr' ? 'CPCB रोख पेमेंट वितरण (नियम 19 सुसंगत)' : 'CPCB Spot Cash Disbursal (Rule 19 Compliant)'}</span>
+                <span className="text-[11px] text-slate-600 dark:text-slate-400">{language === 'hi' ? 'संग्राहक ओटीपी और डिजिटल हस्ताक्षर आवश्यक। सत्यापन योग्य डिजिटल वाउचर जनरेट होगा।' : language === 'mr' ? 'संकलक OTP आणि डिजिटल स्वाक्षरी आवश्यक. डिजिटल रोख व्हाऊचर जनरेट होईल.' : 'Collector OTP & digital signature required. Verifiable Digital Cash Voucher (CSH-LKO-2026-XXXX) will be generated.'}</span>
               </div>
             </div>
           )}

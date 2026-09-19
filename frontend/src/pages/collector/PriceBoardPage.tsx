@@ -24,7 +24,7 @@ import { useSpeech } from '../../hooks/useSpeech';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { PriceRecord, MaterialCategory, RecyclerProfile } from '../../types';
-import { categoryLabels, getCategoryLabel, formatLocationString, MANDI_LOCATIONS, DISTRICT_STATE_MAP } from '../../i18n/translations';
+import { categoryLabels, getCategoryLabel, formatLocationString, formatUserDisplayName, MANDI_LOCATIONS, DISTRICT_STATE_MAP } from '../../i18n/translations';
 
 export const PriceBoardPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -659,7 +659,7 @@ export const PriceBoardPage: React.FC = () => {
                         {t.estFormula || (language === 'hi' ? 'पारदर्शी गणना सूत्र' : language === 'mr' ? 'पारदर्शक सूत्र' : 'Formula Breakdown')}:
                       </span>
                       <p className="font-mono text-slate-700 dark:text-slate-300 text-xs">
-                        {calcWeight} kg × ₹{rate}/kg × {factor} = <b className="text-emerald-700 dark:text-emerald-400 font-black">₹{exactVal}</b> ({calcCondition === 'INTACT' ? '100% Intact' : calcCondition === 'DAMAGED' ? '85% Damaged' : '75% Dismantled'})
+                        {calcWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'} × ₹{rate}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'} × {factor} = <b className="text-emerald-700 dark:text-emerald-400 font-black">₹{exactVal}</b> ({calcCondition === 'INTACT' ? (language === 'hi' ? '100% साबुत' : language === 'mr' ? '100% अखंड' : '100% Intact') : calcCondition === 'DAMAGED' ? (language === 'hi' ? '85% क्षतिग्रस्त' : language === 'mr' ? '85% खराब' : '85% Damaged') : (language === 'hi' ? '75% पृथक्कृत' : language === 'mr' ? '75% वेगळे केलेले' : '75% Dismantled')})
                       </p>
                     </div>
                   </>
@@ -718,7 +718,9 @@ export const PriceBoardPage: React.FC = () => {
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                     {language === 'hi'
-                      ? `${selectedDistrict} स्थानीय मंडी खरीद दर (₹${rate}/kg) पर आधारित प्रारंभिक मूल्य।`
+                      ? `${formatLocationString(selectedDistrict, '', language)} स्थानीय मंडी खरीद दर (₹${rate}/${language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}) पर आधारित प्रारंभिक मूल्य।`
+                      : language === 'mr'
+                      ? `${formatLocationString(selectedDistrict, '', language)} स्थानिक बाजार खरेदी दर (₹${rate}/किग्रा) वर आधारित प्रारंभिक मूल्य.`
                       : 'Initial estimate based on local doorstep collection benchmark rate.'}
                   </p>
                 </div>
@@ -730,17 +732,17 @@ export const PriceBoardPage: React.FC = () => {
                       {t.stageQuoteTitle || (language === 'hi' ? '2. अधिकृत खरीदार की बोली' : language === 'mr' ? '2. खरेदीदाराची बोली' : '2. Recycler Quoted Bid')}
                     </span>
                     <span className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full border dark:border-emerald-800 font-bold">
-                      {quotedTotal ? (language === 'hi' ? 'सर्वोत्तम ऑफर' : 'Best Offer') : (language === 'hi' ? 'प्रतीक्षारत' : 'Pending')}
+                      {quotedTotal ? (language === 'hi' ? 'सर्वोत्तम ऑफर' : language === 'mr' ? 'सर्वोत्तम ऑफर' : 'Best Offer') : (language === 'hi' ? 'प्रतीक्षारत' : language === 'mr' ? 'प्रलंबित' : 'Pending')}
                     </span>
                   </div>
                   <div className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono">
                     {quotedTotal 
-                      ? `₹${quotedTotal.toLocaleString('en-IN')} (₹${activeBid?.rate}/kg)` 
+                      ? `₹${quotedTotal.toLocaleString('en-IN')} (₹${activeBid?.rate}/${language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'})` 
                       : (language === 'hi' ? 'अभी कोई बोली नहीं' : language === 'mr' ? 'सध्या कोणतीही बोली नाही' : 'No quote yet')}
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                     {activeBid 
-                      ? `${activeBid.recName} द्वारा औपचारिक फैक्ट्री बोली (${margin && margin > 0 ? `मुनाफा: +₹${margin}` : 'सत्यापित रीसाइक्लर'})`
+                      ? `${formatUserDisplayName(activeBid.recName, 'RECYCLER', language)} द्वारा औपचारिक फैक्टरी बोली (${margin && margin > 0 ? `मुनाफा: +₹${margin}` : (language === 'hi' ? 'सत्यापित रीसाइक्लर' : language === 'mr' ? 'सत्यापित रिसायकलर' : 'Verified Recycler')})`
                       : (t.stageQuoteDesc || 'अधिकृत रीसाइक्लर द्वारा आपके सामान के लिए दिया गया औपचारिक ऑफर।')}
                   </p>
                 </div>
@@ -752,15 +754,17 @@ export const PriceBoardPage: React.FC = () => {
                       {t.stageFinalTitle || (language === 'hi' ? '3. अंतिम बिक्री मूल्य' : language === 'mr' ? '3. अंतिम विक्री मूल्य' : '3. Final Sale')}
                     </span>
                     <span className="text-[10px] bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950 dark:text-teal-300 border dark:border-teal-800 px-2 py-0.5 rounded-full font-bold">
-                      {language === 'hi' ? 'डिजिटल कांटा' : 'Scale Weight'}
+                      {language === 'hi' ? 'डिजिटल कांटा' : language === 'mr' ? 'डिजिटल काटा' : 'Scale Weight'}
                     </span>
                   </div>
                   <div className="text-xl font-black text-teal-700 dark:text-teal-400 font-mono">
-                    {quotedTotal ? `₹${quotedTotal.toLocaleString('en-IN')} (तौल बाद)` : (language === 'hi' ? 'हैंडओवर तौल के बाद' : 'After Scale Handover')}
+                    {quotedTotal ? `₹${quotedTotal.toLocaleString('en-IN')} (तौल बाद)` : (language === 'hi' ? 'हैंडओवर तौल के बाद' : language === 'mr' ? 'हँडओव्हर वजनानंतर' : 'After Scale Handover')}
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                     {language === 'hi'
                       ? 'रीसाइक्लिंग केंद्र के इलेक्ट्रॉनिक वेइंग स्केल पर वास्तविक वजन के बाद मिलने वाला सीधा भुगतान।'
+                      : language === 'mr'
+                      ? 'रिसायकलिंग केंद्राच्या इलेक्ट्रॉनिक वेइंग स्केलवर प्रत्यक्ष वजनानंतर मिळणारे थेट पेमेंट.'
                       : 'Settled amount based on calibrated digital scale reading at facility.'}
                   </p>
                 </div>
@@ -787,7 +791,7 @@ export const PriceBoardPage: React.FC = () => {
               </span>
             </div>
             <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">
-              {categoryLabels[selectedCategory]?.[language] || selectedCategory} • {selectedDistrict} {language === 'hi' ? 'मंडी' : language === 'mr' ? 'बाजार' : 'Mandi'}
+              {categoryLabels[selectedCategory]?.[language] || selectedCategory} • {formatLocationString(selectedDistrict, '', language)} {language === 'hi' ? 'मंडी' : language === 'mr' ? 'बाजार' : 'Mandi'}
             </h3>
           </div>
 
@@ -809,7 +813,7 @@ export const PriceBoardPage: React.FC = () => {
         {/* Clean Visual Bar Trend from Genuine Stored Records */}
         {historyData?.hasSufficientData && historyData.history && historyData.history.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' ? 'समयरेखा के अनुसार वास्तविक भाव लॉग (₹/kg):' : language === 'mr' ? 'काळानुसार प्रत्यक्ष दर नोंदी (₹/kg):' : 'Observed Price Log Timeline (₹/kg):'}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' ? 'समयरेखा के अनुसार वास्तविक भाव लॉग (₹/किग्रा):' : language === 'mr' ? 'काळानुसार प्रत्यक्ष दर नोंदी (₹/किग्रा):' : 'Observed Price Log Timeline (₹/kg):'}</p>
             <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2">
               {historyData.history.slice(-12).map((point: any, idx: number) => {
                 const priceVal = Number(point.price ?? point.rate ?? 0);
@@ -822,7 +826,15 @@ export const PriceBoardPage: React.FC = () => {
                   try {
                     const parsed = new Date(point.date);
                     if (!isNaN(parsed.getTime())) {
-                      formattedDate = parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                      const day = parsed.getDate();
+                      const monthShortHi = ['जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितं', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+                      const monthShortMr = ['जाने', 'फेब्रु', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टें', 'ऑक्टो', 'नोव्हें', 'डिसें'];
+                      const mIdx = parsed.getMonth();
+                      formattedDate = language === 'hi'
+                        ? `${day} ${monthShortHi[mIdx]}`
+                        : language === 'mr'
+                        ? `${day} ${monthShortMr[mIdx]}`
+                        : parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                     } else {
                       formattedDate = String(point.date).slice(5, 10);
                     }

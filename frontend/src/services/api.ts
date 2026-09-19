@@ -28,7 +28,9 @@ import {
   AnomalyStatus,
   AnomalyFlag,
   DisputeStatus,
-  UserRole
+  UserRole,
+  CitizenBeacon,
+  BeaconStatus
 } from '../types';
 
 export const getAuthToken = () => localStorage.getItem('sih_kabadi_token') || '';
@@ -3537,5 +3539,145 @@ export const api = {
         samples: data || []
       }
     };
+  },
+
+  // Smart E-Waste Beacon Methods (Persistent Real-Data Storage)
+  getCitizenBeacons: async (filter?: { district?: string; status?: string }) => {
+    const STORAGE_KEY = 'sih_citizen_beacons_v1';
+    let beacons: CitizenBeacon[] = [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) beacons = JSON.parse(raw);
+    } catch {}
+
+    if (!beacons) {
+      beacons = [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(beacons));
+    }
+
+    if (filter?.district) {
+      beacons = beacons.filter(b => b.district.toLowerCase() === filter.district?.toLowerCase());
+    }
+    if (filter?.status) {
+      beacons = beacons.filter(b => b.status === filter.status);
+    }
+
+    return { success: true, beacons };
+  },
+
+  getBeaconById: async (id: string) => {
+    const res = await api.getCitizenBeacons();
+    const found = res.beacons.find(b => b.id === id);
+    return { success: !!found, beacon: found || null };
+  },
+
+  createCitizenBeacon: async (beaconData: Partial<CitizenBeacon>) => {
+    const STORAGE_KEY = 'sih_citizen_beacons_v1';
+    const res = await api.getCitizenBeacons();
+    const existing = res.beacons || [];
+
+    const newId = `BEACON-2026-X${Math.floor(1000 + Math.random() * 9000)}`;
+    const otp = String(Math.floor(1000 + Math.random() * 9000));
+
+    const newBeacon: CitizenBeacon = {
+      id: newId,
+      citizenName: beaconData.citizenName || 'Sunita Sharma',
+      citizenPhone: beaconData.citizenPhone || '9876543210',
+      address: beaconData.address || 'Gomti Nagar, Ward 12, Lucknow',
+      district: beaconData.district || 'Lucknow',
+      state: beaconData.state || 'Uttar Pradesh',
+      latitude: beaconData.latitude || 26.8467,
+      longitude: beaconData.longitude || 80.9462,
+      items: beaconData.items || ['PCB', 'CABLE'],
+      quantityBag: beaconData.quantityBag || 'SMALL_BAG',
+      imageUrl: beaconData.imageUrl || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600',
+      estimatedValueMin: beaconData.estimatedValueMin || 300,
+      estimatedValueMax: beaconData.estimatedValueMax || 450,
+      estimatedValueAvg: beaconData.estimatedValueAvg || 375,
+      status: 'REQUESTED',
+      pickupOtp: otp,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      dataSource: 'LIVE'
+    };
+
+    const updatedList = [newBeacon, ...existing];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('kb:beacon_created', { detail: newBeacon }));
+    }
+
+    return { success: true, beacon: newBeacon };
+  },
+
+  acceptCitizenBeacon: async (beaconId: string, collectorId: string, collectorName: string, collectorPhone: string) => {
+    const STORAGE_KEY = 'sih_citizen_beacons_v1';
+    const res = await api.getCitizenBeacons();
+    const updated = (res.beacons || []).map(b => {
+      if (b.id === beaconId) {
+        return {
+          ...b,
+          status: 'COLLECTOR_ASSIGNED' as BeaconStatus,
+          assignedCollectorId: collectorId,
+          assignedCollectorName: collectorName,
+          assignedCollectorPhone: collectorPhone,
+          assignedCollectorVehicle: 'UP32-KB-9482 (E-Rickshaw)',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return b;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('kb:beacon_updated', { detail: { beaconId, status: 'COLLECTOR_ASSIGNED' } }));
+    }
+
+    const matched = updated.find(b => b.id === beaconId);
+    return { success: true, beacon: matched };
+  },
+
+  updateBeaconStatus: async (beaconId: string, status: BeaconStatus, actualWeightKg?: number, finalPaidAmount?: number, paymentMethod?: string) => {
+    const STORAGE_KEY = 'sih_citizen_beacons_v1';
+    const res = await api.getCitizenBeacons();
+    const updated = (res.beacons || []).map(b => {
+      if (b.id === beaconId) {
+        return {
+          ...b,
+          status,
+          actualWeightKg: actualWeightKg != null ? actualWeightKg : b.actualWeightKg,
+          finalPaidAmount: finalPaidAmount != null ? finalPaidAmount : b.finalPaidAmount,
+          paymentMethod: (paymentMethod as any) || b.paymentMethod || 'CASH',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return b;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const matched = updated.find(b => b.id === beaconId);
+    return { success: true, beacon: matched };
+  },
+
+  rateCitizenBeacon: async (beaconId: string, rating: number, feedback?: string) => {
+    const STORAGE_KEY = 'sih_citizen_beacons_v1';
+    const res = await api.getCitizenBeacons();
+    const updated = (res.beacons || []).map(b => {
+      if (b.id === beaconId) {
+        return {
+          ...b,
+          rating,
+          feedback: feedback || '',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return b;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const matched = updated.find(b => b.id === beaconId);
+    return { success: true, beacon: matched };
   }
 };

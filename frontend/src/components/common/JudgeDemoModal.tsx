@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, 
@@ -26,6 +26,13 @@ export const JudgeDemoModal: React.FC<JudgeDemoModalProps> = ({ isOpen, onClose 
   const { switchDemoRole, role } = useAuth();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -231,8 +238,8 @@ export const JudgeDemoModal: React.FC<JudgeDemoModalProps> = ({ isOpen, onClose 
   const steps = getSteps();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border-2 border-emerald-500/80 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative bg-slate-900 border-2 border-emerald-500/80 rounded-3xl max-w-2xl w-full h-[85vh] sm:h-[80vh] max-h-[720px] min-h-[450px] flex flex-col shadow-2xl overflow-hidden text-left">
         {/* Modal Header */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -267,7 +274,7 @@ export const JudgeDemoModal: React.FC<JudgeDemoModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Modal Content / Steps List */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs flex-1">
+        <div ref={contentRef} className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs flex-1 min-h-0">
           <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 text-slate-300 space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
               {language === 'hi' ? '💡 जजों के लिए त्वरित निर्देश:' : language === 'mr' ? '💡 परीक्षकांसाठी सूचना:' : '💡 Instructions for Judges:'}

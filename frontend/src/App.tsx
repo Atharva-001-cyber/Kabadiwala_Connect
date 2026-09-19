@@ -34,6 +34,10 @@ import { AnomalyMonitorPage } from './pages/admin/AnomalyMonitorPage';
 import { DisputeResolutionPage } from './pages/admin/DisputeResolutionPage';
 import { DatasetManagerPage } from './pages/admin/DatasetManagerPage';
 
+// Citizen Smart E-Waste Beacon Pages
+import { SmartBeaconPage } from './pages/citizen/SmartBeaconPage';
+import { BeaconTrackingPage } from './pages/citizen/BeaconTrackingPage';
+
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute: React.FC<{
@@ -133,6 +137,10 @@ export const App: React.FC = () => {
             <Route path="/admin/datasets" element={<DatasetManagerPage />} />
           </Route>
         </Route>
+
+        {/* Citizen Smart E-Waste Beacon Disposal Routes (Standalone Public Access) */}
+        <Route path="/citizen" element={<SmartBeaconPage />} />
+        <Route path="/citizen/track/:beaconId" element={<BeaconTrackingPage />} />
 
         {/* Fallback Catch-All */}
         <Route path="*" element={<Navigate to="/" replace />} />

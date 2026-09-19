@@ -230,13 +230,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse,
         <div className="mx-3 mb-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-emerald-500/30 text-[10px] space-y-1 shadow-sm transition-colors">
           <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
             <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">CPCB Schedule-I Certified</span>
+            <span className="truncate">
+              {language === 'hi' ? 'CPCB अनुसूची-I प्रमाणित' : language === 'mr' ? 'CPCB अनुसूची-I प्रमाणित' : 'CPCB Schedule-I Certified'}
+            </span>
           </div>
           <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight">
-            Govt. of India • E-Waste Rules 2022
+            {language === 'hi' ? 'भारत सरकार • ई-कचरा नियम 2022' : language === 'mr' ? 'भारत सरकार • ई-कचरा नियम 2022' : 'Govt. of India • E-Waste Rules 2022'}
           </p>
           <div className="pt-1 flex items-center justify-between text-[9px] text-slate-600 dark:text-slate-300 font-mono border-t border-slate-200 dark:border-slate-800">
-            <span className="text-amber-600 dark:text-amber-400 font-bold">Helpline:</span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold">
+              {language === 'hi' ? 'हेल्पलाइन:' : language === 'mr' ? 'हेल्पलाइन:' : 'Helpline:'}
+            </span>
             <span>1800-E-WASTE</span>
           </div>
         </div>

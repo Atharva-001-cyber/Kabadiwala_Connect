@@ -1,0 +1,31 @@
+# ==============================================================================
+# KABADIWALA CONNECT — E-WASTE MATERIAL DETECTION MANIFEST
+# SIH 2026 Problem Statement 26229 — Frozen 8-Class AI Taxonomy
+# ==============================================================================
+
+# Dataset root directory (absolute path or relative to training script execution)
+path: ../dataset_ewaste_v1
+
+# Partition subdirectories (relative to path)
+train: train/images
+val: val/images
+test: test/images
+
+# Number of target classes
+nc: 8
+
+# Class index mapping strictly matching Step 1 & Step 2 taxonomy (Class IDs 0 - 7)
+names:
+  0: 'PCB_Circuit_Board'
+  1: 'Battery'
+  2: 'CRT'
+  3: 'LCD_LED_Display'
+  4: 'Cable_Wire'
+  5: 'Electric_Motor'
+  6: 'Magnet_bearing_Assembly'
+  7: 'Mixed_EWaste'
+
+# NOTE ON HARD NEGATIVES:
+# Non-e-waste objects (bottles, shoes, cardboard, clothing, domestic plastic, tools)
+# are represented as background images with zero-byte (empty) label text files.
+# They are NOT additional classes in this manifest.

@@ -7,7 +7,7 @@ import { SafeImage } from '../../components/common/SafeImage';
 import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Pickup } from '../../types';
-import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
+import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatAddressLocation } from '../../i18n/translations';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
@@ -111,7 +111,7 @@ export const RecyclerDashboard: React.FC = () => {
                 <Factory className="w-5 h-5" />
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-display">
-                {recyclerProfile?.facilityName || user?.name || 'Registered Recycling Facility'}
+                {formatUserDisplayName(recyclerProfile?.facilityName || user?.name || 'ABC E-Waste Recycling Pvt Ltd', 'RECYCLER', language)}
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-700 dark:text-slate-400 mt-2 font-bold">
@@ -169,7 +169,9 @@ export const RecyclerDashboard: React.FC = () => {
 
           <div className="bg-slate-50 dark:bg-slate-950/70 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl transition-all shadow-xs">
             <span className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-wider block">{t.totalFormallyRecycled}</span>
-            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 block font-mono">{totalRecycledKg} kg</span>
+            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 block font-mono">
+              {totalRecycledKg} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
+            </span>
             <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold">{t.form6Certified}</span>
           </div>
         </div>
@@ -221,7 +223,7 @@ export const RecyclerDashboard: React.FC = () => {
                 {language === 'hi' ? 'सामग्री छंटाई' : language === 'mr' ? 'साहित्य वर्गीकरण' : 'Material Sorting'}
               </span>
               <h4 className="font-extrabold text-xs text-white mt-0.5">
-                {language === 'hi' ? 'PCB, मेटल व प्लास्टिक पृथक्करण' : language === 'mr' ? 'PCB, धातू व प्लास्टिक वर्गीकरण' : 'PCB & Alloy Segregation'}
+                {language === 'hi' ? 'सर्किट बोर्ड (PCB), मेटल व प्लास्टिक पृथक्करण' : language === 'mr' ? 'सर्किट बोर्ड (PCB), धातू व प्लास्टिक वर्गीकरण' : 'PCB & Alloy Segregation'}
               </h4>
             </div>
           </div>
@@ -254,7 +256,7 @@ export const RecyclerDashboard: React.FC = () => {
             </div>
             <div className="mt-3">
               <span className="text-[10px] font-black text-emerald-300 uppercase tracking-wider block">
-                {language === 'hi' ? 'Form-6 EPR प्रमाण' : language === 'mr' ? 'Form-6 EPR पुरावा' : 'Form-6 Certificate'}
+                {language === 'hi' ? 'फॉर्म-6 EPR प्रमाण' : language === 'mr' ? 'फॉर्म-६ EPR पुरावा' : 'Form-6 Certificate'}
               </span>
               <h4 className="font-extrabold text-xs text-white mt-0.5">
                 {language === 'hi' ? 'कानूनी CPCB क्रेडिट जारी' : language === 'mr' ? 'कायदेशीर CPCB क्रेडिट्स' : 'Statutory Credit Issuance'}
@@ -350,7 +352,7 @@ export const RecyclerDashboard: React.FC = () => {
                     </div>
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">{getCategoryLabel(lot.materialCategory, language)}</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {language === 'hi' ? 'कलेक्टर:' : language === 'mr' ? 'संकलक:' : 'Collector:'} <b className="text-slate-800 dark:text-slate-200">{lot.collectorName}</b> • {lot.approxWeight} kg • {lot.locationDistrict}
+                      {language === 'hi' ? 'कलेक्टर:' : language === 'mr' ? 'संकलक:' : 'Collector:'} <b className="text-slate-800 dark:text-slate-200">{formatUserDisplayName(lot.collectorName, 'COLLECTOR', language)}</b> • {lot.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'} • {formatAddressLocation(lot.locationDistrict || 'Lucknow', language)}
                     </p>
                   </div>
                 </div>

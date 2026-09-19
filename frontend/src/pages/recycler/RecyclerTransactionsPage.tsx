@@ -19,7 +19,7 @@ import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { PaymentLedgerEntry, Lot, HandoverRecord } from '../../types';
 import { GreenCertificateModal } from '../../components/common/GreenCertificateModal';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
 
 export const RecyclerTransactionsPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -165,7 +165,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 text-xs font-black uppercase tracking-wider mb-2">
               <FileText className="w-3.5 h-3.5" />
-              <span>CPCB Rule 19 Double-Entry Accounting</span>
+              <span>{language === 'hi' ? 'CPCB नियम 19 दोहरा-लेखा बहीखाता' : language === 'mr' ? 'CPCB नियम 19 दुहेरी नोंद वहीखाते' : 'CPCB Rule 19 Double-Entry Accounting'}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-2xl">📜</span>
@@ -174,7 +174,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
               </h1>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Facility: <b className="text-emerald-700 dark:text-emerald-400">{facilityName}</b> • Cryptographically Verified Vouchers
+              {language === 'hi' ? 'सुविधा:' : language === 'mr' ? 'सुविधा:' : 'Facility:'} <b className="text-emerald-700 dark:text-emerald-400">{formatUserDisplayName(facilityName, 'RECYCLER', language)}</b> • {language === 'hi' ? 'क्रिप्टोग्राफिक रूप से सत्यापित वाउचर' : language === 'mr' ? 'क्रिप्टोग्राफिकदृष्ट्या पडताळलेले व्हाउचर' : 'Cryptographically Verified Vouchers'}
             </p>
           </div>
 
@@ -191,7 +191,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                 }`}
               >
                 <Building2 className="w-3.5 h-3.5" />
-                <span>My Facility</span>
+                <span>{language === 'hi' ? 'मेरी सुविधा' : language === 'mr' ? 'माझी सुविधा' : 'My Facility'}</span>
               </button>
               <button
                 type="button"
@@ -203,7 +203,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                 }`}
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span>All Network</span>
+                <span>{language === 'hi' ? 'सम्पूर्ण नेटवर्क' : language === 'mr' ? 'संपूर्ण नेटवर्क' : 'All Network'}</span>
               </button>
             </div>
 
@@ -215,7 +215,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
               title="Export official CPCB compliance ledger"
             >
               <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Export CSV</span>
+              <span>{language === 'hi' || language === 'mr' ? 'CSV एक्सपोर्ट' : 'Export CSV'}</span>
             </button>
           </div>
         </div>
@@ -230,7 +230,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
               ₹{(summary?.totalDisbursedINR || 0).toLocaleString('en-IN')}
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-              100% formal banking / verified cash
+              {language === 'hi' ? '100% औपचारिक बैंकिंग / सत्यापित नकद' : language === 'mr' ? '100% औपचारिक बँकिंग / पडताळलेली रोख' : '100% formal banking / verified cash'}
             </span>
           </div>
 
@@ -239,10 +239,10 @@ export const RecyclerTransactionsPage: React.FC = () => {
               {language === 'hi' ? 'कुल प्राप्त वजन' : language === 'mr' ? 'एकूण प्राप्त वजन' : 'Total Weight Procured'}
             </span>
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {Number((summary?.totalWeightKg || 0).toFixed(1)).toLocaleString('en-IN')} kg
+              {Number((summary?.totalWeightKg || 0).toFixed(1)).toLocaleString('en-IN')} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-              Tare-calibrated scale weights
+              {language === 'hi' ? 'कांटा कैलिब्रेटेड शुद्ध वजन' : language === 'mr' ? 'काटा कॅलिब्रेटेड निव्वळ वजन' : 'Tare-calibrated scale weights'}
             </span>
           </div>
 
@@ -254,7 +254,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
               {summary?.totalTransactions || 0}
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-              Cryptographically verified vouchers
+              {language === 'hi' ? 'क्रिप्टोग्राफिक रूप से सत्यापित वाउचर' : language === 'mr' ? 'क्रिप्टोग्राफिकदृष्ट्या पडताळलेले व्हाउचर' : 'Cryptographically verified vouchers'}
             </span>
           </div>
         </div>
@@ -270,7 +270,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                 {language === 'hi' ? 'भुगतान बहीखाता इतिहास' : language === 'mr' ? 'पेमेंट नोंदवही इतिहास' : 'Payment Disbursal Ledger'}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold">
-                {filteredTransactions.length} of {transactions.length}
+                {filteredTransactions.length} {language === 'hi' ? 'में से' : language === 'mr' ? 'पैकी' : 'of'} {transactions.length}
               </span>
             </h2>
           </div>
@@ -283,7 +283,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search Lot ID or Ref..."
+                placeholder={language === 'hi' ? 'लॉट ID या संदर्भ खोजें...' : language === 'mr' ? 'लॉट ID किंवा संदर्भ शोधा...' : 'Search Lot ID or Ref...'}
                 className="pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs w-44 sm:w-56"
               />
             </div>
@@ -296,7 +296,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                   paymentFilter === 'ALL' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                All
+                {language === 'hi' ? 'सभी' : language === 'mr' ? 'सर्व' : 'All'}
               </button>
               <button
                 type="button"
@@ -305,7 +305,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                   paymentFilter === 'CASH' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                Cash
+                {language === 'hi' ? 'नकद' : language === 'mr' ? 'रोख' : 'Cash'}
               </button>
               <button
                 type="button"
@@ -314,7 +314,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                   paymentFilter === 'UPI' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                UPI / Voucher
+                {language === 'hi' ? 'यूपीआई / वाउचर' : language === 'mr' ? 'युपीआय / व्हाउचर' : 'UPI / Voucher'}
               </button>
             </div>
           </div>
@@ -349,7 +349,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs font-black text-blue-700 dark:text-blue-400">{tx.lotId}</span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                        Ref: {tx.transactionRef}
+                        {language === 'hi' ? 'संदर्भ:' : language === 'mr' ? 'संदर्भ:' : 'Ref:'} {tx.transactionRef}
                       </span>
                       {scope === 'ALL_NETWORK' && tx.recyclerName && (
                         <span className="text-[10px] px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-semibold">
@@ -358,7 +358,7 @@ export const RecyclerTransactionsPage: React.FC = () => {
                       )}
                     </div>
                     <p className="text-xs font-bold text-slate-900 dark:text-white mt-1">
-                      {getCategoryLabel(tx.materialCategory, language)} • {tx.weight} kg @ ₹{tx.ratePerKg}/kg
+                      {getCategoryLabel(tx.materialCategory, language)} • {tx.weight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'} @ ₹{tx.ratePerKg}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}
                     </p>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                       {new Date(tx.timestamp).toLocaleString('en-IN')}

@@ -23,7 +23,8 @@ import {
   Scale,
   Clock,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Radio
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -32,10 +33,11 @@ import { useSpeech } from '../../hooks/useSpeech';
 import { AudioButton } from '../../components/common/AudioButton';
 import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
-import { Lot, PriceRecord } from '../../types';
-import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatLocationString } from '../../i18n/translations';
+import { Lot, PriceRecord, CitizenBeacon } from '../../types';
+import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatLocationString, formatAddressLocation } from '../../i18n/translations';
 import { formatWeight } from '../../utils/formatters';
 import { MaterialJourney } from '../../components/common/MaterialJourney';
+import { CollectorGamificationCard } from '../../components/common/CollectorGamificationCard';
 
 export const CollectorDashboard: React.FC = () => {
   const { user, collectorProfile } = useAuth();
@@ -45,6 +47,7 @@ export const CollectorDashboard: React.FC = () => {
 
   const [lots, setLots] = useState<Lot[]>([]);
   const [prices, setPrices] = useState<PriceRecord[]>([]);
+  const [beacons, setBeacons] = useState<CitizenBeacon[]>([]);
   const [ledgerSummary, setLedgerSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -58,14 +61,16 @@ export const CollectorDashboard: React.FC = () => {
         const district = collectorProfile?.district || 'Lucknow';
         const colId = collectorProfile?.id;
         const lotsQuery = colId ? api.getLots({ collectorId: colId }) : api.getLots({});
-        const [lotsRes, ledgerRes, pricesRes] = await Promise.all([
+        const [lotsRes, ledgerRes, pricesRes, beaconsRes] = await Promise.all([
           lotsQuery,
           api.getCollectorLedger(colId),
-          api.getPriceBoard(district)
+          api.getPriceBoard(district),
+          api.getCitizenBeacons({ status: 'REQUESTED' })
         ]);
         if (lotsRes.success) setLots(lotsRes.lots);
         if (ledgerRes.success) setLedgerSummary(ledgerRes.summary);
         if (pricesRes.success) setPrices(pricesRes.prices);
+        if (beaconsRes.success) setBeacons(beaconsRes.beacons);
       } catch (err) {
         console.warn('Dashboard fetch error:', err);
       } finally {
@@ -374,6 +379,82 @@ export const CollectorDashboard: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* 🏅 Collector Gamification Badge Progress Bar */}
+        <div className="mt-4">
+          <CollectorGamificationCard totalWeight={totalCollectedWeight || 180} compact={true} />
+        </div>
+      </div>
+
+      {/* 📡 SMART E-WASTE BEACON DEMAND RADAR (CITIZEN PICKUP OPPORTUNITIES) */}
+      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-950 text-white rounded-3xl p-5 border-2 border-emerald-500/60 shadow-xl space-y-3">
+        <div className="flex items-center justify-between border-b border-emerald-800/60 pb-3">
+          <div className="flex items-center gap-2">
+            <Radio className="w-5 h-5 text-emerald-400 animate-pulse shrink-0" />
+            <div>
+              <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                {language === 'hi' ? '📡 पास के नागरिक ई-कचरा पिकअप सिग्नल (मांग रडार)' : language === 'mr' ? '📡 पासचे नागरिक ई-कचरा पिकअप सिग्नल (माग रडार)' : '📡 Nearby Citizen E-Waste Beacon Signals (Demand Radar)'}
+              </h3>
+              <span className="text-[10px] text-emerald-300 font-mono font-bold block">
+                {language === 'hi' ? 'नागरिक से संकलक तक सीधा घर से पिकअप नेटवर्क' : language === 'mr' ? 'नागरिक ते संकलक थेट घरून पिकअप नेटवर्क' : 'Direct Citizen-to-Collector Doorstep Pickup Network'}
+              </span>
+            </div>
+          </div>
+
+          <Link
+            to="/citizen"
+            className="px-3 py-1 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-mono font-bold flex items-center gap-1 active:scale-95 transition-all"
+          >
+            <span>{language === 'hi' ? 'नागरिक पोर्टल →' : language === 'mr' ? 'नागरिक पोर्टल →' : 'Citizen Portal →'}</span>
+          </Link>
+        </div>
+
+        {beacons.length === 0 ? (
+          <div className="text-center py-4 text-xs text-slate-400 font-mono">
+            {language === 'hi' ? 'वार्ड में सक्रिय नागरिक बीकन खोजे जा रहे हैं... (2 किमी दायरे में कोई नया अनुरोध नहीं)' : language === 'mr' ? 'वॉर्डमध्ये सक्रिय नागरिक बीकन शोधले जात आहेत... (2 किमी परिघात कोणतीही प्रलंबित विनंती नाही)' : 'Scanning ward for active citizen beacons... (No pending requests in 2 km radius)'}
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {beacons.slice(0, 3).map((b) => (
+              <div
+                key={b.id}
+                className="p-3.5 bg-slate-900/90 rounded-2xl border border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-white text-sm">
+                      {formatUserDisplayName(b.citizenName, 'CITIZEN', language)}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-mono font-bold">
+                      {b.quantityBag === 'SMALL_BAG'
+                        ? (language === 'hi' ? 'छोटी थैली' : language === 'mr' ? 'लहान पिशवी' : 'Small Bag')
+                        : b.quantityBag === 'MEDIUM_BOX'
+                        ? (language === 'hi' ? 'मध्यम डिब्बा' : language === 'mr' ? 'मध्यम खोके' : 'Medium Box')
+                        : (language === 'hi' ? 'बड़ा उपकरण' : language === 'mr' ? 'मोठे उपकरण' : 'Large Appliance')}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 text-[11px] font-medium flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>{formatAddressLocation(b.address, language)}</span>
+                  </p>
+                  <p className="text-[10px] font-mono text-emerald-300 font-bold">
+                    {language === 'hi' ? 'सामग्री:' : language === 'mr' ? 'साहित्य:' : 'Items:'} {b.items.map(i => getCategoryLabel(i, language)).join(', ')} | {language === 'hi' ? 'अनुमानित मूल्य:' : language === 'mr' ? 'अंदाजित मोबदला:' : 'Est. Value:'} ₹{b.estimatedValueMin} - ₹{b.estimatedValueMax}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <Link
+                    to={`/citizen/track/${b.id}`}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow active:scale-95 transition-all shrink-0"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{language === 'hi' ? 'पिकअप स्वीकार करें' : language === 'mr' ? 'पिकअप स्वीकार करा' : 'Accept Pickup'}</span>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* TODAY'S SCROLLING RATE TICKER */}

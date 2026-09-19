@@ -171,6 +171,193 @@ export class VoiceCopilotEngine {
     const targetLang: Language = isHinglish ? 'hi' : language;
 
     // -------------------------------------------------------------
+    // 0. VERNACULAR SPEECH-TO-TEXT TYPO NORMALIZER & AUTO-CORRECT
+    // -------------------------------------------------------------
+    const normalizedQ = q
+      .replace(/\b(kabaddi|kabbadi|kabadi|kabaddi|कबड्डी|कबाडी|कबाड़ी)\b/g, 'kabaadi')
+      .replace(/\b(kapda|kapra|कपड़ा|कपड़े)\b/g, 'kabaad')
+      .replace(/\b(mahanga|mahnga|mehnga|mehanga|महंगा|महंगे)\b/g, 'expensive')
+      .replace(/\b(aas paas|aaspaas|pas me|paas me|najdeek|near me|nearby|आसपास|पास में|नजदीक)\b/g, 'nearby');
+
+    // -------------------------------------------------------------
+    // HIGH-PRIORITY STT INTENT: NEARBY RECYCLERS & RECYCLER SEARCH
+    // E.g. "sabse badhiya kabaddi batao aas paas" / "nearby recycler"
+    // -------------------------------------------------------------
+    if (
+      normalizedQ.includes('kabaadi') ||
+      normalizedQ.includes('recycler') ||
+      normalizedQ.includes('nearby') ||
+      normalizedQ.includes('dukaan') ||
+      normalizedQ.includes('plant') ||
+      q.includes('पास') ||
+      q.includes('नजदीक')
+    ) {
+      const msg = targetLang === 'hi'
+        ? `${district} और आसपास के शीर्ष CPCB अधिकृत रीसाइक्लर्स:\n1. 🏭 EcoMetals Recycling Facility (4.9★ • 3.2 km, PCB ₹145/kg)\n2. 🏭 GreenTech E-Waste Plant (4.8★ • 5.8 km, Battery ₹118/kg)\n\nदोनों CPCB प्रमाणित हैं और ₹0 शुल्क पर डोरस्टेप वाहन भेजते हैं।`
+        : targetLang === 'mr'
+        ? `${district} मधील प्रमुख CPCB अधिकृत रीसायकलर्स: 1. EcoMetals Facility (4.9★), 2. GreenTech Plant (4.8★). विनामूल्य वाहन सेवा उपलब्ध.`
+        : `Top CPCB Authorized Recyclers near ${district}:\n1. EcoMetals Facility (4.9★, 3.2km)\n2. GreenTech Plant (4.8★, 5.8km).\nBoth offer 100% free doorstep pickup.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, targetLang),
+        action: { type: 'NAVIGATE', route: '/collector/recyclers', label: 'View Nearby Recyclers (कबाड़ी देखें)' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
+    // HIGH-PRIORITY STT INTENT: MOST EXPENSIVE / HIGHEST RATE ITEMS
+    // E.g. "sabse mahanga kabaad" / "highest price scrap"
+    // -------------------------------------------------------------
+    if (
+      normalizedQ.includes('expensive') ||
+      q.includes('sabse zyada') ||
+      q.includes('highest') ||
+      q.includes('top rate') ||
+      q.includes('best price') ||
+      q.includes('महंगा')
+    ) {
+      const msg = targetLang === 'hi'
+        ? `📊 हमारे प्लेटफॉर्म पर सबसे महंगे बिकने वाले ई-कचरे की सूची:\n1. 🔌 तांबा केबल/तार: ₹285 / kg\n2. 💻 मदरबोर्ड PCB: ₹145 / kg तक\n3. 🔋 लिथियम-आयन बैटरी: ₹118 / kg तक\n4. 🧲 दुर्लभ चुंबक: ₹64 / kg\n\n(CPCB अधिकृत रीसाइक्लर से 0% कटौती पर पूरा 100% भाव मिलता है)।`
+        : targetLang === 'mr'
+        ? `📊 सर्वात जास्त भाव मिळणारे ई-कचरा प्रकार: तांबे वायर ₹285/kg, PCB ₹145/kg, लिथियम बॅटरी ₹118/kg.`
+        : `📊 Highest Value E-Waste Streams:\n1. Copper Cable: ₹285/kg\n2. Motherboard PCB: up to ₹145/kg\n3. Li-Ion Batteries: up to ₹118/kg\n4. Rare Earth Magnets: ₹64/kg. Zero scale cuts guaranteed.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, targetLang),
+        action: { type: 'NAVIGATE', route: '/collector/prices', label: 'View Full Mandi Rate Board' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
+    // HIGH-PRIORITY STT INTENT: ENVIRONMENTAL IMPACT & CRITICAL MINERALS
+    // E.g. "paryavaran bachat" / "green impact" / "mineral savings"
+    // -------------------------------------------------------------
+    if (
+      normalizedQ.includes('paryavaran') ||
+      normalizedQ.includes('green') ||
+      normalizedQ.includes('carbon') ||
+      normalizedQ.includes('co2') ||
+      normalizedQ.includes('mineral') ||
+      normalizedQ.includes('prabhav') ||
+      q.includes('पर्यावरण') ||
+      q.includes('प्रभाव') ||
+      q.includes('बचत')
+    ) {
+      playSoundboxChime();
+      const msg = targetLang === 'hi'
+        ? `🌱 आपका प्रमाणित पर्यावरण और दुर्लभ खनिज प्रभाव (Green Impact):\n• 🌳 CO₂ उत्सर्जन बचत: +342.5 kg CO₂\n• ⚡ बिजली ऊर्जा बचत: 1,280 kWh\n• ⛏️ दुर्लभ खनिज पुनःप्राप्ति: 14.2g सोना/चांदी, 1.8kg तांबा, 420g लिथियम/कोबाल्ट!\n\nआपने औपचारिक रीसाइक्लिंग से अपने शहर को 100% जहर-मुक्त रखा है।`
+        : targetLang === 'mr'
+        ? `🌱 तुमचा पर्यावरण प्रभाव: +342.5 kg CO₂ बचत, 1,280 kWh ऊर्जा बचत, आणि 1.8kg तांबे पुनर्प्राप्ती.`
+        : `🌱 Your Verified Environmental Impact & Critical Mineral Savings:\n• CO₂ Emissions Saved: +342.5 kg CO₂\n• Energy Saved: 1,280 kWh\n• Critical Minerals Recovered: 14.2g Precious Metals, 1.8kg Copper, 420g Li-Ion Cobalt.\n100% diverted from toxic informal dumping.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, targetLang),
+        soundbox: true,
+        action: { type: 'NAVIGATE', route: '/collector/ledger', label: 'View Green Impact Certificate' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
+    // HIGH-PRIORITY STT INTENT: LIVE CONSIGNMENT VEHICLE TELEMETRY
+    // E.g. "meri gaadi kahan hai" / "driver contact" / "vehicle eta"
+    // -------------------------------------------------------------
+    if (
+      normalizedQ.includes('gaadi') ||
+      normalizedQ.includes('driver') ||
+      normalizedQ.includes('vahan') ||
+      normalizedQ.includes('kahan pahuncha') ||
+      normalizedQ.includes('eta') ||
+      normalizedQ.includes('live tracking') ||
+      q.includes('गाड़ी') ||
+      q.includes('पहुंचा')
+    ) {
+      const msg = targetLang === 'hi'
+        ? `🚚 आपकी पिकअप गाड़ी का लाइव स्टेटस:\n• 📍 वाहन: UP-32-AB-1234 (टाटा एपेक्स ई-व्हीकल)\n• 👨‍✈️ ड्राइवर: सुभाष सिंह (Ph: 9876543212)\n• ⏱️ अनुमानित आगमन: 14 मिनट (2.1 km दूर)\n• 🔒 हैंडओवर OTP: 4829\n\nगाड़ी आपके वार्ड की ओर आ रही है।`
+        : targetLang === 'mr'
+        ? `🚚 थेट वाहन स्टेटस: UP-32-AB-1234 (चालक: सुभाष सिंग, Ph: 9876543212). 14 मिनिटात आगमन.`
+        : `🚚 Live Pickup Consignment Telemetry:\n• Vehicle: UP-32-AB-1234 (Clean EV Truck)\n• Logistics Driver: Subhash Singh (Ph: 9876543212)\n• Estimated Arrival: 14 Mins (2.1 km away)\n• Handover OTP: 4829. Vehicle en route.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, targetLang),
+        action: { type: 'NAVIGATE', route: '/collector/tracking', label: 'Open Live Consignment Map' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
+    // HIGH-PRIORITY STT INTENT: VOICE PORTAL SWITCH (ADMIN / RECYCLER)
+    // -------------------------------------------------------------
+    if (
+      normalizedQ.includes('admin mode') ||
+      normalizedQ.includes('admin portal') ||
+      normalizedQ.includes('cpcb mode')
+    ) {
+      const msg = targetLang === 'hi'
+        ? '🏛️ सीपीसीबी राष्ट्रीय एडमिन पोर्टल में स्विच किया जा रहा है...'
+        : '🏛️ Switching to CPCB National Admin Portal...';
+      return {
+        text: msg,
+        spokenText: msg,
+        action: { type: 'NAVIGATE', route: '/admin', label: 'Go to CPCB Admin Hub' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
+    // HIGH-PRIORITY STT INTENT: DAILY MANDI VOICE NEWS BULLETIN
+    // E.g. "mandi samachar" / "today news" / "mandi news"
+    // -------------------------------------------------------------
+    if (
+      normalizedQ.includes('samachar') ||
+      normalizedQ.includes('news') ||
+      normalizedQ.includes('bulletin') ||
+      q.includes('समाचार') ||
+      q.includes('न्यूज')
+    ) {
+      playSoundboxChime();
+      const msg = targetLang === 'hi'
+        ? `🎙️ राम-राम कबाड़ी भाइयों! आज ${district} मंडी समाचार:\n• 💻 मदरबोर्ड PCB ₹145/kg (तेजी +3.4%)\n• 🔌 तांबा केबल ₹285/kg (तेजी +4.2%)\n• 🔋 लिथियम बैटरी ₹118/kg (तेजी +2.5%)\n\nसभी CPCB रीसाइक्लर्स आज 0% कटौती पर 100% पूरा भाव दे रहे हैं!`
+        : targetLang === 'mr'
+        ? `🎙️ आजचे बाजार वृत्त: PCB ₹145/kg (+3.4%), तांबे ₹285/kg (+4.2%), बॅटरी ₹118/kg (+2.5%).`
+        : `🎙️ Daily Mandi Voice Bulletin for ${district}:\n• Motherboard PCB: ₹145/kg (+3.4% UP)\n• Copper Cable: ₹285/kg (+4.2% UP)\n• Li-Ion Battery: ₹118/kg (+2.5% UP).\nZero scale cuts guaranteed across all CPCB yards today!`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, targetLang),
+        soundbox: true,
+        action: { type: 'NAVIGATE', route: '/collector/prices', label: 'View Mandi Rate Board' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
+    // 0.5. SYSTEM ACTION: VOICE-TRIGGERED AI CAMERA SCANNER LAUNCH
+    // E.g. "camera kholo" / "photo kheencho" / "scan karo"
+    // -------------------------------------------------------------
+    if (
+      q.includes('camera') ||
+      q.includes('photo') ||
+      q.includes('scan') ||
+      q.includes('scanner') ||
+      q.includes('khichna') ||
+      q.includes('kheencho')
+    ) {
+      const msg = targetLang === 'hi'
+        ? 'जी भैया! AI कैमरा स्कैनर ओपन कर रहे हैं। कबाड़ का फोटो खींचकर AI ऑटो-कैटेगराइज करेगा।'
+        : targetLang === 'mr'
+        ? 'AI कॅमेरा उघडत आहे. फोटो काढून AI वर्गीकरण करेल.'
+        : 'Opening AI Camera Scanner for instant YOLO e-waste classification.';
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, targetLang),
+        action: { type: 'OPEN_CAMERA', route: '/collector/add', label: '📸 Open AI Camera Scanner' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // -------------------------------------------------------------
     // 1. SYSTEM ACTIONS: THEME TOGGLE VIA VOICE
     // -------------------------------------------------------------
     if (
@@ -772,6 +959,153 @@ export class VoiceCopilotEngine {
         text: msg,
         spokenText: formatSpeechText(msg, lang),
         action: { type: 'NAVIGATE', route: '/collector/add', label: 'Open Camera Scanner' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 7. KYC / AADHAAR / VERIFICATION
+    if (
+      q.includes('kyc') ||
+      q.includes('aadhaar') ||
+      q.includes('id proof') ||
+      q.includes('pan card') ||
+      q.includes('document') ||
+      q.includes('verif')
+    ) {
+      const msg = lang === 'hi'
+        ? `प्रोफाइल पेज पर आपका आधार/KYC सत्यापन स्टेटस 'CPCB Verified' (XXXX-XXXX-8921) के रूप में सक्रिय है। कोई अतिरिक्त दस्तावेज अपलोड करने की जरूरत नहीं है।`
+        : lang === 'mr'
+        ? `प्रोफाइलवर तुमचे आधार/KYC सत्यापन सक्रिय आहे. अतिरिक्त कागदपत्रांची गरज नाही.`
+        : `Your Aadhaar/KYC identity verification is active under CPCB Authorized badge (XXXX-XXXX-8921). Opening Profile settings.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
+        action: { type: 'NAVIGATE', route: '/collector/profile', label: 'View Profile & KYC' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 8. UPI / BANK ACCOUNT / PAYMENT SETTLEMENT
+    if (
+      q.includes('upi') ||
+      q.includes('bank') ||
+      q.includes('account number') ||
+      q.includes('payment method') ||
+      q.includes('paisa kaise milta')
+    ) {
+      const msg = lang === 'hi'
+        ? `भुगतान सीधे आपके पंजीकृत UPI ID (${context.userName ? '9876543210@paytm' : 'आपकी UPI ID'}) या कैश में मिलता है। रीसाइक्लर द्वारा कांटा तौल पूरा होते ही शून्य कटौती के साथ पैसा तुरंत क्रेडिट होता है।`
+        : lang === 'mr'
+        ? `पैसे थेट तुमच्या UPI ID वर किंवा रोखीने मिळतात. काटा वजनानंतर त्वरित जमा होतात.`
+        : `Payments are transferred instantly via your registered UPI ID or direct Cash upon scale weighment verification with zero deductions.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
+        action: { type: 'NAVIGATE', route: '/collector/profile', label: 'Manage Payment Methods' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 9. SWOLLEN BATTERY / DANGER HANDLING
+    if (
+      q.includes('phooli') ||
+      q.includes('swollen') ||
+      q.includes('fula') ||
+      q.includes('blast') ||
+      q.includes('garam') ||
+      q.includes('battery fula')
+    ) {
+      const msg = lang === 'hi'
+        ? `⚠️ जरूरी सुरक्षा चेतावनी: फूली हुई लिथियम बैटरी में आग लगने का खतरा होता है! इसे धातु की चीज से न छेदें, पानी में न डालें और धूप से दूर सूखे डिब्बे में रखें। पिकअप गाड़ी आने तक इसे अलग रखें।`
+        : lang === 'mr'
+        ? `⚠️ सुरक्षा इशारा: फुगलेली लिथियम बॅटरी पंक्चर करू नका! ती कोरड्या डब्यात वेगळी ठेवा.`
+        : `⚠️ Critical Safety Alert: Never puncture or compress a swollen Li-Ion battery! Store in a dry non-conductive box away from heat until certified recycler pickup.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
+        action: { type: 'NAVIGATE', route: '/collector/safety', label: 'Battery Safety Guide' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 10. CRT MONITOR / PICTURE TUBE GLASS
+    if (
+      q.includes('crt') ||
+      q.includes('picture tube') ||
+      q.includes('tv kacha') ||
+      q.includes('shisha')
+    ) {
+      const msg = lang === 'hi'
+        ? `CRT मॉनिटर में भारी सीसा (Lead) और वैक्यूम होता है। इसे कभी भी न फोड़ें। टूटने पर खतरनाक जहर फैलता है। साबुत CRT का रीसाइक्लर भाव ₹22/kg तक मिलता है।`
+        : lang === 'mr'
+        ? `CRT मॉनिटर फोडू नका, त्यात विषारी शिसे असते. साबुत CRT चा भाव ₹22/kg मिळतो.`
+        : `Intact CRT monitors yield up to ₹22/kg. Never break picture tube glass due to toxic lead oxide and vacuum implosion risks.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
+        action: { type: 'NAVIGATE', route: '/collector/prices', label: 'View CRT Benchmark Rates' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 11. MIDDLEMAN / DEDUCTION / KATTAI DEDUCTIONS
+    if (
+      q.includes('kattai') ||
+      q.includes('middleman') ||
+      q.includes('bicholiya') ||
+      q.includes('cut') ||
+      q.includes('deduction')
+    ) {
+      const msg = lang === 'hi'
+        ? `कबाड़ी कनेक्ट पर 0% कट्टई (कटौती) नीति है! पारंपरिक दलाल 10%-15% वजन काटकर 50% कम दाम देते हैं, जबकि यहाँ CPCB अधिकृत रीसाइक्लर डिजिटल कांटे का 100% पूरा भाव देता है जिससे आपकी +72.4% ज्यादा कमाई होती है।`
+        : lang === 'mr'
+        ? `कबाडी कनेक्टवर 0% कपातीचे धोरण आहे! तुम्हाला +72.4% जास्त नफा मिळतो.`
+        : `Kabadiwala Connect guarantees ZERO scale deductions. Direct authorized recycling yields +72.4% net margin gain versus traditional middleman cuts.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
+        action: { type: 'NAVIGATE', route: '/collector/ledger', label: 'View Earnings Passbook' },
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 12. FREE APP / COMMISSION
+    if (
+      q.includes('free') ||
+      q.includes('paisa lagta hai') ||
+      q.includes('app charge') ||
+      q.includes('commission') ||
+      q.includes('shulk')
+    ) {
+      const msg = lang === 'hi'
+        ? `यह ऐप कबाड़ियों के लिए 100% मुफ्त (Free) है! कोई रजिस्ट्रेशन शुल्क या कमीशन नहीं काटा जाता। पूरा पैसा सीधे आपके पासबुक में जमा होता है।`
+        : lang === 'mr'
+        ? `हे ॲप कबाडी भावांसाठी 100% मोफत आहे! कोणतेही कमिशन किंवा शुल्क आकारले जात नाही.`
+        : `Kabadiwala Connect is 100% FREE for informal scrap collectors! Zero registration fees, zero commission, and zero hidden transport charges.`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
+        source: 'LOCAL_EDGE_BRAIN'
+      };
+    }
+
+    // 13. GREETINGS & IDENTITY
+    if (
+      q.includes('kaun ho') ||
+      q.includes('who are you') ||
+      q.includes('kabaad saathi') ||
+      q.includes('hello') ||
+      q.includes('namaste') ||
+      q.includes('hi')
+    ) {
+      const msg = lang === 'hi'
+        ? `नमस्ते ${context.userName || 'भैया'}! मैं आपका 'कबाड़ साथी' AI वॉइस असिस्टेंट हूँ। आप मुझसे मंडी के भाव, ई-कचरा बेचने का तरीका, या अपनी कुल कमाई के बारे में कुछ भी पूछ सकते हैं!`
+        : lang === 'mr'
+        ? `नमस्कार ${context.userName || 'भाऊ'}! मी तुमचा 'कबाडी साथी' AI व्हॉइस असिस्टंट आहे. बाजार भाव किंवा कमाईबद्दल काहीही विचारा!`
+        : `Hello ${context.userName || 'Friend'}! I am Kabaad Saathi, your vernacular AI voice assistant. Ask me about mandi rates, selling scrap, or your earnings!`;
+      return {
+        text: msg,
+        spokenText: formatSpeechText(msg, lang),
         source: 'LOCAL_EDGE_BRAIN'
       };
     }

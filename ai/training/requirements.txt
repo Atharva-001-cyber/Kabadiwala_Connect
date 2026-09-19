@@ -1,0 +1,28 @@
+# ==============================================================================
+# KABADIWALA CONNECT — AI MODEL TRAINING & EVALUATION DEPENDENCIES
+# SIH 2026 Problem Statement 26229 — Genuine Edge AI Pipeline
+# Target Python Version: 3.9 - 3.11 (Recommended: 3.10)
+# ==============================================================================
+
+# Core YOLO Training & Inference Framework
+ultralytics>=8.3.0
+
+# Deep Learning Backbone (PyTorch with CUDA recommended for GPU training)
+torch>=2.2.0
+torchvision>=0.17.0
+
+# ONNX Export & Graph Simplification for Browser WebAssembly/WebGL
+onnx>=1.15.0
+onnxsim>=0.4.35
+
+# Image Processing & Preprocessing
+opencv-python-headless>=4.9.0
+pillow>=10.2.0
+
+# Data Serialization & Metrics Calculation
+pyyaml>=6.0.1
+numpy>=1.24.0
+tqdm>=4.66.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+scipy>=1.11.0

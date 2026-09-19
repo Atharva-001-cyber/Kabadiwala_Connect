@@ -17,6 +17,7 @@ import { api } from '../../services/api';
 import { Lot, HandoverRecord, Pickup } from '../../types';
 import { GreenCertificateModal } from '../../components/common/GreenCertificateModal';
 import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
+import { WhatsAppReceiptButton } from '../../components/common/WhatsAppReceiptButton';
 
 export const HandoverViewPage: React.FC = () => {
   const { lotId } = useParams<{ lotId: string }>();
@@ -246,15 +247,23 @@ export const HandoverViewPage: React.FC = () => {
           </div>
         )}
 
-        {/* GREEN CERTIFICATE ACTION */}
-        <button
-          type="button"
-          onClick={() => setShowCertModal(true)}
-          className="w-full min-h-[56px] py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
-        >
-          <Award className="w-5 h-5" />
-          <span>{language === 'hi' ? 'ग्रीन रीसाइक्लिंग सर्टिफिकेट देखें (Form-6 Digital Proof)' : language === 'mr' ? 'ग्रीन रीसायकलिंग प्रमाणपत्र पहा (Form-6 Digital Proof)' : 'View Green Recycling Certificate (Form-6 Proof)'}</span>
-        </button>
+        {/* 📲 1-TAP WHATSAPP VERNACULAR RECEIPT SLIP & GREEN CERTIFICATE ACTIONS */}
+        <div className="space-y-3 pt-2">
+          <WhatsAppReceiptButton 
+            lot={lot} 
+            handover={handover} 
+            className="w-full min-h-[52px]"
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowCertModal(true)}
+            className="w-full min-h-[56px] py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm rounded-2xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
+          >
+            <Award className="w-5 h-5" />
+            <span>{language === 'hi' ? 'ग्रीन रीसाइक्लिंग सर्टिफिकेट देखें (Form-6 Digital Proof)' : language === 'mr' ? 'ग्रीन रीसायकलिंग प्रमाणपत्र पहा (Form-6 Digital Proof)' : 'View Green Recycling Certificate (Form-6 Proof)'}</span>
+          </button>
+        </div>
       </div>
 
       {showCertModal && (

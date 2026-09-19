@@ -20,7 +20,7 @@ import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Offer } from '../../types';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -132,7 +132,7 @@ export const MyRequestsPage: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 text-xs font-black uppercase tracking-wider mb-2">
               <Truck className="w-3.5 h-3.5" />
-              <span>Clean & Green Circular Supply Chain</span>
+              <span>{language === 'hi' ? 'स्वच्छ एवं हरित सर्कुलर आपूर्ति श्रृंखला' : language === 'mr' ? 'स्वच्छ व हरित वर्तुळाकार पुरवठा साखळी' : 'Clean & Green Circular Supply Chain'}</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <span>🚚</span>
@@ -251,15 +251,17 @@ export const MyRequestsPage: React.FC = () => {
                             : 'bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/80 dark:text-orange-300 dark:border-orange-700'
                         }`}>
                           {lot.condition === 'INTACT'
-                            ? (language === 'hi' ? '🟢 साबुत (Intact)' : language === 'mr' ? '🟢 अखंड (Intact)' : '🟢 Intact')
+                            ? (language === 'hi' ? '🟢 साबुत' : language === 'mr' ? '🟢 अखंड' : '🟢 Intact')
                             : lot.condition === 'DAMAGED'
-                            ? (language === 'hi' ? '🟡 क्षतिग्रस्त (Damaged)' : language === 'mr' ? '🟡 खराब (Damaged)' : '🟡 Damaged')
-                            : (language === 'hi' ? '🟠 खुला हुआ (Dismantled)' : language === 'mr' ? '🟠 वेगळे केलेले (Dismantled)' : '🟠 Dismantled')}
+                            ? (language === 'hi' ? '🟡 क्षतिग्रस्त' : language === 'mr' ? '🟡 खराब' : '🟡 Damaged')
+                            : (language === 'hi' ? '🟠 खुला हुआ' : language === 'mr' ? '🟠 वेगळे केलेले' : '🟠 Dismantled')}
                         </span>
                       </div>
-                      <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">{lot.subCategory || lot.materialCategory}</h3>
+                      <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                        {getCategoryLabel(lot.subCategory || lot.materialCategory, language)}
+                      </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {language === 'hi' ? 'वजन:' : language === 'mr' ? 'वजन:' : 'Weight:'} <b className="text-slate-900 dark:text-white">{lot.approxWeight} kg</b> • {language === 'hi' ? 'स्थिति:' : language === 'mr' ? 'स्थिती:' : 'Condition:'} <b className="text-slate-700 dark:text-slate-200">{lot.condition}</b> • {language === 'hi' ? 'बेंचमार्क अनुमान:' : language === 'mr' ? 'बाजार अंदाज:' : 'Benchmark Est:'} <b className="text-emerald-700 dark:text-emerald-300">₹{lot.estimatedValueMin} – ₹{lot.estimatedValueMax}</b>
+                        {language === 'hi' ? 'वजन:' : language === 'mr' ? 'वजन:' : 'Weight:'} <b className="text-slate-900 dark:text-white">{lot.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</b> • {language === 'hi' ? 'स्थिति:' : language === 'mr' ? 'स्थिती:' : 'Condition:'} <b className="text-slate-700 dark:text-slate-200">{lot.condition === 'INTACT' ? (language === 'hi' ? 'साबुत' : language === 'mr' ? 'अखंड' : 'Intact') : lot.condition === 'DAMAGED' ? (language === 'hi' ? 'क्षतिग्रस्त' : language === 'mr' ? 'खराब' : 'Damaged') : (language === 'hi' ? 'खुला हुआ' : language === 'mr' ? 'वेगळे केलेले' : 'Dismantled')}</b> • {language === 'hi' ? 'बेंचमार्क अनुमान:' : language === 'mr' ? 'बाजार अंदाज:' : 'Benchmark Est:'} <b className="text-emerald-700 dark:text-emerald-300">₹{lot.estimatedValueMin} – ₹{lot.estimatedValueMax}</b>
                       </p>
                     </div>
                   </div>
@@ -301,7 +303,9 @@ export const MyRequestsPage: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                         <IndianRupee className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                        <span>{language === 'hi' ? 'रीसाइक्लर की बोलियां' : language === 'mr' ? 'कारखान्यांच्या बोली' : 'Formal Recycler Bids'} ({pendingOffers.length} Bids)</span>
+                        <span>
+                          {language === 'hi' ? 'रीसाइक्लर की बोलियां' : language === 'mr' ? 'कारखान्यांच्या बोली' : 'Formal Recycler Bids'} ({pendingOffers.length} {language === 'hi' ? 'बोलियां' : language === 'mr' ? 'बोली' : 'Bids'})
+                        </span>
                       </span>
                       <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{language === 'hi' ? 'पारदर्शी ऑफर तुलना' : language === 'mr' ? 'पारदर्शक तुलना' : 'Bid Comparison'}</span>
                     </div>
@@ -318,7 +322,9 @@ export const MyRequestsPage: React.FC = () => {
                           >
                             <div className="space-y-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-bold text-sm text-slate-900 dark:text-white">{offer.recyclerName}</span>
+                                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                                  {formatUserDisplayName(offer.recyclerName, 'RECYCLER', language)}
+                                </span>
                                 {isTopRate && (
                                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-black border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
                                     <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
@@ -326,17 +332,17 @@ export const MyRequestsPage: React.FC = () => {
                                   </span>
                                 )}
                                 <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 font-bold border border-slate-200 dark:border-slate-700">
-                                  CPCB Registered
+                                  {language === 'hi' ? 'CPCB पंजीकृत' : language === 'mr' ? 'CPCB नोंदणीकृत' : 'CPCB Registered'}
                                 </span>
                               </div>
 
                               <div className="text-xs text-slate-600 dark:text-slate-300 space-x-2">
                                 <span>
-                                  {language === 'hi' ? 'ऑफर दर:' : language === 'mr' ? 'दर:' : 'Rate:'} <b className="text-emerald-700 dark:text-emerald-400 font-black text-sm">₹{offer.offeredRatePerKg}/kg</b>
+                                  {language === 'hi' ? 'ऑफर दर:' : language === 'mr' ? 'दर:' : 'Rate:'} <b className="text-emerald-700 dark:text-emerald-400 font-black text-sm">₹{offer.offeredRatePerKg}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</b>
                                 </span>
                                 <span>•</span>
                                 <span>
-                                  {language === 'hi' ? 'कुल राशि' : language === 'mr' ? 'एकूण रक्कम' : 'Total Value'} ({lot.approxWeight} kg): <b className="text-slate-900 dark:text-white font-extrabold text-sm">₹{offer.totalOfferedPrice}</b>
+                                  {language === 'hi' ? 'कुल राशि' : language === 'mr' ? 'एकूण रक्कम' : 'Total Value'} ({lot.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}): <b className="text-slate-900 dark:text-white font-extrabold text-sm">₹{offer.totalOfferedPrice}</b>
                                 </span>
                               </div>
 
@@ -370,9 +376,9 @@ export const MyRequestsPage: React.FC = () => {
                   <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-700/50 rounded-2xl p-4 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">{language === 'hi' ? 'स्वीकृत रीसाइक्लर:' : language === 'mr' ? 'स्वीकृत कारखाना:' : 'Accepted Recycler:'}</span>
-                      <span className="font-black text-slate-900 dark:text-white text-sm">{acceptedOffer.recyclerName}</span>
-                      <span className="text-slate-600 dark:text-slate-300 block">
-                        {language === 'hi' ? 'स्वीकृत दर:' : language === 'mr' ? 'स्वीकृत दर:' : 'Accepted Rate:'} <b>₹{acceptedOffer.offeredRatePerKg}/kg</b> ({language === 'hi' ? 'अनुमानित कुल:' : language === 'mr' ? 'अंदाजे एकूण:' : 'Est Total:'} <b>₹{acceptedOffer.totalOfferedPrice}</b>)
+                      <span className="font-black text-slate-900 dark:text-white text-sm">{formatUserDisplayName(acceptedOffer.recyclerName, 'RECYCLER', language)}</span>
+                      <span className="text-slate-600 dark:text-slate-300 block mt-0.5">
+                        {language === 'hi' ? 'स्वीकृत दर:' : language === 'mr' ? 'स्वीकृत दर:' : 'Accepted Rate:'} <b>₹{acceptedOffer.offeredRatePerKg}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</b> ({language === 'hi' ? 'अनुमानित कुल:' : language === 'mr' ? 'अंदाजे एकूण:' : 'Est Total:'} <b>₹{acceptedOffer.totalOfferedPrice}</b>)
                       </span>
                     </div>
                     <div className="sm:text-right">
@@ -414,17 +420,17 @@ export const MyRequestsPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'रीसाइक्लर:' : language === 'mr' ? 'रिसायकलर:' : 'Recycler:'}</span>
-                <b className="text-slate-900 dark:text-white">{selectedOfferForAcceptance.offer.recyclerName}</b>
+                <b className="text-slate-900 dark:text-white">{formatUserDisplayName(selectedOfferForAcceptance.offer.recyclerName, 'RECYCLER', language)}</b>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'सामग्री व वजन:' : language === 'mr' ? 'साहित्य व वजन:' : 'Item & Weight:'}</span>
                 <b className="text-slate-900 dark:text-white">
-                  {getCategoryLabel(selectedOfferForAcceptance.lot.materialCategory, language)} ({selectedOfferForAcceptance.lot.approxWeight} kg)
+                  {getCategoryLabel(selectedOfferForAcceptance.lot.subCategory || selectedOfferForAcceptance.lot.materialCategory, language)} ({selectedOfferForAcceptance.lot.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'})
                 </b>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'प्रस्तावित दर:' : language === 'mr' ? 'प्रस्तावित दर:' : 'Offered Rate:'}</span>
-                <b className="text-emerald-600 dark:text-emerald-400 text-sm font-black">₹{selectedOfferForAcceptance.offer.offeredRatePerKg} / kg</b>
+                <b className="text-emerald-600 dark:text-emerald-400 text-sm font-black">₹{selectedOfferForAcceptance.offer.offeredRatePerKg} / {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</b>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'अनुमानित कुल राशि:' : language === 'mr' ? 'एकूण रक्कम:' : 'Total Value:'}</span>

@@ -26,6 +26,7 @@ import { PaymentLedgerEntry } from '../../types';
 import { getCategoryLabel } from '../../i18n/translations';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
+import { CollectorGamificationCard } from '../../components/common/CollectorGamificationCard';
 
 export const EarningsLedgerPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -187,7 +188,7 @@ export const EarningsLedgerPage: React.FC = () => {
                 : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/80'
             }`}
           >
-            💵 Cash: ₹{(summary?.cashEarnings || 0).toLocaleString('en-IN')}
+            💵 {language === 'hi' ? 'नकद:' : language === 'mr' ? 'रोख:' : 'Cash:'} ₹{(summary?.cashEarnings || 0).toLocaleString('en-IN')}
           </button>
 
           <button
@@ -199,7 +200,7 @@ export const EarningsLedgerPage: React.FC = () => {
                 : 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/80'
             }`}
           >
-            📱 UPI / Online: ₹{(summary?.upiEarnings || 0).toLocaleString('en-IN')}
+            📱 {language === 'hi' ? 'यूपीआई / ऑनलाइन:' : language === 'mr' ? 'UPI / ऑनलाईन:' : 'UPI / Online:'} ₹{(summary?.upiEarnings || 0).toLocaleString('en-IN')}
           </button>
         </div>
 
@@ -241,19 +242,19 @@ export const EarningsLedgerPage: React.FC = () => {
                 onClick={() => setShowUpliftDetails(!showUpliftDetails)}
                 className="text-[11px] text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 font-bold flex items-center gap-1 active:scale-95"
               >
-                <span>{showUpliftDetails ? (language === 'hi' ? 'विवरण छिपाएं' : 'Hide Economic Breakdown') : (language === 'hi' ? 'आर्थिक गणना देखें' : 'View Economic Breakdown')}</span>
+                <span>{showUpliftDetails ? (language === 'hi' ? 'विवरण छिपाएं' : language === 'mr' ? 'तपशील लपवा' : 'Hide Economic Breakdown') : (language === 'hi' ? 'आर्थिक विवरण देखें' : language === 'mr' ? 'आर्थिक तपशील पहा' : 'View Economic Breakdown')}</span>
                 {showUpliftDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
 
               {showUpliftDetails && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-200 dark:border-slate-800/50 text-[11px] text-slate-600 dark:text-slate-300 animate-fadeIn">
                   <div className="bg-white dark:bg-slate-950/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <span className="font-bold text-emerald-700 dark:text-emerald-400 block mb-0.5">1. Direct Mandi Price Premium</span>
-                    <span>Local aggregators typically shave 20-25% off scrap value. Direct CPCB authorized recyclers offer transparent real-time benchmark rates.</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400 block mb-0.5">{language === 'hi' ? '1. सीधी मंडी भाव प्रीमियम' : language === 'mr' ? '1. थेट बाजारभाव प्रीमियम' : '1. Direct Mandi Price Premium'}</span>
+                    <span>{language === 'hi' ? 'स्थानीय बिचौलिए आमतौर पर 20-25% कम दर देते हैं। सीधे CPCB अधिकृत रीसाइक्लर पारदर्शी रियल-टाइम दरें प्रदान करते हैं।' : language === 'mr' ? 'स्थानिक दलाल २०-२५% कमी दर देतात. थेट CPCB अधिकृत रिसायकलर्स पारदर्शक बेंचमार्क दर देतात.' : 'Local aggregators typically shave 20-25% off scrap value. Direct CPCB authorized recyclers offer transparent real-time benchmark rates.'}</span>
                   </div>
                   <div className="bg-white dark:bg-slate-950/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <span className="font-bold text-emerald-700 dark:text-emerald-400 block mb-0.5">2. Digital Weighbridge Accuracy Gain</span>
-                    <span>Informal manual spring scales siphon ~12% weight. Calibrated digital weighbridge scales guarantee 100% true weight compensation.</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400 block mb-0.5">{language === 'hi' ? '2. डिजिटल कांटे की सटीकता से लाभ' : language === 'mr' ? '2. डिजिटल काट्याची अचूकता फायदा' : '2. Digital Weighbridge Accuracy Gain'}</span>
+                    <span>{language === 'hi' ? 'अनौपचारिक मैनुअल कांटे ~12% वजन कम बताते हैं। कैलिब्रेटेड डिजिटल कांटे 100% सही वजन मूल्य की गारंटी देते हैं।' : language === 'mr' ? 'मॅन्युअल वजन काटा ~१२% वजन कमी दाखवतो. डिजिटल वजन काटा १००% अचूक वजनाची हमी देतो.' : 'Informal manual spring scales siphon ~12% weight. Calibrated digital weighbridge scales guarantee 100% true weight compensation.'}</span>
                   </div>
                 </div>
               )}
@@ -261,6 +262,9 @@ export const EarningsLedgerPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* 🏅 Collector Gamification & Green Badges Section */}
+      <CollectorGamificationCard totalWeight={(summary as any)?.totalWeight || 180} />
 
       {/* Transaction History & Interactive Filter Bar */}
       <div className="space-y-4">

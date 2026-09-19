@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Recycle,
   Phone,
@@ -409,7 +409,7 @@ export const LoginPage: React.FC = () => {
   const speakWelcome = () => {
     const welcomeTexts = {
       hi: 'कबाड़ीवाला कनेक्ट में आपका स्वागत है। आप अपना ई-वेस्ट यहाँ बेच सकते हैं। अपनी भूमिका चुनें और मोबाइल नंबर से आसानी से लॉगिन करें।',
-      mr: 'कबाडीवाला कनेक्ट मध्ये आपले स्वागत आहे. तुम्ही तुमचा ई-वेस्ट येथे विकू शकता. आपली भूमिका निवडा आणि सहज लॉगिन करा.',
+      mr: 'कबाडीवाला कनेक्ट मध्ये आपले स्वागत आहे. तुम्ही तुमचा ई-कचरा येथे विकू शकता. आपली भूमिका निवडा आणि मोबाईल नंबरने सहज लॉगिन करा.',
       en: 'Welcome to Kabadiwala Connect. You can sell your e-waste here. Select your designated role and log in with your verified credentials.'
     };
     speak(welcomeTexts[language], language);
@@ -608,7 +608,7 @@ export const LoginPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="font-bold text-white block">
-                      {language === 'hi' ? 'कानूनी Form-6 व EPR क्रेडिट्स' : language === 'mr' ? 'कायदेशीर Form-6 व EPR क्रेडिट्स' : 'Form-6 & SHA-256 Traceability'}
+                      {language === 'hi' ? 'कानूनी फॉर्म-6 व EPR क्रेडिट्स' : language === 'mr' ? 'कायदेशीर फॉर्म-6 व EPR क्रेडिट्स' : 'Form-6 & SHA-256 Traceability'}
                     </span>
                     <span className="text-[11px] text-slate-400">
                       {language === 'hi' ? 'ब्लॉकचेन-सत्यापित एंड-टू-एंड रीसाइक्लिंग प्रमाण' : language === 'mr' ? 'ब्लॉकचेन-सत्यापित संपूर्ण रिसायकलिंग पुरावा' : 'Immutable Merkle custody proof for state audit'}
@@ -635,7 +635,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div className="pt-6 mt-6 border-t border-slate-800 text-[11px] text-slate-400">
-              {language === 'hi' ? '🇮🇳 भारत सरकार • SIH 2026 ग्रैंड फिनाले' : language === 'mr' ? '🇮🇳 भारत सरकार • SIH 2026 ग्रँड फिनाले' : '🇮🇳 Government of India • SIH 2026 Grand Finale'}
+              {language === 'hi' ? 'भारत सरकार • SIH 2026 ग्रैंड फिनाले' : language === 'mr' ? 'भारत सरकार • SIH 2026 ग्रँड फिनाले' : 'Government of India • SIH 2026 Grand Finale'}
             </div>
           </div>
 
@@ -671,6 +671,27 @@ export const LoginPage: React.FC = () => {
                     );
                   })}
                 </div>
+
+                {/* 🌱 Citizen E-Waste Disposal Fast-Track Banner */}
+                <Link
+                  to="/citizen"
+                  className="w-full mt-3 p-3 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-950 text-white rounded-2xl border-2 border-emerald-500/60 flex items-center justify-between text-xs font-bold shadow-md hover:from-emerald-800 hover:to-teal-800 transition-all active:scale-95"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🌱</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white block">
+                        {language === 'hi' ? 'आम नागरिक ई-कचरा डिस्पोज़ल (स्मार्ट बीकन)' : language === 'mr' ? 'सर्वसामान्य नागरिक ई-कचरा डिस्पोजल (स्मार्ट बीकन)' : 'Citizen E-Waste Disposal Portal'}
+                      </span>
+                      <span className="text-[10px] text-emerald-300 font-medium block">
+                        {language === 'hi' ? 'बिना लॉगिन • सीधे घर से पिकअप' : language === 'mr' ? 'लॉगिनशिवाय • थेट घरून पिकअप' : 'No Login Required • Direct Doorstep Pickup'}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 bg-emerald-500 text-slate-950 rounded-lg text-[10px] font-black uppercase shrink-0">
+                    {language === 'hi' ? 'पोर्टल खोलें →' : language === 'mr' ? 'पोर्टल उघडा →' : 'Open Portal →'}
+                  </span>
+                </Link>
               </div>
 
               {/* Role Context & Specific Highlights */}
@@ -745,11 +766,11 @@ export const LoginPage: React.FC = () => {
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                     </svg>
                     <span className="group-hover:text-black">
-                      {language === 'hi' ? 'Google से लॉगिन करें' : language === 'mr' ? 'Google द्वारे लॉगिन करा' : 'Continue with Google'}
+                      {language === 'hi' ? 'गूगल से लॉगिन करें' : language === 'mr' ? 'गूगल द्वारे लॉगिन करा' : 'Continue with Google'}
                     </span>
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    1-Click Real Auth
+                    {language === 'hi' ? '1-क्लिक प्रामाणिक लॉगिन' : language === 'mr' ? '1-क्लिक अधिकृत लॉगिन' : '1-Click Real Auth'}
                   </span>
                 </button>
 
@@ -787,8 +808,14 @@ export const LoginPage: React.FC = () => {
                         maxLength={10}
                         value={phone}
                         onChange={(e) => handlePhoneChange(e.target.value)}
-                        placeholder={selectedRole === 'ADMIN' ? '99999 99999' : selectedRole === 'RECYCLER' ? '98200 98200' : '98765 43210'}
-                        className={`w-full pl-14 pr-4 py-3 bg-white dark:bg-slate-800 border rounded-2xl text-slate-900 dark:text-white font-mono font-bold text-base focus:outline-none transition-all ${
+                        placeholder={
+                          selectedRole === 'ADMIN'
+                            ? (language === 'hi' ? 'उदा. 99999 99999' : language === 'mr' ? 'उदा. 99999 99999' : 'e.g. 99999 99999')
+                            : selectedRole === 'RECYCLER'
+                            ? (language === 'hi' ? 'उदा. 98200 98200' : language === 'mr' ? 'उदा. 98200 98200' : 'e.g. 98200 98200')
+                            : (language === 'hi' ? 'उदा. 98765 43210' : language === 'mr' ? 'उदा. 98765 43210' : 'e.g. 98765 43210')
+                        }
+                        className={`w-full pl-14 pr-4 py-3 bg-white dark:bg-slate-800 border rounded-2xl text-slate-900 dark:text-white font-mono font-bold text-base focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal ${
                           roleConflict?.hasConflict
                             ? 'border-amber-500 ring-1 ring-amber-500'
                             : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm'
@@ -809,7 +836,7 @@ export const LoginPage: React.FC = () => {
                           <span>{t.newUserNotice || 'नया उपयोगकर्ता पंजीकरण'}</span>
                         </div>
                         <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded font-mono font-bold">
-                          Real-time Supabase Cloud
+                          {language === 'hi' ? 'रियल-टाइम क्लाउड डेटाबेस' : language === 'mr' ? 'रियल-टाइम क्लाउड डेटाबेस' : 'Real-time Supabase Cloud'}
                         </span>
                       </div>
 
@@ -863,7 +890,7 @@ export const LoginPage: React.FC = () => {
                                 required
                                 value={facilityName}
                                 onChange={(e) => setFacilityName(e.target.value)}
-                                placeholder="e.g. GreenEarth E-Waste Solutions Pvt Ltd"
+                                placeholder={language === 'hi' ? 'उदा. ग्रीनअर्थ ई-वेस्ट सॉल्यूशंस' : language === 'mr' ? 'उदा. ग्रीनअर्थ ई-वेस्ट सोल्यूशन्स' : 'e.g. GreenEarth E-Waste Solutions Pvt Ltd'}
                                 className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:border-blue-500 shadow-sm"
                               />
                               <Building2 className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
@@ -877,7 +904,7 @@ export const LoginPage: React.FC = () => {
                               type="text"
                               value={userName}
                               onChange={(e) => setUserName(e.target.value)}
-                              placeholder="e.g. Operations Manager"
+                              placeholder={language === 'hi' ? 'उदा. ऑपरेशन्स मैनेजर' : language === 'mr' ? 'उदा. ऑपरेशन्स मॅनेजर' : 'e.g. Operations Manager'}
                               className="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-blue-500 shadow-sm"
                             />
                           </div>
@@ -914,7 +941,7 @@ export const LoginPage: React.FC = () => {
                           {t.adminPasscodeLabel || 'CPCB मास्टर पासकोड (अनिवार्य)'} <span className="text-red-500 dark:text-red-400">*</span>
                         </label>
                         <span className="text-[10px] text-purple-700 dark:text-purple-300 font-mono bg-purple-100 dark:bg-purple-900/80 px-2 py-0.5 rounded border border-purple-200 dark:border-transparent">
-                          Security Guard
+                          {language === 'hi' ? 'सुरक्षा पासकोड' : language === 'mr' ? 'सुरक्षा पासकोड' : 'Security Guard'}
                         </span>
                       </div>
                       <div className="relative">
@@ -928,7 +955,7 @@ export const LoginPage: React.FC = () => {
                         <KeyRound className="w-4 h-4 absolute left-3 top-2.5 text-purple-600 dark:text-purple-400" />
                       </div>
                       <p className="text-[10px] text-purple-700 dark:text-purple-300/80 font-mono">
-                        SIH Jury Key: <span className="font-bold text-purple-950 dark:text-white">SIH2026-CPCB-ADMIN</span>
+                        {language === 'hi' ? 'SIH जूरी पासकोड:' : language === 'mr' ? 'SIH ज्युरी पासकोड:' : 'SIH Jury Key:'} <span className="font-bold text-purple-950 dark:text-white">SIH2026-CPCB-ADMIN</span>
                       </p>
                     </div>
                   )}
@@ -958,11 +985,11 @@ export const LoginPage: React.FC = () => {
                       </label>
                       {phone === '9876543210' || phone === '9820098200' || phone === '9999999999' ? (
                         <span className="text-[11px] text-amber-900 dark:text-amber-300 font-bold bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700/60 font-mono">
-                          SIH Judge Demo OTP: {phone === '9820098200' ? '123456' : '1234'}
+                          {language === 'hi' ? 'SIH जज डेमो OTP:' : language === 'mr' ? 'SIH परीक्षक डेमो OTP:' : 'SIH Judge Demo OTP:'} {phone === '9820098200' ? '123456' : '1234'}
                         </span>
                       ) : (
                         <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
-                          {isFirebaseOtp ? 'Google Verified SMS' : 'Expires in 5m'}
+                          {isFirebaseOtp ? (language === 'hi' ? 'गूगल सत्यापित SMS' : language === 'mr' ? 'गूगल सत्यापित SMS' : 'Google Verified SMS') : (language === 'hi' ? '5 मिनट में एक्सपायर' : language === 'mr' ? '5 मिनिटांत एक्सपायर' : 'Expires in 5m')}
                         </span>
                       )}
                     </div>
@@ -981,7 +1008,7 @@ export const LoginPage: React.FC = () => {
                           </span>
                         </div>
                         <span className="font-mono font-black text-xs text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900/90 px-2.5 py-1 rounded-xl border border-emerald-300 dark:border-emerald-600/80 shadow-inner">
-                          Check Mobile SMS
+                          {language === 'hi' ? 'मोबाइल SMS देखें' : language === 'mr' ? 'मोबाईल SMS पहा' : 'Check Mobile SMS'}
                         </span>
                       </div>
                     )}
@@ -1078,7 +1105,7 @@ export const LoginPage: React.FC = () => {
                 <div className="mt-2.5 p-3 rounded-2xl bg-amber-50/50 dark:bg-slate-950/80 border border-amber-300 dark:border-amber-500/30 space-y-2.5 animate-in fade-in-50 duration-150">
                   <div className="text-[11px] text-amber-900 dark:text-amber-200/80 font-medium flex items-center justify-between">
                     <span>{language === 'hi' ? 'हैकथॉन जजों के त्वरित मूल्यांकन हेतु पूर्व-कॉन्फ़िगर किए गए खाते:' : language === 'mr' ? 'हॅकाथॉन परीक्षकांच्या त्वरित मूल्यमापनासाठी पूर्व-कॉन्फिगर केलेली खाती:' : 'Pre-configured test accounts for rapid hackathon jury review:'}</span>
-                    <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Collector/Admin OTP: 1234 • Recycler Demo OTP: 123456</span>
+                    <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">{language === 'hi' ? 'कलेक्टर/एडमिन OTP: 1234 • रीसाइक्लर डेमो OTP: 123456' : language === 'mr' ? 'संकलक/प्रशासक OTP: 1234 • रिसायकलर डेमो OTP: 123456' : 'Collector/Admin OTP: 1234 • Recycler Demo OTP: 123456'}</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -1097,7 +1124,7 @@ export const LoginPage: React.FC = () => {
                           onClick={() => handleJudgeOneClick('COLLECTOR')}
                           className="flex-1 py-1 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] text-center shadow transition-all active:scale-95"
                         >
-                          ⚡ 1-Click
+                          {language === 'hi' ? '⚡ 1-क्लिक' : language === 'mr' ? '⚡ 1-क्लिक' : '⚡ 1-Click'}
                         </button>
                         <button
                           type="button"
@@ -1105,7 +1132,7 @@ export const LoginPage: React.FC = () => {
                           className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] border border-slate-300 dark:border-slate-700 transition-all active:scale-95"
                           title="Fill form to test manual flow"
                         >
-                          ✍️ Form
+                          {language === 'hi' ? '✍️ फॉर्म' : language === 'mr' ? '✍️ फॉर्म' : '✍️ Form'}
                         </button>
                       </div>
                     </div>
@@ -1116,9 +1143,13 @@ export const LoginPage: React.FC = () => {
                           <span className="text-xs font-black text-blue-700 dark:text-blue-400">🏭 {t.roleRecycler}</span>
                           <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400">98200 98200</span>
                         </div>
-                        <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">ABC E-Waste Recycling Pvt Ltd</span>
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">
+                          {language === 'hi' ? 'एबीसी ई-वेस्ट रीसायकलिंग प्रा. लि.' : language === 'mr' ? 'एबीसी ई-कचरा रीसायकलिंग प्रा. लि.' : 'ABC E-Waste Recycling Pvt Ltd'}
+                        </span>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block truncate">CPCB Authorized</span>
+                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block truncate">
+                            {language === 'hi' ? 'CPCB अधिकृत रीसाइक्लर' : language === 'mr' ? 'CPCB अधिकृत रिसायकलर' : 'CPCB Authorized'}
+                          </span>
                           <span className="text-[9px] font-mono font-black text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-700/60">
                             OTP: 123456
                           </span>
@@ -1130,7 +1161,7 @@ export const LoginPage: React.FC = () => {
                           onClick={() => handleJudgeOneClick('RECYCLER')}
                           className="flex-1 py-1 px-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] text-center shadow transition-all active:scale-95"
                         >
-                          ⚡ 1-Click
+                          {language === 'hi' ? '⚡ 1-क्लिक' : language === 'mr' ? '⚡ 1-क्लिक' : '⚡ 1-Click'}
                         </button>
                         <button
                           type="button"
@@ -1138,7 +1169,7 @@ export const LoginPage: React.FC = () => {
                           className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] border border-slate-300 dark:border-slate-700 transition-all active:scale-95"
                           title="Fill form to test manual flow"
                         >
-                          ✍️ Form
+                          {language === 'hi' ? '✍️ फॉर्म' : language === 'mr' ? '✍️ फॉर्म' : '✍️ Form'}
                         </button>
                       </div>
                     </div>
@@ -1158,7 +1189,7 @@ export const LoginPage: React.FC = () => {
                           onClick={() => handleJudgeOneClick('ADMIN')}
                           className="flex-1 py-1 px-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-black text-[10px] text-center shadow transition-all active:scale-95"
                         >
-                          ⚡ 1-Click
+                          {language === 'hi' ? '⚡ 1-क्लिक' : language === 'mr' ? '⚡ 1-क्लिक' : '⚡ 1-Click'}
                         </button>
                         <button
                           type="button"
@@ -1166,7 +1197,7 @@ export const LoginPage: React.FC = () => {
                           className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] border border-slate-300 dark:border-slate-700 transition-all active:scale-95"
                           title="Fill form to test manual flow"
                         >
-                          ✍️ Form
+                          {language === 'hi' ? '✍️ फॉर्म' : language === 'mr' ? '✍️ फॉर्म' : '✍️ Form'}
                         </button>
                       </div>
                     </div>
@@ -1179,7 +1210,7 @@ export const LoginPage: React.FC = () => {
       </main>
 
       {/* Modern Compact Environmental Footer */}
-      <footer className="h-10 px-4 sm:px-8 border-t border-slate-200 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+      <footer className="py-2.5 px-4 sm:px-8 border-t border-slate-200 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
         <div>{language === 'hi' ? 'स्मार्ट इंडिया हैकथॉन 2026 • पर्यावरण, वन और जलवायु परिवर्तन मंत्रालय' : language === 'mr' ? 'स्मार्ट इंडिया हॅकाथॉन 2026 • पर्यावरण, वन आणि हवामान बदल मंत्रालय' : 'Smart India Hackathon 2026 • Ministry of Environment, Forest and Climate Change'}</div>
         <div className="hidden sm:block">{language === 'hi' ? 'CPCB ई-कचरा नियम 2022 • विस्तारित निर्माता उत्तरदायित्व (EPR)' : language === 'mr' ? 'CPCB ई-कचरा नियम 2022 • विस्तारित उत्पादक जबाबदारी (EPR)' : 'CPCB E-Waste Rules 2022 • Extended Producer Responsibility (EPR)'}</div>
       </footer>

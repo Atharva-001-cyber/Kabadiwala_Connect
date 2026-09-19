@@ -1,0 +1,185 @@
+{
+  "pt_path": "D:\\Sih_229Anti\\ai\\training\\runs\\ewaste_yolov8n_v1\\weights\\best.pt",
+  "onnx_path": "D:\\Sih_229Anti\\ai\\training\\runs\\ewaste_yolov8n_v1\\weights\\best.onnx",
+  "last_pt_path": "D:\\Sih_229Anti\\ai\\training\\runs\\ewaste_yolov8n_v1\\weights\\last.pt",
+  "pt_size_bytes": 24464551,
+  "onnx_size_bytes": 12147251,
+  "onnx_size_mb": 11.58,
+  "inputs": [
+    {
+      "name": "images",
+      "shape": [
+        1,
+        3,
+        416,
+        416
+      ],
+      "type": "FLOAT"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "output0",
+      "shape": [
+        1,
+        12,
+        3549
+      ],
+      "type": "FLOAT"
+    }
+  ],
+  "metadata_classes": "{0: 'PCB_Circuit_Board', 1: 'Battery', 2: 'CRT', 3: 'LCD_LED_Display', 4: 'Cable_Wire', 5: 'Electric_Motor', 6: 'Magnet_bearing_Assembly', 7: 'Mixed_EWaste'}",
+  "parity_tests": [
+    {
+      "image": "pcb_Zedboard_jpg_0.jpg",
+      "max_abs_diff": 0.0004425048828125,
+      "mean_abs_diff": 4.924696440866683e-06,
+      "cosine_similarity": 1.0,
+      "pytorch_detections": 1,
+      "onnx_detections": 1,
+      "pytorch_classes": [
+        "PCB_Circuit_Board"
+      ],
+      "onnx_classes": [
+        "PCB_Circuit_Board"
+      ],
+      "pytorch_confs": [
+        0.7147
+      ],
+      "onnx_confs": [
+        0.7092
+      ]
+    },
+    {
+      "image": "motor_rf_test_002_cc09cd88.jpg",
+      "max_abs_diff": 0.000274658203125,
+      "mean_abs_diff": 4.120478479308076e-06,
+      "cosine_similarity": 1.0000001192092896,
+      "pytorch_detections": 1,
+      "onnx_detections": 1,
+      "pytorch_classes": [
+        "Electric_Motor"
+      ],
+      "onnx_classes": [
+        "Electric_Motor"
+      ],
+      "pytorch_confs": [
+        0.9026
+      ],
+      "onnx_confs": [
+        0.9026
+      ]
+    },
+    {
+      "image": "battery_cables_test_001_6ac66a69.jpg",
+      "max_abs_diff": 0.00048828125,
+      "mean_abs_diff": 4.189067567494931e-06,
+      "cosine_similarity": 1.0,
+      "pytorch_detections": 12,
+      "onnx_detections": 12,
+      "pytorch_classes": [
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery"
+      ],
+      "onnx_classes": [
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery",
+        "Battery"
+      ],
+      "pytorch_confs": [
+        0.8686,
+        0.8354,
+        0.8336,
+        0.8245,
+        0.82,
+        0.8196,
+        0.811,
+        0.8086,
+        0.7739,
+        0.7144,
+        0.6346,
+        0.6044
+      ],
+      "onnx_confs": [
+        0.8686,
+        0.8354,
+        0.8336,
+        0.8245,
+        0.82,
+        0.8196,
+        0.811,
+        0.8086,
+        0.7739,
+        0.7144,
+        0.6346,
+        0.6044
+      ]
+    },
+    {
+      "image": "magnet_rf_test_001_30b78b09.jpg",
+      "max_abs_diff": 0.0003204345703125,
+      "mean_abs_diff": 4.665478627430275e-06,
+      "cosine_similarity": 1.0,
+      "pytorch_detections": 1,
+      "onnx_detections": 1,
+      "pytorch_classes": [
+        "Magnet_bearing_Assembly"
+      ],
+      "onnx_classes": [
+        "Magnet_bearing_Assembly"
+      ],
+      "pytorch_confs": [
+        0.4518
+      ],
+      "onnx_confs": [
+        0.4795
+      ]
+    },
+    {
+      "image": "oi_neg_0013ea2087020901.jpg",
+      "max_abs_diff": 0.0003662109375,
+      "mean_abs_diff": 5.044908448326169e-06,
+      "cosine_similarity": 1.0,
+      "pytorch_detections": 0,
+      "onnx_detections": 0,
+      "pytorch_classes": [],
+      "onnx_classes": [],
+      "pytorch_confs": [],
+      "onnx_confs": []
+    }
+  ],
+  "readiness": {
+    "model_file_size_mb": 11.58,
+    "size_acceptable_for_web": true,
+    "fixed_shape": true,
+    "opset_compatible_web": true,
+    "input_tensor_bchw": true,
+    "output_tensor_shape": [
+      1,
+      12,
+      3549
+    ],
+    "num_classes": 8,
+    "preprocessing_required": "RGB normalize [0, 1], direct resize 416x416, channel transpose [0, 1, 2] -> [2, 0, 1]",
+    "postprocessing_required": "Transpose (1, 12, 3549) -> (3549, 12), decode cx,cy,w,h to xyxy, extract class confidences (cols 4..11), apply NMS (conf=0.25, iou=0.45)"
+  }
+}

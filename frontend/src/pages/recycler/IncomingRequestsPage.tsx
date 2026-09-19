@@ -8,7 +8,7 @@ import { SafeImage } from '../../components/common/SafeImage';
 import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Offer } from '../../types';
-import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
+import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatAddressLocation, getConditionLabel, formatLotDescription } from '../../i18n/translations';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
@@ -184,7 +184,7 @@ export const IncomingRequestsPage: React.FC = () => {
           </div>
 
           <div className="px-3.5 py-1.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 self-start sm:self-auto">
-            <span>Available Lots: <b className="text-blue-600 dark:text-blue-400 font-mono">{lots.length}</b></span>
+            <span>{language === 'hi' || language === 'mr' ? 'उपलब्ध लॉट:' : 'Available Lots:'} <b className="text-blue-600 dark:text-blue-400 font-mono">{lots.length}</b></span>
           </div>
         </div>
       </div>
@@ -253,7 +253,7 @@ export const IncomingRequestsPage: React.FC = () => {
                     <h3 className="text-base font-black text-slate-900 dark:text-white mt-0.5">{getCategoryLabel(lot.materialCategory, language)}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>{lot.collectorName} • {lot.locationDistrict}, {lot.locationState}</span>
+                      <span>{formatUserDisplayName(lot.collectorName, 'COLLECTOR', language)} • {formatAddressLocation(lot.locationDistrict || '', language)}{lot.locationState ? `, ${formatAddressLocation(lot.locationState, language)}` : ''}</span>
                     </p>
                   </div>
                 </div>
@@ -263,11 +263,11 @@ export const IncomingRequestsPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-2.5 text-xs">
               <div className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider block">{t.totalWeight}</span>
-                <span className="font-black text-slate-900 dark:text-white text-base font-mono mt-0.5 block">{lot.approxWeight} kg</span>
+                <span className="font-black text-slate-900 dark:text-white text-base font-mono mt-0.5 block">{lot.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
               </div>
               <div className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider block">{t.condition}</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block capitalize">{lot.condition}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5 block capitalize">{getConditionLabel(lot.condition, language)}</span>
               </div>
               <div className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider block">{t.estimatedValue}</span>
@@ -277,7 +277,7 @@ export const IncomingRequestsPage: React.FC = () => {
 
             {lot.description && (
               <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 italic">
-                "{lot.description}"
+                "{formatLotDescription(lot.description, lot.approxWeight, lot.materialCategory, language)}"
               </p>
             )}
 
@@ -301,9 +301,9 @@ export const IncomingRequestsPage: React.FC = () => {
                   <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>
                     {language === 'hi'
-                      ? `बोली सक्रिय: ₹${(lot as any).myOffer.offeredRatePerKg}/kg`
+                      ? `बोली सक्रिय: ₹${(lot as any).myOffer.offeredRatePerKg}/किग्रा`
                       : language === 'mr'
-                      ? `बोली पाठवली: ₹${(lot as any).myOffer.offeredRatePerKg}/kg`
+                      ? `बोली पाठवली: ₹${(lot as any).myOffer.offeredRatePerKg}/किग्रा`
                       : `Bid Active: ₹${(lot as any).myOffer.offeredRatePerKg}/kg`}
                   </span>
                 </div>

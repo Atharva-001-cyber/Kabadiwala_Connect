@@ -98,7 +98,21 @@ export const getStatusLabel = (status: string, lang: Language): string => {
 };
 
 export const getCategoryLabel = (category: string, lang: Language): string => {
-  return (categoryLabels as any)[category]?.[lang] || category;
+  if (!category) return '';
+  const directObj = (categoryLabels as any)[category];
+  if (directObj && directObj[lang]) return directObj[lang];
+
+  const upper = category.toUpperCase();
+  if (upper.includes('PCB')) return categoryLabels.PCB[lang] || category;
+  if (upper.includes('BATT') || upper.includes('LI-ION') || upper.includes('CELL')) return categoryLabels.BATTERY[lang] || category;
+  if (upper.includes('CRT')) return categoryLabels.CRT[lang] || category;
+  if (upper.includes('LCD') || upper.includes('SCREEN') || upper.includes('PANEL')) return categoryLabels.LCD[lang] || category;
+  if (upper.includes('CABLE') || upper.includes('COPPER') || upper.includes('WIRE')) return categoryLabels.CABLE[lang] || category;
+  if (upper.includes('MOTOR')) return categoryLabels.MOTOR[lang] || category;
+  if (upper.includes('MAGNET')) return categoryLabels.MAGNET[lang] || category;
+  if (upper.includes('PLASTIC') || upper.includes('MIXED')) return categoryLabels.MIXED_PLASTIC[lang] || category;
+
+  return category;
 };
 
 export const formatUserDisplayName = (name?: string, role: string = 'COLLECTOR', lang: Language = 'hi'): string => {
@@ -118,10 +132,187 @@ export const formatUserDisplayName = (name?: string, role: string = 'COLLECTOR',
   if (name === 'Ramesh Kumar') {
     return lang === 'hi' ? 'रमेश कुमार' : lang === 'mr' ? 'रमेश कुमार' : 'Ramesh Kumar';
   }
-  if (name === 'GreenEarth Solutions' || name === 'GreenEarth E-Waste Solutions') {
-    return lang === 'hi' ? 'ग्रीनअर्थ सॉल्यूशंस' : lang === 'mr' ? 'ग्रीनअर्थ सोल्यूशन्स' : name;
+  if (name === 'Sunita Sharma') {
+    return lang === 'hi' ? 'सुनीता शर्मा' : lang === 'mr' ? 'सुनिता शर्मा' : 'Sunita Sharma';
+  }
+  if (name === 'Arun Bhatia' || name === 'Arun') {
+    return lang === 'hi' ? 'अरुण भाटिया' : lang === 'mr' ? 'अरुण भाटीया' : 'Arun Bhatia';
+  }
+  if (name === 'Balak' || name === 'balak') {
+    return lang === 'hi' ? 'बालक' : lang === 'mr' ? 'बालक' : 'Balak';
+  }
+  if (name === 'Sanklap' || name === 'Sankalp' || name === 'sanklap' || name === 'sankalp') {
+    return lang === 'hi' ? 'संकल्प' : lang === 'mr' ? 'संकल्प' : 'Sankalp';
+  }
+  if (name === 'Atharva' || name === 'atharva') {
+    return lang === 'hi' ? 'अथर्व' : lang === 'mr' ? 'अथर्व' : 'Atharva';
+  }
+  if (name === 'Avinash' || name === 'avinash') {
+    return lang === 'hi' ? 'अविनाश' : lang === 'mr' ? 'अविनाश' : 'Avinash';
+  }
+  if (name === 'Rahul' || name === 'rahul') {
+    return lang === 'hi' ? 'राहुल' : lang === 'mr' ? 'राहुल' : 'Rahul';
+  }
+  if (name === 'Priya' || name === 'priya') {
+    return lang === 'hi' ? 'प्रिया' : lang === 'mr' ? 'प्रिया' : 'Priya';
+  }
+  if (name === 'Amit' || name === 'amit') {
+    return lang === 'hi' ? 'अमित' : lang === 'mr' ? 'अमित' : 'Amit';
+  }
+  if (name === 'Vikram' || name === 'vikram') {
+    return lang === 'hi' ? 'विक्रम' : lang === 'mr' ? 'विक्रम' : 'Vikram';
+  }
+  if (name === 'Suresh' || name === 'suresh') {
+    return lang === 'hi' ? 'सुरेश' : lang === 'mr' ? 'सुरेश' : 'Suresh';
+  }
+  if (name === 'Rajesh' || name === 'rajesh') {
+    return lang === 'hi' ? 'राजेश' : lang === 'mr' ? 'राजेश' : 'Rajesh';
+  }
+  if (name === 'Mohan Singh' || name === 'mohan singh') {
+    return lang === 'hi' ? 'मोहन सिंह' : lang === 'mr' ? 'मोहन सिंग' : 'Mohan Singh';
+  }
+  if (name === 'Suresh Patil' || name === 'suresh patil') {
+    return lang === 'hi' ? 'सुरेश पाटिल' : lang === 'mr' ? 'सुरेश पाटील' : 'Suresh Patil';
+  }
+  if (name === 'kaalu' || name === 'Kaalu' || name === 'kalu') {
+    return lang === 'hi' ? 'कालू' : lang === 'mr' ? 'कालू' : 'Kaalu';
+  }
+  if (name === 'ABS' || name === 'abs') {
+    return lang === 'hi' ? 'एबीएस' : lang === 'mr' ? 'एबीएस' : 'ABS';
+  }
+  if (name === 'Deepak' || name === 'deepak') {
+    return lang === 'hi' ? 'दीपक' : lang === 'mr' ? 'दीपक' : 'Deepak';
+  }
+  if (name.includes('GreenEarth')) {
+    return lang === 'hi' ? 'ग्रीनअर्थ ई-वेस्ट सॉल्यूशंस प्रा. लि.' : lang === 'mr' ? 'ग्रीनअर्थ ई-कचरा सोल्यूशन्स प्रा. लि.' : name;
+  }
+  if (name.includes('ABC E-Waste') || name.includes('ABC Recycling') || name.includes('ABC') || name.includes('एबीसी') || name.includes('ABC ई-वेस्ट') || name.includes('ABC ई-कचरा')) {
+    return lang === 'hi' ? 'एबीसी ई-वेस्ट रीसायकलिंग प्रा. लि.' : lang === 'mr' ? 'एबीसी ई-कचरा रीसायकलिंग प्रा. लि.' : 'ABC E-Waste Recycling Pvt Ltd';
+  }
+  if (name.includes('EcoMetals')) {
+    return lang === 'hi' ? 'इकोमेटल्स रीसाइक्लिंग यूनिट' : lang === 'mr' ? 'इकोमेटल्स रिसायकलिंग युनिट' : name;
+  }
+  if (name.includes('Recycling Facility') || name.includes('Recycler Facility')) {
+    const phone = name.match(/\d+/)?.[0] || '';
+    return lang === 'hi'
+      ? `रीसाइक्लिंग केंद्र${phone ? ` (${phone})` : ''}`
+      : lang === 'mr'
+      ? `रिसायकलिंग केंद्र${phone ? ` (${phone})` : ''}`
+      : name;
   }
   return name;
+};
+
+export const getConditionLabel = (condition: string, lang: Language = 'hi'): string => {
+  if (!condition) return '';
+  if (lang === 'en') {
+    const upper = condition.toUpperCase().trim();
+    if (upper === 'INTACT') return 'Intact';
+    if (upper === 'DAMAGED') return 'Damaged';
+    if (upper === 'DISMANTLED') return 'Dismantled';
+    if (upper === 'MIXED') return 'Mixed';
+    return condition;
+  }
+  const upper = condition.toUpperCase().trim();
+  const map: Record<string, { hi: string; mr: string }> = {
+    'INTACT': { hi: 'सुरक्षित / सही स्थिति', mr: 'सुरक्षित / उत्तम स्थिती' },
+    'DAMAGED': { hi: 'क्षतिग्रस्त / टूटा हुआ', mr: 'क्षतिग्रस्त / तुटलेले' },
+    'DISMANTLED': { hi: 'खुला हुआ / विघटित', mr: 'वेगळे केलेले' },
+    'MIXED': { hi: 'मिश्रित अवस्था', mr: 'मिश्रित अवस्था' },
+    'SCRAP': { hi: 'पुराना स्क्रैप', mr: 'भंगार स्क्रॅप' }
+  };
+  return map[upper]?.[lang] || condition;
+};
+
+export const formatLotDescription = (
+  desc?: string,
+  weight?: number,
+  category?: string,
+  lang: Language = 'hi'
+): string => {
+  if (!desc) return '';
+  if (lang === 'en') return desc;
+
+  const match = desc.match(/e-waste scrap lot containing\s*(\d+(?:\.\d+)?)\s*kg of\s*(.*)/i);
+  if (match) {
+    const w = match[1] || weight || '';
+    const rawCat = match[2]?.trim() || category || '';
+    const catLabel = getCategoryLabel(rawCat, lang);
+    const unit = lang === 'hi' ? 'किग्रा' : 'किग्रॅ';
+
+    if (lang === 'hi') {
+      return `${catLabel} का ${w} ${unit} ई-कचरा स्क्रैप लॉट`;
+    } else {
+      return `${catLabel} चा ${w} ${unit} ई-कचरा स्क्रॅप लॉट`;
+    }
+  }
+
+  let str = desc;
+  const unit = lang === 'hi' ? 'किग्रा' : 'किग्रॅ';
+
+  str = str
+    .replace(/E-waste scrap lot containing/gi, lang === 'hi' ? 'ई-कचरा स्क्रैप लॉट जिसमें है' : 'ई-कचरा स्क्रॅप लॉट ज्यामध्ये आहे')
+    .replace(/\bkg of\b/gi, `${unit} `)
+    .replace(/\bkg\b/gi, unit)
+    .replace(/\bPCB\b/gi, getCategoryLabel('PCB', lang))
+    .replace(/\bBATTERY\b/gi, getCategoryLabel('BATTERY', lang))
+    .replace(/\bCRT\b/gi, getCategoryLabel('CRT', lang))
+    .replace(/\bLCD\b/gi, getCategoryLabel('LCD', lang));
+
+  return str;
+};
+
+export const formatAddressLocation = (address?: string, lang: Language = 'hi'): string => {
+  if (!address) return '';
+  if (lang === 'en') return address;
+
+  let str = address;
+
+  if (str.toLowerCase().includes('abhay tent house')) {
+    return lang === 'hi' ? 'अभय टेंट हाउस' : 'अभय टेंट हाऊस';
+  }
+
+  // General Token and Phrase Substitutions for Indian Address Devanagari Translation
+  str = str
+    .replace(/\bPlot\b/gi, lang === 'hi' ? 'प्लॉट' : 'प्लॉट')
+    .replace(/\bUPSIDC Industrial Area\b/gi, lang === 'hi' ? 'UPSIDC औद्योगिक क्षेत्र' : 'UPSIDC औद्योगिक क्षेत्र')
+    .replace(/\bIndustrial Area\b/gi, lang === 'hi' ? 'औद्योगिक क्षेत्र' : 'औद्योगिक क्षेत्र')
+    .replace(/\bAmausi\b/gi, lang === 'hi' ? 'अमौसी' : 'अमौसी')
+    .replace(/\bNadarganj\b/gi, lang === 'hi' ? 'नादरगंज' : 'नादरगंज')
+    .replace(/\bFlat\b/gi, lang === 'hi' ? 'फ्लैट' : 'फ्लॅट')
+    .replace(/\bRoyal Residence\b/gi, lang === 'hi' ? 'रॉयल रेजीडेंसी' : 'रॉयल रेसिडेन्सी')
+    .replace(/\bHouse\b/gi, lang === 'hi' ? 'मकान' : 'घर')
+    .replace(/\bWard\b/gi, lang === 'hi' ? 'वार्ड' : 'प्रभाग')
+    .replace(/\bBlock\b/gi, 'ब्लॉक')
+    .replace(/\bSector\b/gi, 'सेक्टर')
+    .replace(/\bRoad\b/gi, 'रोड')
+    .replace(/\bStreet\b/gi, lang === 'hi' ? 'स्ट्रीट' : 'रस्ता')
+    .replace(/\bSociety\b/gi, 'सोसाइटी')
+    .replace(/\bApartment\b/gi, 'अपार्टमेंट')
+    .replace(/\bGomti Nagar\b/gi, 'गोमती नगर')
+    .replace(/\bAliganj\b/gi, 'अलीगंज')
+    .replace(/\bHazratganj\b/gi, 'हजरतगंज')
+    .replace(/\bIndira Nagar\b/gi, 'इंदिरा नगर')
+    .replace(/\bUttar Pradesh\b/gi, 'उत्तर प्रदेश')
+    .replace(/\bMaharashtra\b/gi, 'महाराष्ट्र')
+    .replace(/\bKarnataka\b/gi, 'कर्नाटक')
+    .replace(/\bDelhi \/ NCR\b/gi, 'दिल्ली / एनसीआर')
+    .replace(/\bLucknow\b/gi, 'लखनऊ')
+    .replace(/\bPune\b/gi, 'पुणे')
+    .replace(/\bNagpur\b/gi, lang === 'hi' ? 'नागपुर' : 'नागपूर')
+    .replace(/\bMumbai\b/gi, 'मुंबई')
+    .replace(/\bDelhi\b/gi, 'दिल्ली')
+    .replace(/\bBengaluru\b/gi, lang === 'hi' ? 'बेंगलुरु' : 'बेंगळुरू');
+
+  // Deduplicate consecutive identical city tokens (e.g. लखनऊ, लखनऊ -> लखनऊ)
+  str = str.replace(/लखनऊ,\s*लखनऊ/g, 'लखनऊ')
+           .replace(/पुणे,\s*पुणे/g, 'पुणे')
+           .replace(/नागपुर,\s*नागपुर/g, 'नागपुर')
+           .replace(/नागपूर,\s*नागपूर/g, 'नागपूर')
+           .replace(/मुंबई,\s*मुंबई/g, 'मुंबई')
+           .replace(/दिल्ली,\s*दिल्ली/g, 'दिल्ली');
+
+  return str;
 };
 
 export const DISTRICT_STATE_MAP: Record<string, string> = {
@@ -229,7 +420,7 @@ export const translations = {
     navPickups: 'पिकअप व वाहन प्रबंधन',
     navHandover: 'कांटा वजन व हैंडओवर',
     navInventory: 'इन्वेंटरी व प्रोसेसिंग',
-    navTransactions: 'लेनदेन व Form-6 प्रमाण',
+    navTransactions: 'लेनदेन व फॉर्म-6 प्रमाण',
     navVerification: 'CPCB राजपत्र सत्यापन',
     navFacilityProfile: 'प्लांट प्रोफाइल',
 
@@ -249,7 +440,7 @@ export const translations = {
     authCollectorTitle: 'कलेक्टर डिजिटल पहचान',
     authCollectorDesc: 'पारदर्शी भाव, डिजिटल लॉट और सीधा बैंक/कैश भुगतान',
     authRecyclerTitle: 'अधिकृत रीसाइक्लर पोर्टल',
-    authRecyclerDesc: 'औद्योगिक ई-कचरा खरीद, पिकअप शेड्यूलिंग और Form-6 EPR प्रमाण',
+    authRecyclerDesc: 'औद्योगिक ई-कचरा खरीद, पिकअप शेड्यूलिंग और फॉर्म-6 EPR प्रमाण',
     authAdminTitle: 'राष्ट्रीय ई-कचरा नियामक एवं ऑडिट सेल',
     authAdminDesc: 'राज्य प्रदूषण नियंत्रण बोर्ड निगरानी एवं टेलीमेट्री डैशबोर्ड',
     portalCollector: 'कलेक्टर पोर्टल',

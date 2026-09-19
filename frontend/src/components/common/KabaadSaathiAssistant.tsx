@@ -264,17 +264,17 @@ export const KabaadSaathiAssistant: React.FC = () => {
       // Speak the response
       speak(response.spokenText || response.text, language);
 
-      // Auto-navigate if user explicitly asked to open/go somewhere
+      // Auto-navigate if user explicitly asked to open/go somewhere or open camera
       const q = queryText.toLowerCase();
       if (
-        response.action?.type === 'NAVIGATE' &&
+        (response.action?.type === 'NAVIGATE' || response.action?.type === 'OPEN_CAMERA') &&
         response.action.route &&
-        (q.includes('kholo') || q.includes('chalo') || q.includes('jao') || q.includes('open') || q.includes('dikhao') || q.includes('le chalo'))
+        (q.includes('kholo') || q.includes('chalo') || q.includes('jao') || q.includes('open') || q.includes('dikhao') || q.includes('le chalo') || q.includes('camera') || q.includes('photo') || q.includes('scan'))
       ) {
         setTimeout(() => {
-          navigate(response.action!.route!);
+          navigate(response.action!.route!, { state: { autoOpenCamera: response.action?.type === 'OPEN_CAMERA' } });
           setIsOpen(false);
-        }, 1500);
+        }, 1200);
       }
     } catch (err) {
       console.error('[KabaadSaathi] Engine error:', err);
@@ -339,10 +339,10 @@ export const KabaadSaathiAssistant: React.FC = () => {
     }
     // Default: COLLECTOR
     return [
-      { label: language === 'hi' ? '💰 मंडी भाव?' : '💰 Mandi Rates?', q: 'Aaj ka mandi bhav kya hai?' },
-      { label: language === 'hi' ? '📦 कबाड़ बेचें' : '📦 Sell Scrap', q: 'Ham apna e-waste is app per kaise bhej sakte hain?' },
-      { label: language === 'hi' ? '💵 मेरी कमाई?' : '💵 My Earnings', q: 'Meri kamai kitni hai?' },
-      { label: language === 'hi' ? '🛡️ Safety नियम' : '🛡️ Safety Rules', q: 'Safety niyam batao' },
+      { label: language === 'hi' ? '🎙️ मंडी समाचार' : '🎙️ Mandi News', q: 'aaj ka mandi samachar' },
+      { label: language === 'hi' ? '🏭 पास के कबाड़ी?' : '🏭 Nearby Recyclers?', q: 'sabse badhiya kabaddi batao aas paas' },
+      { label: language === 'hi' ? '🔥 सबसे महंगा कबाड़?' : '🔥 Highest Rate Scrap?', q: 'sabse mahanga kabaad' },
+      { label: language === 'hi' ? '📸 कैमरा स्कैनर' : '📸 Camera Scanner', q: 'camera kholo' },
       { label: language === 'hi' ? '🧮 10kg PCB भाव' : '🧮 10kg PCB Rate', q: '10 kilo PCB ka kitna banega' }
     ];
   };
@@ -465,11 +465,34 @@ export const KabaadSaathiAssistant: React.FC = () => {
                   }`}>
                     <p className="leading-relaxed font-medium whitespace-pre-line">{m.text}</p>
 
-                    {/* Calculation total badge */}
+                    {/* Paytm / PhonePe Style Digital Soundbox Receipt Card */}
                     {m.calculationTotal != null && m.calculationTotal > 0 && (
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-950 border border-emerald-700 text-emerald-300 font-black text-xs">
-                        <Calculator className="w-3.5 h-3.5" />
-                        <span>₹{m.calculationTotal.toLocaleString('en-IN')}</span>
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border-2 border-emerald-500/80 text-emerald-300 shadow-xl space-y-2 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between border-b border-emerald-800/80 pb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-base">📢</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 font-display">
+                              PAYOUT SOUNDBOX RECEIPT
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-900/90 text-emerald-200 border border-emerald-700">
+                            CPCB VERIFIED
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline justify-between pt-1">
+                          <span className="text-xs text-slate-300 font-medium">
+                            {language === 'hi' ? 'कुल अनुमानित भुगतान:' : language === 'mr' ? 'एकूण अंदाजे रक्कम:' : 'Guaranteed Payout:'}
+                          </span>
+                          <span className="text-lg font-black text-emerald-400 font-mono tracking-tight">
+                            ₹{m.calculationTotal.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] text-emerald-400/90 font-semibold flex items-center justify-between pt-1 border-t border-emerald-900/60">
+                          <span>✨ 0% Scale Deductions</span>
+                          <span>⚡ Instant Cash / UPI</span>
+                        </div>
                       </div>
                     )}
 

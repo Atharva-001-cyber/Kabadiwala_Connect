@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { Lot } from '../../types';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName, formatLocationString } from '../../i18n/translations';
 import { StatusBadge } from './StatusBadge';
 import { SafeImage } from './SafeImage';
 import { formatWeight } from '../../utils/formatters';
@@ -75,17 +75,17 @@ export const LotCard: React.FC<LotCardProps> = ({
 
           <div className="flex-1 min-w-0">
             <h4 className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight truncate">
-              {getCategoryLabel(lot.materialCategory, language)}
+              {getCategoryLabel(lot.subCategory || lot.materialCategory, language)}
             </h4>
             <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5">
-              {lot.subCategory || lot.description || 'E-Waste Material'}
+              {lot.description || (language === 'hi' ? 'ई-कचरा सामग्री' : language === 'mr' ? 'ई-कचरा साहित्य' : 'E-Waste Material')}
             </p>
 
             {/* Weight Badge */}
             <div className="mt-2 flex items-center gap-1.5">
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs font-black text-amber-700 dark:text-amber-400">
                 <Scale className="w-3.5 h-3.5" />
-                <span>{formatWeight(displayWeight)} kg</span>
+                <span>{formatWeight(displayWeight)} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
                 {isActualWeight && (
                   <span className="text-[9px] text-emerald-700 dark:text-emerald-400 font-normal">
                     ({language === 'hi' ? 'कांटा सत्यापित' : language === 'mr' ? 'काटा प्रमाणित' : 'scale verified'})
@@ -102,7 +102,7 @@ export const LotCard: React.FC<LotCardProps> = ({
           <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 min-w-0">
             <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span className="truncate">
-              {lot.locationDistrict || 'Lucknow'}, {lot.locationState || 'UP'}
+              {formatLocationString(lot.locationDistrict || 'Lucknow', lot.locationState || 'UP', language)}
             </span>
           </div>
 
@@ -115,14 +115,14 @@ export const LotCard: React.FC<LotCardProps> = ({
           {/* Collector */}
           <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 min-w-0">
             <User className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-            <span className="truncate font-medium">{lot.collectorName || 'Collector'}</span>
+            <span className="truncate font-medium">{formatUserDisplayName(lot.collectorName, 'COLLECTOR', language)}</span>
           </div>
 
           {/* Valuation / Rate */}
           <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 justify-end min-w-0">
             <span className="text-slate-500 text-[10px]">{language === 'hi' ? 'मूल्य:' : language === 'mr' ? 'मूल्य:' : 'Val:'}</span>
             <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 truncate">
-              {lot.finalSaleValue != null ? `₹${lot.finalSaleValue}` : lot.estimatedValueAvg ? `₹${lot.estimatedValueAvg}` : 'Pending Quote'}
+              {lot.finalSaleValue != null ? `₹${lot.finalSaleValue}` : lot.estimatedValueAvg ? `₹${lot.estimatedValueAvg}` : (language === 'hi' ? 'कोटेशन लंबित' : language === 'mr' ? 'कोटेशन प्रलंबित' : 'Pending Quote')}
             </span>
           </div>
         </div>

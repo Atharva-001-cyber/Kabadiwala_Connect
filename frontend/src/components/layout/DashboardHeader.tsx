@@ -29,7 +29,7 @@ import { useSync } from '../../context/SyncContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Language, UserRole } from '../../types';
 import { JudgeDemoModal } from '../common/JudgeDemoModal';
-import { formatUserDisplayName } from '../../i18n/translations';
+import { formatUserDisplayName, getCategoryLabel } from '../../i18n/translations';
 import { api } from '../../services/api';
 
 interface DashboardHeaderProps {
@@ -452,7 +452,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onToggleMobile
                     <span className="text-xs font-black text-slate-900 dark:text-white truncate block">{userName}</span>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block">{user?.phone || '9876543210'}</span>
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block mt-0.5">
-                      {role === 'COLLECTOR' ? 'Verified Collector' : role === 'RECYCLER' ? 'Registered Facility' : 'CPCB Admin'}
+                      {role === 'COLLECTOR' 
+                        ? (language === 'hi' ? 'सत्यापित कलेक्टर' : language === 'mr' ? 'सत्यापित संकलक' : 'Verified Collector') 
+                        : role === 'RECYCLER' 
+                        ? (language === 'hi' ? 'अधिकृत रीसाइक्लिंग केंद्र' : language === 'mr' ? 'अधिकृत रिसायकलिंग केंद्र' : 'Registered Facility') 
+                        : (language === 'hi' ? 'CPCB एडमिन अधिकारी' : language === 'mr' ? 'CPCB ॲडमिन अधिकारी' : 'CPCB Admin')}
                     </span>
                   </div>
 
@@ -504,20 +508,27 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onToggleMobile
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
           <span className="text-[10px] font-black tracking-wider uppercase text-emerald-400 font-display flex items-center gap-1 shrink-0">
             <TrendingUp className="w-3 h-3 shrink-0" />
-            <span className="hidden xs:inline">MANDI LIVE:</span>
-            <span className="xs:hidden">LIVE:</span>
+            <span className="hidden xs:inline">
+              {language === 'hi' ? 'मंडी लाइव:' : language === 'mr' ? 'बाजार थेट:' : 'MANDI LIVE:'}
+            </span>
+            <span className="xs:hidden">
+              {language === 'hi' ? 'लाइव:' : language === 'mr' ? 'थेट:' : 'LIVE:'}
+            </span>
           </span>
         </div>
         <div className="overflow-hidden flex-1 relative min-w-0">
           <div className="animate-ticker flex items-center gap-6 text-[11px] font-mono text-slate-300">
-            {[...tickerPrices, ...tickerPrices].map((item, idx) => (
-              <span key={idx} className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <span className="text-slate-400 font-sans font-bold">{item.category}:</span>
-                <span className="text-white font-bold font-mono">₹{item.rate}/kg</span>
-                <span className="text-emerald-400 text-[10px] font-black">{item.shift}</span>
-                <span className="text-slate-700 mx-1">•</span>
-              </span>
-            ))}
+            {[...tickerPrices, ...tickerPrices].map((item, idx) => {
+              const translatedCategory = getCategoryLabel(item.category, language);
+              return (
+                <span key={idx} className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="text-slate-400 font-sans font-bold">{translatedCategory}:</span>
+                  <span className="text-white font-bold font-mono">₹{item.rate}/{language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
+                  <span className="text-emerald-400 text-[10px] font-black">{item.shift}</span>
+                  <span className="text-slate-700 mx-1">•</span>
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

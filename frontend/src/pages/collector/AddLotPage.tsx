@@ -1108,7 +1108,11 @@ export const AddLotPage: React.FC = () => {
                     title="Dual-Tier AI Settings"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{isCloudActive ? '☁️ Cloud Co-Pilot (ON)' : '⚡ Edge AI (Offline)'}</span>
+                    <span>
+                      {isCloudActive
+                        ? (language === 'hi' ? '☁️ क्लाउड को-पायलट (चालू)' : language === 'mr' ? '☁️ क्लाउड को-पायलट (सुरू)' : '☁️ Cloud Co-Pilot (ON)')
+                        : (language === 'hi' ? '⚡ एज AI (ऑफलाइन)' : language === 'mr' ? '⚡ एज AI (ऑफलाइन)' : '⚡ Edge AI (Offline)')}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -1150,7 +1154,11 @@ export const AddLotPage: React.FC = () => {
                     title="Dual-Tier AI Settings"
                   >
                     <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>{isCloudActive ? '☁️ Cloud Co-Pilot' : '⚡ Edge AI'}</span>
+                    <span>
+                      {isCloudActive
+                        ? (language === 'hi' ? '☁️ क्लाउड को-पायलट' : language === 'mr' ? '☁️ क्लाउड को-पायलट' : '☁️ Cloud Co-Pilot')
+                        : (language === 'hi' ? '⚡ एज AI' : language === 'mr' ? '⚡ एज AI' : '⚡ Edge AI')}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -2101,16 +2109,22 @@ export const AddLotPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sky-300 flex items-center gap-1.5">
                     <span>☁️</span>
-                    <span>Tier 1: Cloud Vision (Gemini 1.5 Flash)</span>
+                    <span>{language === 'hi' ? 'टियर 1: क्लाउड विजन (Gemini 1.5 Flash)' : language === 'mr' ? 'टियर 1: क्लाउड व्हिजन (Gemini 1.5 Flash)' : 'Tier 1: Cloud Vision (Gemini 1.5 Flash)'}</span>
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-black ${
                     isCloudActive ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' : 'bg-slate-800 text-slate-400'
                   }`}>
-                    {isCloudActive ? '● Active' : '○ Disabled (No Key)'}
+                    {isCloudActive
+                      ? (language === 'hi' ? '● सक्रिय' : language === 'mr' ? '● सक्रिय' : '● Active')
+                      : (language === 'hi' ? '○ निष्क्रिय (की नहीं)' : language === 'mr' ? '○ निष्क्रिय (की नाही)' : '○ Disabled (No Key)')}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  99.9% Multimodal precision on complex assemblies, reading chip model numbers and CPCB Schedule-I rules.
+                  {language === 'hi'
+                    ? 'जटिल स्क्रैप, चिप मॉडल नंबर और CPCB नियम 19 पर 99.9% मल्टीमॉडल सटीकता।'
+                    : language === 'mr'
+                    ? 'गुंतागुंतीचे स्क्रॅप, चिप मॉडेल नंबर आणि CPCB नियमांवर ९९.९% अचूकता.'
+                    : '99.9% Multimodal precision on complex assemblies, reading chip model numbers and CPCB Schedule-I rules.'}
                 </p>
               </div>
 
@@ -2118,14 +2132,18 @@ export const AddLotPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-emerald-300 flex items-center gap-1.5">
                     <span>⚡</span>
-                    <span>Tier 2: YOLOv8-Nano + MobileNet</span>
+                    <span>{language === 'hi' ? 'टियर 2: YOLOv8-नैनो + मोबाइलनेट' : language === 'mr' ? 'टियर 2: YOLOv8-नॅनो + मोबाईलनेट' : 'Tier 2: YOLOv8-Nano + MobileNet'}</span>
                   </span>
                   <span className="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    ● Always Ready (Offline)
+                    {language === 'hi' ? '● हमेशा तैयार (ऑफलाइन)' : language === 'mr' ? '● नेहमी तयार (ऑफलाइन)' : '● Always Ready (Offline)'}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  100% in-browser, client-side, zero latency (&lt;50ms), works in remote rural areas with zero internet connectivity.
+                  {language === 'hi'
+                    ? '100% ब्राउज़र में, क्लाइंट-साइड, बिना इंटरनेट के ग्रामीण क्षेत्रों में भी तत्काल काम करता है।'
+                    : language === 'mr'
+                    ? '१००% ब्राउझरमध्ये, क्लायंट-साइड, इंटरनेट नसलेल्या ग्रामीण भागातही त्वरित कार्य करते.'
+                    : '100% in-browser, client-side, zero latency (<50ms), works in remote rural areas with zero internet connectivity.'}
                 </p>
               </div>
             </div>

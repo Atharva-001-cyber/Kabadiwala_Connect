@@ -24,6 +24,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { AudioButton } from '../../components/common/AudioButton';
 import { api } from '../../services/api';
+import { getCategoryLabel } from '../../i18n/translations';
 
 export const SafetyCenterPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -144,7 +145,7 @@ export const SafetyCenterPage: React.FC = () => {
             </h2>
           </div>
           <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 dark:text-red-300 dark:bg-red-950/80 dark:border-red-800 px-2.5 py-0.5 rounded-full self-start sm:self-auto">
-            Emergency Hotlines
+            {language === 'hi' ? 'आपात्कालीन हेल्पलाइन्स' : language === 'mr' ? 'आपत्कालीन हेल्पलाईन' : 'Emergency Hotlines'}
           </span>
         </div>
 
@@ -158,8 +159,12 @@ export const SafetyCenterPage: React.FC = () => {
               112
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-red-600 dark:text-red-300 font-bold uppercase block truncate">National Helpline</span>
-              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-200">Police / Medical</span>
+              <span className="text-[10px] text-red-600 dark:text-red-300 font-bold uppercase block truncate">
+                {language === 'hi' ? 'राष्ट्रीय हेल्पलाइन' : language === 'mr' ? 'राष्ट्रीय हेल्पलाईन' : 'National Helpline'}
+              </span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-200">
+                {language === 'hi' ? 'पुलिस / चिकित्सा' : language === 'mr' ? 'पोलिस / वैद्यकीय' : 'Police / Medical'}
+              </span>
             </div>
           </a>
 
@@ -171,7 +176,9 @@ export const SafetyCenterPage: React.FC = () => {
               AIIMS
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase block truncate">Poison Information</span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase block truncate">
+                {language === 'hi' ? 'विष सूचना केंद्र' : language === 'mr' ? 'विष माहिती केंद्र' : 'Poison Information'}
+              </span>
               <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-200">1800-116-117</span>
             </div>
           </a>
@@ -184,8 +191,12 @@ export const SafetyCenterPage: React.FC = () => {
               101
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-orange-700 dark:text-orange-300 font-bold uppercase block truncate">Fire Emergency</span>
-              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-orange-700 dark:group-hover:text-orange-200">Battery Fires</span>
+              <span className="text-[10px] text-orange-700 dark:text-orange-300 font-bold uppercase block truncate">
+                {language === 'hi' ? 'अग्नि आपात्काल' : language === 'mr' ? 'आग आपत्काळ' : 'Fire Emergency'}
+              </span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-orange-700 dark:group-hover:text-orange-200">
+                {language === 'hi' ? 'बैटरी आग नियंत्रण' : language === 'mr' ? 'बॅटरी आग नियंत्रण' : 'Battery Fires'}
+              </span>
             </div>
           </a>
 
@@ -197,7 +208,9 @@ export const SafetyCenterPage: React.FC = () => {
               CPCB
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase block truncate">Hazard Control</span>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase block truncate">
+                {language === 'hi' ? 'खतरा नियंत्रण' : language === 'mr' ? 'धोका नियंत्रण' : 'Hazard Control'}
+              </span>
               <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-200">1800-180-1717</span>
             </div>
           </a>
@@ -211,7 +224,11 @@ export const SafetyCenterPage: React.FC = () => {
             className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 font-bold flex items-center gap-1.5 active:scale-95"
           >
             <Droplets className="w-3.5 h-3.5" />
-            <span>{showFirstAid ? (language === 'hi' ? 'प्राथमिक उपचार प्रोटोकॉल छिपाएं' : 'Hide Field First-Aid Protocols') : (language === 'hi' ? 'दुर्घटना में तत्काल प्राथमिक उपचार (First Aid) देखें' : 'View Immediate Field First-Aid Protocols')}</span>
+            <span>
+              {showFirstAid 
+                ? (language === 'hi' ? 'प्राथमिक उपचार प्रोटोकॉल छिपाएं' : language === 'mr' ? 'प्राथमिक उपचार प्रोटोकॉल लपवा' : 'Hide Field First-Aid Protocols') 
+                : (language === 'hi' ? 'दुर्घटना में तत्काल प्राथमिक उपचार (First Aid) देखें' : language === 'mr' ? 'अपघातात तत्काळ प्राथमिक उपचार (First Aid) पहा' : 'View Immediate Field First-Aid Protocols')}
+            </span>
             {showFirstAid ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
@@ -220,30 +237,42 @@ export const SafetyCenterPage: React.FC = () => {
               <div className="bg-red-50/60 dark:bg-slate-950 p-3 rounded-2xl border border-red-200 dark:border-red-900/60 space-y-1">
                 <span className="font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
                   <span>🧪</span>
-                  <span>Acid or Chemical Splash</span>
+                  <span>{language === 'hi' ? 'तेजाब या रसायन छीटें' : language === 'mr' ? 'ऍसिड किंवा रासायनिक संपर्क' : 'Acid or Chemical Splash'}</span>
                 </span>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Flush affected skin or eyes with continuous clean running tap water for at least 15 minutes. Do NOT rub, apply oils or soap. Seek medical attention immediately.
+                  {language === 'hi'
+                    ? 'प्रभावित त्वचा या आंखों को कम से कम 15 मिनट तक लगातार साफ नल के पानी से धोएं। रगड़ें नहीं। तुरंत डॉक्टर के पास जाएं।'
+                    : language === 'mr'
+                    ? 'बाधित त्वचा किंवा डोळे कमीत कमी १५ मिनिटे स्वच्छ पाण्याने धुवा. चोळू नका. तत्काळ डॉक्टरांचा सल्ला घ्या.'
+                    : 'Flush affected skin or eyes with continuous clean running tap water for at least 15 minutes. Do NOT rub, apply oils or soap. Seek medical attention immediately.'}
                 </p>
               </div>
 
               <div className="bg-amber-50/60 dark:bg-slate-950 p-3 rounded-2xl border border-amber-200 dark:border-amber-900/60 space-y-1">
                 <span className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1">
                   <span>⚡</span>
-                  <span>Lithium Battery Thermal Fire</span>
+                  <span>{language === 'hi' ? 'लिथियम बैटरी तापीय आग' : language === 'mr' ? 'लिथियम बॅटरी तापीय आग' : 'Lithium Battery Thermal Fire'}</span>
                 </span>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Smother fire with dry sand, soil, or Class D dry chemical extinguisher. NEVER pour small amounts of water on burning lithium cells (causes hydrogen explosion)!
+                  {language === 'hi'
+                    ? 'सूखी रेत, मिट्टी या क्लास D अग्निशामक से आग बुझाएं। जलती लिथियम बैटरी पर पानी कभी न डालें (हाइड्रोजन विस्फोट हो सकता है)!'
+                    : language === 'mr'
+                    ? 'कोरडी वाळू, माती किंवा क्लास D अग्निशामक वापरा. जळत्या लिथियम बॅटरीवर पाणी टाकू नका (हायड्रोजन स्फोट होऊ शकतो)!'
+                    : 'Smother fire with dry sand, soil, or Class D dry chemical extinguisher. NEVER pour small amounts of water on burning lithium cells (causes hydrogen explosion)!'}
                 </p>
               </div>
 
               <div className="bg-orange-50/60 dark:bg-slate-950 p-3 rounded-2xl border border-orange-200 dark:border-orange-900/60 space-y-1">
                 <span className="font-bold text-orange-700 dark:text-orange-400 flex items-center gap-1">
                   <span>💨</span>
-                  <span>Toxic Wire Fume Inhalation</span>
+                  <span>{language === 'hi' ? 'जहरीला धुआं फेफड़ों में जाना' : language === 'mr' ? 'विषारी धूर श्वासात जाणे' : 'Toxic Wire Fume Inhalation'}</span>
                 </span>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Move patient immediately to open, uncontaminated outdoor air. Keep person upright and loosen tight clothing around neck. Administer oxygen if available.
+                  {language === 'hi'
+                    ? 'व्यक्ति को तुरंत खुली ताजा हवा में लाएं। गले के कपड़े ढीले करें और व्यक्ति को सीधा बैठाएं।'
+                    : language === 'mr'
+                    ? 'बाधित व्यक्तीला तत्काळ मोकळ्या हवेत आणा. गळ्यातील कपडे सैल करा आणि बसवून ठेवा.'
+                    : 'Move patient immediately to open, uncontaminated outdoor air. Keep person upright and loosen tight clothing around neck. Administer oxygen if available.'}
                 </p>
               </div>
             </div>
@@ -258,10 +287,10 @@ export const SafetyCenterPage: React.FC = () => {
             <HardHat className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <div>
               <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                {language === 'hi' ? 'अनिवार्य व्यक्तिगत सुरक्षा उपकरण (PPE Kit)' : 'Mandatory PPE Safety Gear Checklist'}
+                {language === 'hi' ? 'अनिवार्य व्यक्तिगत सुरक्षा उपकरण (PPE Kit)' : language === 'mr' ? 'अनिवार्य वैयक्तिक सुरक्षा उपकरणे (PPE Kit)' : 'Mandatory PPE Safety Gear Checklist'}
               </h2>
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                {language === 'hi' ? 'कचरा उठाने और हैंडल करने से पहले 4 सुरक्षा साधन अवश्य पहनें' : 'Check off your safety equipment before handling hazardous e-waste'}
+                {language === 'hi' ? 'कचरा उठाने और हैंडल करने से पहले 4 सुरक्षा साधन अवश्य पहनें' : language === 'mr' ? 'ई-कचरा हाताळण्यापूर्वी ४ सुरक्षा साधने नक्की वापरा' : 'Check off your safety equipment before handling hazardous e-waste'}
               </span>
             </div>
           </div>
@@ -272,8 +301,8 @@ export const SafetyCenterPage: React.FC = () => {
               : 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
           }`}>
             {isAllPpeChecked 
-              ? (language === 'hi' ? '🟢 100% सुरक्षा तैयार' : '🟢 100% PPE COMPLIANT')
-              : (language === 'hi' ? '⚠️ सुरक्षा साधन पहनें' : '⚠️ PPE GEAR REQUIRED')}
+              ? (language === 'hi' ? '🟢 100% सुरक्षा तैयार' : language === 'mr' ? '🟢 १००% सुरक्षा तयार' : '🟢 100% PPE COMPLIANT')
+              : (language === 'hi' ? '⚠️ सुरक्षा साधन पहनें' : language === 'mr' ? '⚠️ सुरक्षा साधने वापरा' : '⚠️ PPE GEAR REQUIRED')}
           </span>
         </div>
 
@@ -284,28 +313,40 @@ export const SafetyCenterPage: React.FC = () => {
               id: 'gloves',
               title: 'Heavy Nitrile Chemical Gloves',
               hindi: 'रासायनिक प्रतिरोधी मोटे दस्ताने',
-              desc: 'Protects hands from battery acids, electrolyte leakages and sharp PCB edges.',
+              marathi: 'रासायनिक प्रतिरोधी जाड हातमोजे',
+              descHi: 'बैटरी एसिड, इलेक्ट्रोलाइट रिसाव और तेज पीसीबी किनारों से हाथों की रक्षा करता है।',
+              descMr: 'बॅटरी ऍसिड, इलेक्ट्रोलाइट गळती आणि पीसीबीच्या तीक्ष्ण कडांपासून हातांचे संरक्षण करते.',
+              descEn: 'Protects hands from battery acids, electrolyte leakages and sharp PCB edges.',
               icon: '🧤'
             },
             {
               id: 'goggles',
               title: 'Impact Safety Eye Goggles',
               hindi: 'सुरक्षा चश्मा (आंखों का बचाव)',
-              desc: 'Shields eyes from exploding vacuum CRT tube shards and corrosive chemical splashes.',
+              marathi: 'सुरक्षा चष्मा (डोळ्यांचे रक्षण)',
+              descHi: 'सीआरटी टीवी शीशे के टुकड़ों और तेजाब के छीटों से आंखों का बचाव करता है।',
+              descMr: 'सीआरटी टीव्हीचे काच व ऍसिडच्या उडणाऱ्या थेंबांपासून डोळ्यांचे रक्षण करते.',
+              descEn: 'Shields eyes from exploding vacuum CRT tube shards and corrosive chemical splashes.',
               icon: '🥽'
             },
             {
               id: 'mask',
               title: 'N95 Acid Gas & Dust Respirator',
               hindi: 'N95 मास्क (जहरीले धुएं से बचाव)',
-              desc: 'Blocks inhalation of carcinogenic dioxins, solder lead fumes and toxic dust.',
+              marathi: 'N95 मास्क (विषारी धुरापासून संरक्षण)',
+              descHi: 'कैंसरकारी डाइऑक्सिन, सोल्डर लेड धुएं और जहरीली धूल को फेफड़ों में जाने से रोकता है।',
+              descMr: 'कर्करोगास कारणीभूत धूर, शिसे व विषारी धुळीपासून फुफ्फुसांचे रक्षण करते.',
+              descEn: 'Blocks inhalation of carcinogenic dioxins, solder lead fumes and toxic dust.',
               icon: '😷'
             },
             {
               id: 'boots',
               title: 'Steel-Toe Reinforced Work Boots',
               hindi: 'मजबूत सुरक्षा जूते (पैरों का बचाव)',
-              desc: 'Prevents crush injuries from heavy motor transformers and sharp chassis metals.',
+              marathi: 'मजबूत सुरक्षा बूट (पायांचे रक्षण)',
+              descHi: 'भारी मोटर ट्रांसफार्मर और नुकीले चेसिस मेटल से पैरों की सुरक्षा करता है।',
+              descMr: 'जड मोटार ट्रान्सफॉर्मर व तीक्ष्ण धातूंपासून पायांचे रक्षण करते.',
+              descEn: 'Prevents crush injuries from heavy motor transformers and sharp chassis metals.',
               icon: '🥾'
             }
           ].map(item => (
@@ -324,9 +365,11 @@ export const SafetyCenterPage: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-black text-sm text-slate-900 dark:text-white">
-                    {language === 'hi' ? item.hindi : item.title}
+                    {language === 'hi' ? item.hindi : language === 'mr' ? item.marathi : item.title}
                   </h4>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">{item.desc}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+                    {language === 'hi' ? item.descHi : language === 'mr' ? item.descMr : item.descEn}
+                  </p>
                 </div>
               </div>
 
@@ -348,7 +391,7 @@ export const SafetyCenterPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-orange-500" />
             <h2 className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">
-              {language === 'hi' ? 'विशिष्ट सामग्री सुरक्षा नियम' : 'Consignment Material Safety Protocols'}
+              {language === 'hi' ? 'विशिष्ट सामग्री सुरक्षा नियम' : language === 'mr' ? 'विशिष्ट साहित्य सुरक्षा नियम' : 'Consignment Material Safety Protocols'}
             </h2>
             <span className="text-[10px] font-mono font-bold text-orange-800 bg-orange-50 dark:text-orange-400 dark:bg-orange-950 px-2 py-0.5 rounded-full border border-orange-200 dark:border-orange-800">
               {filteredGuides.length}
@@ -361,7 +404,7 @@ export const SafetyCenterPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={language === 'hi' ? 'खतरा, नियम या सामग्री खोजें...' : 'Search hazard, rule or category...'}
+              placeholder={language === 'hi' ? 'खतरा, नियम या सामग्री खोजें...' : language === 'mr' ? 'धोका, नियम किंवा साहित्य शोधा...' : 'Search hazard, rule or category...'}
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-orange-500 shadow-2xs"
             />
             <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
@@ -371,15 +414,15 @@ export const SafetyCenterPage: React.FC = () => {
         {/* Filter Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold">
           {[
-            { key: 'ALL', label: language === 'hi' ? 'सभी श्रेणियां' : 'All Rules' },
-            { key: 'BATTERY', label: '⚡ Batteries' },
-            { key: 'CABLE', label: '🔥 Cables' },
-            { key: 'PCB', label: '🧪 PCBs & Acid' },
-            { key: 'CRT', label: '📺 CRTs / TVs' },
-            { key: 'LCD', label: '💻 LCD Screens' },
-            { key: 'MOTOR', label: '⚙️ Motors' },
-            { key: 'MAGNET', label: '🧲 Magnets' },
-            { key: 'MIXED_PLASTIC', label: '♻️ Plastics' }
+            { key: 'ALL', label: language === 'hi' ? 'सभी श्रेणियां' : language === 'mr' ? 'सर्व प्रकार' : 'All Rules' },
+            { key: 'BATTERY', label: language === 'hi' ? '⚡ बैटरी' : language === 'mr' ? '⚡ बॅटरी' : '⚡ Batteries' },
+            { key: 'CABLE', label: language === 'hi' ? '🔥 केबल व तार' : language === 'mr' ? '🔥 केबल व वायर' : '🔥 Cables' },
+            { key: 'PCB', label: language === 'hi' ? '🧪 पीसीबी व तेजाब' : language === 'mr' ? '🧪 पीसीबी व ऍसिड' : '🧪 PCBs & Acid' },
+            { key: 'CRT', label: language === 'hi' ? '📺 सीआरटी टीवी' : language === 'mr' ? '📺 सीआरटी टीव्ही' : '📺 CRTs / TVs' },
+            { key: 'LCD', label: language === 'hi' ? '💻 एलसीडी स्क्रीन' : language === 'mr' ? '💻 एलसीडी स्क्रीन' : '💻 LCD Screens' },
+            { key: 'MOTOR', label: language === 'hi' ? '⚙️ इलेक्ट्रिक मोटर' : language === 'mr' ? '⚙️ इलेक्ट्रिक मोटार' : '⚙️ Motors' },
+            { key: 'MAGNET', label: language === 'hi' ? '🧲 मैग्नेट' : language === 'mr' ? '🧲 चुंबक' : '🧲 Magnets' },
+            { key: 'MIXED_PLASTIC', label: language === 'hi' ? '♻️ प्लास्टिक' : language === 'mr' ? '♻️ प्लॅस्टिक' : '♻️ Plastics' }
           ].map((cat) => (
             <button
               key={cat.key}
@@ -447,7 +490,7 @@ export const SafetyCenterPage: React.FC = () => {
                         {guide.title?.[language] || guide.title?.hi || (typeof guide.title === 'string' ? guide.title : 'सुरक्षा निर्देश')}
                       </h3>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {language === 'hi' ? 'सामग्री श्रेणी:' : language === 'mr' ? 'प्रकार:' : 'Material Category:'} {guide.category}
+                        {language === 'hi' ? 'सामग्री श्रेणी:' : language === 'mr' ? 'प्रकार:' : 'Material Category:'} {getCategoryLabel(guide.category, language)}
                       </span>
                     </div>
                   </div>

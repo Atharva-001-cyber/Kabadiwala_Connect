@@ -126,6 +126,15 @@ export const Navbar: React.FC = () => {
                 <Shield className="w-3 h-3 text-purple-200" />
                 <span className="hidden sm:inline">{t.roleAdmin}</span>
               </button>
+
+              <Link
+                to="/citizen"
+                className="px-2.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 text-slate-300 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/30"
+                title="Citizen Smart Beacon Disposal Portal"
+              >
+                <span>🌱</span>
+                <span className="hidden sm:inline">Citizen Disposal</span>
+              </Link>
             </div>
 
             {/* Language Indicator (Non-Interactive) */}

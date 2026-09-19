@@ -20,7 +20,7 @@ import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot } from '../../types';
-import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
+import { getStatusLabel, getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
 import { GreenCertificateModal } from '../../components/common/GreenCertificateModal';
 
 const FACILITY_STATUSES = ['RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED', 'RECYCLED'];
@@ -53,21 +53,26 @@ export const InventoryProcessingPage: React.FC = () => {
   const getStageDefaultNote = (stage: string, category?: string, weight: number = 10): string => {
     const w = weight > 0 ? weight : 10;
     const cat = (category || 'BATTERY').toUpperCase();
+    const isHi = language === 'hi';
+    const isMr = language === 'mr';
+    const prefix = isHi ? 'पुनर्प्राप्त:' : isMr ? 'पुनर्प्राप्त:' : 'Recovered:';
+    const kgUnit = isHi || isMr ? 'किग्रा' : 'kg';
+    const gUnit = isHi || isMr ? 'ग्राम' : 'g';
 
     if (stage === 'RECOVERED' || stage === 'RECYCLED') {
       if (cat.includes('BATT')) {
-        return `Recovered: ${(w * 0.42).toFixed(1)}kg Lithium Carbonate (Li2CO3), ${(w * 0.28).toFixed(1)}kg Cobalt, ${(w * 0.15).toFixed(1)}kg Nickel, ${(w * 0.11).toFixed(1)}kg High-Purity Copper Foil`;
+        return `${prefix} ${(w * 0.42).toFixed(1)}${kgUnit} ${isHi ? 'लिथियम कार्बोनेट' : isMr ? 'लिथियम कार्बोनेट' : 'Lithium Carbonate'} (Li2CO3), ${(w * 0.28).toFixed(1)}${kgUnit} ${isHi ? 'कोबाल्ट' : isMr ? 'कोबाल्ट' : 'Cobalt'}, ${(w * 0.15).toFixed(1)}${kgUnit} ${isHi ? 'निकल' : isMr ? 'निकल' : 'Nickel'}, ${(w * 0.11).toFixed(1)}${kgUnit} ${isHi ? 'कॉपर फ़ॉइल' : isMr ? 'कॉपर फॉइल' : 'Copper Foil'}`;
       }
       if (cat.includes('PCB') || cat.includes('CIRCUIT')) {
-        return `Recovered: ${(w * 0.55).toFixed(1)}kg Refined Copper (Cu 99.9%), ${(w * 0.18).toFixed(1)}g Gold (Au 99.99%), ${(w * 0.75).toFixed(1)}g Silver (Ag), ${(w * 0.15).toFixed(1)}kg Aluminium`;
+        return `${prefix} ${(w * 0.55).toFixed(1)}${kgUnit} ${isHi ? 'शुद्ध तांबा (Cu 99.9%)' : isMr ? 'शुद्ध तांबे (Cu 99.9%)' : 'Refined Copper (Cu 99.9%)'}, ${(w * 0.18).toFixed(1)}${gUnit} ${isHi ? 'सोना (Au 99.99%)' : isMr ? 'सोने (Au 99.99%)' : 'Gold (Au 99.99%)'}, ${(w * 0.75).toFixed(1)}${gUnit} ${isHi ? 'चांदी (Ag)' : isMr ? 'चांदी (Ag)' : 'Silver (Ag)'}, ${(w * 0.15).toFixed(1)}${kgUnit} ${isHi ? 'एल्युमीनियम' : isMr ? 'ॲल्युमिनियम' : 'Aluminium'}`;
       }
       if (cat.includes('CABLE') || cat.includes('WIRE')) {
-        return `Recovered: ${(w * 0.65).toFixed(1)}kg Bare Copper Wire (Grade A 99.9%), ${(w * 0.30).toFixed(1)}kg Recycled PVC/XLPE Granules`;
+        return `${prefix} ${(w * 0.65).toFixed(1)}${kgUnit} ${isHi ? 'तांबे का तार' : isMr ? 'तांब्याची तार' : 'Bare Copper Wire'}, ${(w * 0.30).toFixed(1)}${kgUnit} ${isHi ? 'रीसाइकिल्ड PVC प्लास्टिक दाने' : isMr ? 'रिसायकल केलेले PVC प्लास्टिक' : 'Recycled PVC Granules'}`;
       }
       if (cat.includes('MOTOR')) {
-        return `Recovered: ${(w * 0.68).toFixed(1)}kg Ferrous Stator Core Scrap, ${(w * 0.26).toFixed(1)}kg Pure Copper Windings, ${(w * 0.04).toFixed(1)}kg NdFeB Magnets`;
+        return `${prefix} ${(w * 0.68).toFixed(1)}${kgUnit} ${isHi ? 'स्टेटर कोर स्क्रैप' : isMr ? 'स्टेटर कोर स्क्रॅप' : 'Ferrous Stator Core Scrap'}, ${(w * 0.26).toFixed(1)}${kgUnit} ${isHi ? 'तांबे की वाइंडिंग' : isMr ? 'तांब्याची वाईंडिंग' : 'Pure Copper Windings'}, ${(w * 0.04).toFixed(1)}${kgUnit} ${isHi ? 'चुंबक (NdFeB)' : isMr ? 'चुंबक (NdFeB)' : 'NdFeB Magnets'}`;
       }
-      return `Recovered: ${(w * 0.60).toFixed(1)}kg Recycled High-Grade Fractions, ${(w * 0.35).toFixed(1)}kg Polymer Byproducts`;
+      return `${prefix} ${(w * 0.60).toFixed(1)}${kgUnit} ${isHi ? 'उच्च श्रेणी रीसाइकिल्ड अंश' : isMr ? 'उच्च श्रेणी रिसायकल केलेले अंश' : 'Recycled High-Grade Fractions'}, ${(w * 0.35).toFixed(1)}${kgUnit} ${isHi ? 'पॉलिमर उपोत्पाद' : isMr ? 'पॉलिमर उपउत्पादने' : 'Polymer Byproducts'}`;
     }
 
     switch (stage) {
@@ -332,6 +337,39 @@ export const InventoryProcessingPage: React.FC = () => {
     }
   };
 
+  const pipelineSteps = [
+    {
+      stage: 'RECEIVED',
+      num: '1',
+      title: language === 'hi' ? 'आवक कांटा' : language === 'mr' ? 'आवक काटा' : 'Intake Scale',
+      desc: language === 'hi' ? 'वजन सत्यापित' : language === 'mr' ? 'वजन पडताळले' : 'Tare Verified'
+    },
+    {
+      stage: 'SORTED',
+      num: '2',
+      title: language === 'hi' ? 'पृथक्करण' : language === 'mr' ? 'वर्गीकरण' : 'Segregation',
+      desc: language === 'hi' ? 'मैनुअल छंटाई' : language === 'mr' ? 'मॅन्युअल विभागणी' : 'Manual / Depopulation'
+    },
+    {
+      stage: 'PROCESSING',
+      num: '3',
+      title: language === 'hi' ? 'शोधन' : language === 'mr' ? 'शुद्धीकरण' : 'Refining',
+      desc: language === 'hi' ? 'धातुशोधन' : language === 'mr' ? 'हायड्रोमेटॅलर्जी' : 'Hydrometallurgy'
+    },
+    {
+      stage: 'RECOVERED',
+      num: '4',
+      title: language === 'hi' ? 'धातु पुनर्प्राप्ति' : language === 'mr' ? 'धातू पुनर्प्राप्ती' : 'Metal Recovery',
+      desc: language === 'hi' ? 'महत्वपूर्ण खनिज' : language === 'mr' ? 'महत्त्वाचे खनिज' : 'Critical Minerals'
+    },
+    {
+      stage: 'RECYCLED',
+      num: '5',
+      title: language === 'hi' ? '100% रीसाइक्लिंग' : language === 'mr' ? '100% रिसायकल' : '100% Recycled',
+      desc: language === 'hi' ? 'फॉर्म-6 तैयार' : language === 'mr' ? 'फॉर्म-6 तयार' : 'Form-6 Ready'
+    }
+  ];
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
       {/* Header */}
@@ -340,25 +378,25 @@ export const InventoryProcessingPage: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 text-xs font-black uppercase tracking-wider mb-2">
               <Factory className="w-3.5 h-3.5" />
-              <span>Plant Processing & Refining</span>
+              <span>{language === 'hi' ? 'संयंत्र प्रसंस्करण एवं शोधन' : language === 'mr' ? 'प्रक्रिया व शुद्धीकरण' : 'Plant Processing & Refining'}</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <span>⚙️</span>
               <span>{t.inventoryProcessingTitle}</span>
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Facility: <b className="text-emerald-700 dark:text-emerald-400">{recyclerProfile?.facilityName || 'ABC E-Waste Recycling Pvt Ltd'}</b> • CPCB EPR Rule 19 Compliant
+              {language === 'hi' ? 'सुविधा:' : language === 'mr' ? 'सुविधा:' : 'Facility:'} <b className="text-emerald-700 dark:text-emerald-400">{formatUserDisplayName(recyclerProfile?.facilityName || 'ABC E-Waste Recycling Pvt Ltd', 'RECYCLER', language)}</b> • {language === 'hi' ? 'CPCB ईपीआर नियम 19 अनुपालित' : language === 'mr' ? 'CPCB ईपीआर नियम 19 सुसंगत' : 'CPCB EPR Rule 19 Compliant'}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-mono font-black border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Active: {facilityLots.filter(l => l.status !== 'RECYCLED').length}</span>
+              <span>{language === 'hi' ? 'सक्रिय:' : language === 'mr' ? 'सक्रिय:' : 'Active:'} {facilityLots.filter(l => l.status !== 'RECYCLED').length}</span>
             </span>
             <span className="px-3.5 py-1.5 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-300 rounded-xl text-xs font-mono font-black border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span>Recycled: {facilityLots.filter(l => l.status === 'RECYCLED').length}</span>
+              <span>{language === 'hi' ? 'रीसाइक्लिंग पूर्ण:' : language === 'mr' ? 'पुनर्प्रक्रिया पूर्ण:' : 'Recycled:'} {facilityLots.filter(l => l.status === 'RECYCLED').length}</span>
             </span>
           </div>
         </div>
@@ -368,15 +406,15 @@ export const InventoryProcessingPage: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
         <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span>{t.materialStockTitle} ({recyclerProfile?.facilityName || 'My Facility Stock'})</span>
+          <span>{t.materialStockTitle} ({formatUserDisplayName(recyclerProfile?.facilityName || 'My Facility Stock', 'RECYCLER', language)})</span>
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           {Object.entries(inventoryWeights).map(([cat, weight]) => (
             <div key={cat} className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-center justify-between hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
               <div>
-                <span className="font-bold text-slate-500 dark:text-slate-400 block">{cat}</span>
-                <span className="text-lg font-black text-slate-900 dark:text-white">{weight} kg</span>
+                <span className="font-bold text-slate-500 dark:text-slate-400 block">{getCategoryLabel(cat, language)}</span>
+                <span className="text-lg font-black text-slate-900 dark:text-white">{weight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}</span>
               </div>
               <span className="text-2xl p-2 rounded-xl bg-white dark:bg-slate-900 shadow-2xs border border-slate-100 dark:border-slate-800">
                 {cat === 'PCB' && '📟'}
@@ -399,15 +437,15 @@ export const InventoryProcessingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Lifecycle Pipeline Progress: <b className="text-emerald-700 dark:text-emerald-400 font-mono">{currentLot.id}</b></span>
+              <span>{language === 'hi' ? 'लाइफसाइकिल पाइपलाइन प्रगति:' : language === 'mr' ? 'लाइफसायकल पाइपलाइन प्रगती:' : 'Lifecycle Pipeline Progress:'} <b className="text-emerald-700 dark:text-emerald-400 font-mono">{currentLot.id}</b></span>
             </span>
             <span className="text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              {getCategoryLabel(currentLot.materialCategory, language)} • {currentLot.actualWeight || currentLot.approxWeight} kg
+              {getCategoryLabel(currentLot.materialCategory, language)} • {currentLot.actualWeight || currentLot.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
-            {PIPELINE_STEPS.map((step, idx) => {
+            {pipelineSteps.map((step, idx) => {
               const isPast = isLotFullyRecycled ? idx <= currentStepIdx : idx < currentStepIdx;
               const isCurrent = !isLotFullyRecycled && idx === currentStepIdx;
               const isPending = !isLotFullyRecycled && idx > currentStepIdx;
@@ -435,12 +473,12 @@ export const InventoryProcessingPage: React.FC = () => {
                     </span>
                     {isCurrent && (
                       <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold tracking-wider">
-                        ACTIVE
+                        {language === 'hi' ? 'सक्रिय' : language === 'mr' ? 'सक्रिय' : 'ACTIVE'}
                       </span>
                     )}
                     {isLotFullyRecycled && idx === 4 && (
                       <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black animate-pulse">
-                        DONE
+                        {language === 'hi' || language === 'mr' ? 'पूर्ण' : 'DONE'}
                       </span>
                     )}
                   </div>
@@ -461,7 +499,11 @@ export const InventoryProcessingPage: React.FC = () => {
               {t.advanceStageTitle}
             </h2>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Advance material batches through legal recycling checkpoints and generate CPCB Form-6 proofs
+              {language === 'hi'
+                ? 'कानूनी रीसाइक्लिंग चेकपॉइंट के माध्यम से सामग्री बैचों को आगे बढ़ाएं और CPCB फॉर्म-6 प्रमाण बनाएं'
+                : language === 'mr'
+                ? 'कायदेशीर रिसायकलिंग तपासणीद्वारे सामग्रीच्या बॅचेस पुढे न्या आणि CPCB फॉर्म-6 पुरावे तयार करा'
+                : 'Advance material batches through legal recycling checkpoints and generate CPCB Form-6 proofs'}
             </p>
           </div>
 
@@ -474,7 +516,7 @@ export const InventoryProcessingPage: React.FC = () => {
                 filterTab === 'ALL' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              All ({facilityLots.length})
+              {language === 'hi' ? 'सभी' : language === 'mr' ? 'सर्व' : 'All'} ({facilityLots.length})
             </button>
             <button
               type="button"
@@ -483,7 +525,7 @@ export const InventoryProcessingPage: React.FC = () => {
                 filterTab === 'IN_PROCESS' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              In-Process ({facilityLots.filter(l => l.status !== 'RECYCLED').length})
+              {language === 'hi' ? 'प्रसंस्करण में' : language === 'mr' ? 'प्रक्रियेत' : 'In-Process'} ({facilityLots.filter(l => l.status !== 'RECYCLED').length})
             </button>
             <button
               type="button"
@@ -492,7 +534,7 @@ export const InventoryProcessingPage: React.FC = () => {
                 filterTab === 'COMPLETED' ? 'bg-white dark:bg-emerald-600 text-emerald-800 dark:text-white shadow-sm font-black' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              Completed ({facilityLots.filter(l => l.status === 'RECYCLED').length})
+              {language === 'hi' || language === 'mr' ? 'पूर्ण' : 'Completed'} ({facilityLots.filter(l => l.status === 'RECYCLED').length})
             </button>
           </div>
         </div>
@@ -501,7 +543,7 @@ export const InventoryProcessingPage: React.FC = () => {
           <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-8 text-center space-y-3 border border-slate-200 dark:border-slate-800">
             <Factory className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto" />
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              No lots found matching the selected filter in your facility inventory.
+              {language === 'hi' ? 'आपकी सुविधा इन्वेंटरी में चयनित फ़िल्टर से मेल खाता कोई लॉट नहीं मिला।' : language === 'mr' ? 'तुमच्या सुविधेतील इन्व्हेंटरीमध्ये निवडलेल्या फिल्टरशी जुळणारा कोणताही लॉट आढळला नाही.' : 'No lots found matching the selected filter in your facility inventory.'}
             </p>
           </div>
         ) : (
@@ -517,7 +559,7 @@ export const InventoryProcessingPage: React.FC = () => {
                 >
                   {displayedLots.map((l) => (
                     <option key={l.id} value={l.id}>
-                      {l.id} - {getCategoryLabel(l.materialCategory, language)} ({l.actualWeight || l.approxWeight} kg) [{getStatusLabel(l.status, language)}]
+                      {l.id} - {getCategoryLabel(l.materialCategory, language)} ({l.actualWeight || l.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'}) [{getStatusLabel(l.status, language)}]
                     </option>
                   ))}
                 </select>
@@ -542,8 +584,8 @@ export const InventoryProcessingPage: React.FC = () => {
                 <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <div>
-                    <span className="font-bold text-xs block">100% Formally Recycled</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Terminal lifecycle state reached. Certificate ready below.</span>
+                    <span className="font-bold text-xs block">{language === 'hi' ? '100% औपचारिक रीसाइक्लिंग पूर्ण' : language === 'mr' ? '100% औपचारिक रिसायकल पूर्ण' : '100% Formally Recycled'}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">{language === 'hi' ? 'अंतिम जीवनचक्र स्थिति तक पहुंच गया। नीचे प्रमाणपत्र तैयार है।' : language === 'mr' ? 'अंतिम जीवनचक्र स्थिती पूर्ण झाली. खाली प्रमाणपत्र तयार आहे.' : 'Terminal lifecycle state reached. Certificate ready below.'}</span>
                   </div>
                 </div>
               )}
@@ -556,9 +598,13 @@ export const InventoryProcessingPage: React.FC = () => {
                   <Award className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">This Consignment is 100% Formally Recycled!</h3>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">{language === 'hi' ? 'यह खेप 100% औपचारिक रूप से रीसायकल हो चुकी है!' : language === 'mr' ? 'हा माल 100% औपचारिकपणे रिसायकल झाला आहे!' : 'This Consignment is 100% Formally Recycled!'}</h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
-                    All hazardous materials neutralized, valuable secondary raw materials extracted, and CPCB Form-6 manifest generated.
+                    {language === 'hi'
+                      ? 'सभी खतरनाक सामग्रियां निष्प्रभावी कर दी गई हैं, मूल्यवान द्वितीयक कच्चा माल निकाला गया है, और CPCB फॉर्म-6 मेनिफेस्ट तैयार है।'
+                      : language === 'mr'
+                      ? 'सर्व धोकादायक साहित्य निष्प्रभ केले आहे, मौल्यवान दुय्यम कच्चा माल काढला आहे आणि CPCB फॉर्म-6 मॅनिफेस्ट तयार आहे.'
+                      : 'All hazardous materials neutralized, valuable secondary raw materials extracted, and CPCB Form-6 manifest generated.'}
                   </p>
                 </div>
                 <div className="pt-2">
@@ -568,7 +614,7 @@ export const InventoryProcessingPage: React.FC = () => {
                     className="px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-black shadow-lg inline-flex items-center gap-2 active:scale-95 transition-all"
                   >
                     <Award className="w-4 h-4" />
-                    <span>View CPCB Form-6 Certificate (Green Certificate)</span>
+                    <span>{t.greenCertTitle}</span>
                   </button>
                 </div>
               </div>
@@ -580,19 +626,19 @@ export const InventoryProcessingPage: React.FC = () => {
                       {t.recoveredDetailsLabel}
                     </label>
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-bold">
-                      CPCB Rule 2022 Recovery Standards
+                      {language === 'hi' ? 'CPCB नियम 2022 रिकवरी मानक' : language === 'mr' ? 'CPCB नियम 2022 रिकव्हरी मानके' : 'CPCB Rule 2022 Recovery Standards'}
                     </span>
                   </div>
                   <input
                     type="text"
                     value={recoveredDetails}
                     onChange={(e) => setRecoveredDetails(e.target.value)}
-                    placeholder="Recovered fractions..."
+                    placeholder={language === 'hi' ? 'पुनर्प्राप्त अंश...' : language === 'mr' ? 'पुनर्प्राप्त अंश...' : 'Recovered fractions...'}
                     className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-mono font-medium"
                     required
                   />
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 block">
-                    * Logged into immutable double-entry traceability audit trail.
+                    {language === 'hi' ? '* अपरिवर्तनीय डबल-एंट्री ट्रैसेबिलिटी ऑडिट ट्रेल में दर्ज।' : language === 'mr' ? '* अपरिवर्तनीय डबल-एंट्री ट्रॅसेबिलिटी ऑडिट ट्रेलमध्ये नोंदवले.' : '* Logged into immutable double-entry traceability audit trail.'}
                   </span>
                 </div>
 

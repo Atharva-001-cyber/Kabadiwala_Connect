@@ -7,7 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Pickup } from '../../types';
-import { getStatusLabel, getCategoryLabel } from '../../i18n/translations';
+import { getStatusLabel, getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
@@ -136,7 +136,7 @@ export const PickupManagementPage: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/80 text-purple-700 dark:text-purple-300 text-xs font-black uppercase tracking-wider mb-2">
               <Truck className="w-3.5 h-3.5" />
-              <span>Doorstep Logistics Fleet</span>
+              <span>{language === 'hi' ? 'डोरस्टेप लॉजिस्टिक्स बेड़ा' : language === 'mr' ? 'डोअरस्टेप लॉजिस्टिक्स ताफा' : 'Doorstep Logistics Fleet'}</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <span>{language === 'hi' ? 'पिकअप एवं लॉजिस्टिक्स प्रबंधन' : language === 'mr' ? 'पिकअप व लॉजिस्टिक्स व्यवस्थापन' : 'Pickup & Logistics Management'}</span>
@@ -152,7 +152,7 @@ export const PickupManagementPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
-              <span>{pickups.filter(p => p.status === 'SCHEDULED').length} Active Pickups</span>
+              <span>{pickups.filter(p => p.status === 'SCHEDULED').length} {language === 'hi' || language === 'mr' ? 'सक्रिय पिकअप' : 'Active Pickups'}</span>
             </span>
           </div>
         </div>
@@ -209,7 +209,7 @@ export const PickupManagementPage: React.FC = () => {
                 >
                   {acceptedLots.map((l) => (
                     <option key={l.id} value={l.id}>
-                      {l.id} - {getCategoryLabel(l.materialCategory, language)} ({l.approxWeight} kg)
+                      {l.id} - {getCategoryLabel(l.materialCategory, language)} ({l.approxWeight} {language === 'hi' || language === 'mr' ? 'किग्रा' : 'kg'})
                     </option>
                   ))}
                 </select>
@@ -319,21 +319,21 @@ export const PickupManagementPage: React.FC = () => {
                 onClick={() => setFeedFilter('ALL')}
                 className={`px-3 py-1 rounded-lg transition-all ${feedFilter === 'ALL' ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                All ({pickups.length})
+                {language === 'hi' ? 'सभी' : language === 'mr' ? 'सर्व' : 'All'} ({pickups.length})
               </button>
               <button
                 type="button"
                 onClick={() => setFeedFilter('SCHEDULED')}
                 className={`px-3 py-1 rounded-lg transition-all ${feedFilter === 'SCHEDULED' ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Scheduled ({pickups.filter(p => p.status === 'SCHEDULED').length})
+                {language === 'hi' ? 'शेड्यूल किए गए' : language === 'mr' ? 'नियोजित' : 'Scheduled'} ({pickups.filter(p => p.status === 'SCHEDULED').length})
               </button>
               <button
                 type="button"
                 onClick={() => setFeedFilter('COMPLETED')}
                 className={`px-3 py-1 rounded-lg transition-all ${feedFilter === 'COMPLETED' ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                Completed ({pickups.filter(p => p.status === 'COMPLETED').length})
+                {language === 'hi' || language === 'mr' ? 'पूर्ण' : 'Completed'} ({pickups.filter(p => p.status === 'COMPLETED').length})
               </button>
             </div>
           </div>
@@ -369,7 +369,7 @@ export const PickupManagementPage: React.FC = () => {
                       {language === 'hi' ? 'तारीख' : language === 'mr' ? 'दिनांक' : 'Date'}: {p.scheduledDate} ({p.timeSlot})
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      {language === 'hi' ? 'ड्राइवर' : language === 'mr' ? 'चालक' : 'Driver'}: <b className="text-slate-800 dark:text-slate-200">{p.driverName}</b> ({p.driverContact}) • {language === 'hi' ? 'वाहन' : language === 'mr' ? 'वाहन' : 'Vehicle'}: <b className="font-mono text-slate-700 dark:text-slate-300">{p.vehicleNumber}</b>
+                      {language === 'hi' ? 'ड्राइवर' : language === 'mr' ? 'चालक' : 'Driver'}: <b className="text-slate-800 dark:text-slate-200">{formatUserDisplayName(p.driverName, 'DRIVER', language)}</b> ({p.driverContact}) • {language === 'hi' ? 'वाहन' : language === 'mr' ? 'वाहन' : 'Vehicle'}: <b className="font-mono text-slate-700 dark:text-slate-300">{p.vehicleNumber}</b>
                     </p>
                   </div>
                 </div>
