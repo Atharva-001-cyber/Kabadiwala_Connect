@@ -129,11 +129,17 @@ export const formatUserDisplayName = (name?: string, role: string = 'COLLECTOR',
   if (name === 'Regulatory Officer' || name === 'Admin') {
     return lang === 'hi' ? 'नियामक अधिकारी' : lang === 'mr' ? 'नियामक अधिकारी' : 'Regulatory Officer';
   }
+  if (name === 'Bmn' || name === 'bmn' || name === 'BMN') {
+    return lang === 'hi' ? 'बीएमएन' : lang === 'mr' ? 'बीएमएन' : 'Bmn';
+  }
   if (name === 'Ramesh Kumar') {
     return lang === 'hi' ? 'रमेश कुमार' : lang === 'mr' ? 'रमेश कुमार' : 'Ramesh Kumar';
   }
   if (name === 'Sunita Sharma') {
     return lang === 'hi' ? 'सुनीता शर्मा' : lang === 'mr' ? 'सुनिता शर्मा' : 'Sunita Sharma';
+  }
+  if (name.includes('Mayank') || name.includes('mayank') || name.includes('Mayank Gaur') || name.includes('mayank gaur')) {
+    return lang === 'hi' ? 'मयंक गौर' : lang === 'mr' ? 'मयंक गौर' : name;
   }
   if (name === 'Arun Bhatia' || name === 'Arun') {
     return lang === 'hi' ? 'अरुण भाटिया' : lang === 'mr' ? 'अरुण भाटीया' : 'Arun Bhatia';
@@ -183,14 +189,35 @@ export const formatUserDisplayName = (name?: string, role: string = 'COLLECTOR',
   if (name === 'Deepak' || name === 'deepak') {
     return lang === 'hi' ? 'दीपक' : lang === 'mr' ? 'दीपक' : 'Deepak';
   }
+  if (name.includes('CPCB E-Waste Officer') || name.includes('CPCB Officer') || name.includes('CPCB Admin')) {
+    return lang === 'hi' ? 'CPCB ई-वेस्ट अधिकारी' : lang === 'mr' ? 'CPCB ई-कचरा अधिकारी' : name;
+  }
+  if (name.includes('Avadh Green Tech')) {
+    return lang === 'hi' ? 'अवध ग्रीन टेक एग्रीगेटर्स' : lang === 'mr' ? 'अवध ग्रीन टेक ॲग्रिगेटर्स' : name;
+  }
   if (name.includes('GreenEarth')) {
     return lang === 'hi' ? 'ग्रीनअर्थ ई-वेस्ट सॉल्यूशंस प्रा. लि.' : lang === 'mr' ? 'ग्रीनअर्थ ई-कचरा सोल्यूशन्स प्रा. लि.' : name;
   }
   if (name.includes('ABC E-Waste') || name.includes('ABC Recycling') || name.includes('ABC') || name.includes('एबीसी') || name.includes('ABC ई-वेस्ट') || name.includes('ABC ई-कचरा')) {
     return lang === 'hi' ? 'एबीसी ई-वेस्ट रीसायकलिंग प्रा. लि.' : lang === 'mr' ? 'एबीसी ई-कचरा रीसायकलिंग प्रा. लि.' : 'ABC E-Waste Recycling Pvt Ltd';
   }
+  if (name.includes('EcoClean') || name.includes('इकोक्लीन')) {
+    return lang === 'hi' ? 'इकोक्लीन रीसाइकलर्स इंडिया प्रा. लि.' : lang === 'mr' ? 'इकोक्लीन रिसायकलर्स इंडिया प्रा. लि.' : 'EcoClean Recyclers India Pvt Ltd';
+  }
   if (name.includes('EcoMetals')) {
     return lang === 'hi' ? 'इकोमेटल्स रीसाइक्लिंग यूनिट' : lang === 'mr' ? 'इकोमेटल्स रिसायकलिंग युनिट' : name;
+  }
+  if (name.includes('Apex') || name.includes('apex')) {
+    return lang === 'hi' ? 'एपेक्स स्क्रैप डिस्मैंटलर्स' : lang === 'mr' ? 'ॲपेक्स स्क्रॅप डिस्मँटलर्स' : name;
+  }
+  if (name === 'Authorized Recycler' || name === 'authorized recycler') {
+    return lang === 'hi' ? 'अधिकृत रीसायकलिंग प्लांट' : lang === 'mr' ? 'अधिकृत रिसायकलिंग प्लांट' : name;
+  }
+  if (name === 'Ook' || name === 'ook') {
+    return lang === 'hi' ? 'उक रीसाइक्लिंग केंद्र' : lang === 'mr' ? 'उक रिसायकलिंग केंद्र' : name;
+  }
+  if (name.includes('Atharva Ranjan') || name.includes('Atharva Soni') || name.includes('atharva ranjan')) {
+    return lang === 'hi' ? 'अथर्व रंजन सोनी' : lang === 'mr' ? 'अथर्व रंजन सोनी' : name;
   }
   if (name.includes('Recycling Facility') || name.includes('Recycler Facility')) {
     const phone = name.match(/\d+/)?.[0] || '';
@@ -200,6 +227,79 @@ export const formatUserDisplayName = (name?: string, role: string = 'COLLECTOR',
       ? `रिसायकलिंग केंद्र${phone ? ` (${phone})` : ''}`
       : name;
   }
+
+  // Dynamic Devanagari Transliteration Fallback for Any Latin English Name
+  if (lang !== 'en') {
+    const isHi = lang === 'hi';
+    let str = name;
+    str = str
+      .replace(/E-Waste|E-waste|e-waste|E-WASTE/g, 'ई-कचरा')
+      .replace(/Authorization|authorization|AUTHORIZATION/g, 'प्राधिकरण')
+      .replace(/Authorized Recycler|authorized recycler/gi, isHi ? 'अधिकृत रीसायकलर' : 'अधिकृत रिसायकलर')
+      .replace(/Authorized|authorized|AUTHORIZED/g, 'अधिकृत')
+      .replace(/Recycler|recycler|RECYCLER/g, isHi ? 'रीसायकलर' : 'रिसायकलर')
+      .replace(/Recycling|recycling|RECYCLING/g, isHi ? 'रीसायकलिंग' : 'रिसायकलिंग')
+      .replace(/Dismantlers|dismantlers/gi, isHi ? 'डिस्मैंटलर्स' : 'डिस्मँटलर्स')
+      .replace(/Dismantler|dismantler/gi, isHi ? 'डिस्मैंटलर' : 'डिस्मँटल')
+      .replace(/Scrap|scrap/gi, isHi ? 'स्क्रैप' : 'स्क्रॅप')
+      .replace(/Facility|facility/gi, 'सुविधा')
+      .replace(/Plant|plant/gi, 'प्लांट')
+      .replace(/Center|center/gi, 'केंद्र')
+      .replace(/Hub|hub/gi, 'हब')
+      .replace(/Solutions|solutions/gi, isHi ? 'सॉल्यूशंस' : 'सोल्यूशन्स')
+      .replace(/Services|services/gi, isHi ? 'सर्विसेज' : 'सर्व्हिसेस')
+      .replace(/Aggregators|aggregators/gi, isHi ? 'एग्रीगेटर्स' : 'ॲग्रिगेटर्स')
+      .replace(/Aggregator|aggregator/gi, isHi ? 'एग्रीगेटर' : 'ॲग्रिगेटर')
+      .replace(/Enterprises|enterprises/gi, isHi ? 'एंटरप्राइज' : 'एन्टरप्रायजेस')
+      .replace(/Enterprise|enterprise/gi, isHi ? 'एंटरप्राइज' : 'एन्टरप्राइज')
+      .replace(/Traders|traders/gi, isHi ? 'ट्रेडर्स' : 'ट्रेडर्स')
+      .replace(/Trader|trader/gi, isHi ? 'ट्रेडर' : 'ट्रेडर')
+      .replace(/Pvt Ltd|pvt ltd/gi, 'प्रा. लि.')
+      .replace(/Private Limited|private limited/gi, 'प्राईवेट लिमिटेड')
+      .replace(/Ltd|ltd/gi, 'लि.')
+      .replace(/Corporation|corporation/gi, 'कॉर्पोरेशन')
+      .replace(/Apex|apex/gi, isHi ? 'एपेक्स' : 'ॲपेक्स')
+      .replace(/Ook|ook/gi, 'उक')
+      .replace(/Bmn|bmn|BMN/g, 'बीएमएन')
+      .replace(/Mayank Gaur|mayank gaur/gi, 'मयंक गौर')
+      .replace(/Mayank|mayank/gi, 'मयंक')
+      .replace(/Gaur|gaur/gi, 'गौर')
+      .replace(/Atharva Ranjan Soni/gi, 'अथर्व रंजन सोनी')
+      .replace(/Atharva/gi, 'अथर्व')
+      .replace(/Ranjan/gi, 'रंजन')
+      .replace(/Soni/gi, 'सोनी');
+
+    if (!isHi) {
+      // In Marathi, convert Hindi spelling of recycler to Marathi spelling
+      str = str
+        .replace(/रीसायकलर|रीसाइक्लर/g, 'रिसायकलर')
+        .replace(/रीसायकलिंग|रीसाइक्लिंग/g, 'रिसायकलिंग');
+    }
+
+    // Universal phonetic transliteration for any unmapped English Latin names
+    if (/[a-zA-Z]/.test(str)) {
+      str = str.split(' ').map(w => {
+        if (!/[a-zA-Z]/.test(w)) return w;
+        if (w === 'Bmn' || w === 'bmn' || w === 'BMN') return 'बीएमएन';
+        return w
+          .replace(/sh/gi, 'श').replace(/ch/gi, 'च').replace(/th/gi, 'थ').replace(/dh/gi, 'ध')
+          .replace(/bh/gi, 'भ').replace(/gh/gi, 'घ').replace(/kh/gi, 'ख').replace(/ph/gi, 'फ')
+          .replace(/zh/gi, 'झ').replace(/ee/gi, 'ी').replace(/oo/gi, 'ू').replace(/ai/gi, 'ै')
+          .replace(/au/gi, 'ौ').replace(/ou/gi, 'ौ').replace(/ea/gi, 'ी').replace(/ay/gi, 'े')
+          .replace(/aa/gi, 'ा')
+          .replace(/a/gi, 'ा').replace(/e/gi, 'े').replace(/i/gi, 'ि').replace(/o/gi, 'ो').replace(/u/gi, 'ु')
+          .replace(/b/gi, 'ब').replace(/c/gi, 'क').replace(/d/gi, 'द').replace(/f/gi, 'फ')
+          .replace(/g/gi, 'ग').replace(/h/gi, 'ह').replace(/j/gi, 'ज').replace(/k/gi, 'क')
+          .replace(/l/gi, 'ल').replace(/m/gi, 'म').replace(/n/gi, 'न').replace(/p/gi, 'प')
+          .replace(/q/gi, 'क').replace(/r/gi, 'र').replace(/s/gi, 'स').replace(/t/gi, 'त')
+          .replace(/v/gi, 'व').replace(/w/gi, 'व').replace(/x/gi, 'क्स').replace(/y/gi, 'य')
+          .replace(/z/gi, 'ज');
+      }).join(' ');
+    }
+
+    return str;
+  }
+
   return name;
 };
 
@@ -274,11 +374,13 @@ export const formatAddressLocation = (address?: string, lang: Language = 'hi'): 
 
   // General Token and Phrase Substitutions for Indian Address Devanagari Translation
   str = str
-    .replace(/\bPlot\b/gi, lang === 'hi' ? 'प्लॉट' : 'प्लॉट')
-    .replace(/\bUPSIDC Industrial Area\b/gi, lang === 'hi' ? 'UPSIDC औद्योगिक क्षेत्र' : 'UPSIDC औद्योगिक क्षेत्र')
-    .replace(/\bIndustrial Area\b/gi, lang === 'hi' ? 'औद्योगिक क्षेत्र' : 'औद्योगिक क्षेत्र')
-    .replace(/\bAmausi\b/gi, lang === 'hi' ? 'अमौसी' : 'अमौसी')
-    .replace(/\bNadarganj\b/gi, lang === 'hi' ? 'नादरगंज' : 'नादरगंज')
+    .replace(/Industrial Cluster|Industrial cluster/gi, 'औद्योगिक क्लस्टर')
+    .replace(/\bIndustrial Area\b/gi, 'औद्योगिक क्षेत्र')
+    .replace(/\bCluster\b/gi, 'क्लस्टर')
+    .replace(/\bPlot\b/gi, 'प्लॉट')
+    .replace(/\bUPSIDC Industrial Area\b/gi, 'UPSIDC औद्योगिक क्षेत्र')
+    .replace(/\bAmausi\b/gi, 'अमौसी')
+    .replace(/\bNadarganj\b/gi, 'नादरगंज')
     .replace(/\bFlat\b/gi, lang === 'hi' ? 'फ्लैट' : 'फ्लॅट')
     .replace(/\bRoyal Residence\b/gi, lang === 'hi' ? 'रॉयल रेजीडेंसी' : 'रॉयल रेसिडेन्सी')
     .replace(/\bHouse\b/gi, lang === 'hi' ? 'मकान' : 'घर')
@@ -298,11 +400,19 @@ export const formatAddressLocation = (address?: string, lang: Language = 'hi'): 
     .replace(/\bKarnataka\b/gi, 'कर्नाटक')
     .replace(/\bDelhi \/ NCR\b/gi, 'दिल्ली / एनसीआर')
     .replace(/\bLucknow\b/gi, 'लखनऊ')
+    .replace(/\bKanpur\b/gi, 'कानपुर')
+    .replace(/\bVaranasi\b/gi, 'वाराणसी')
+    .replace(/\bAgra\b/gi, 'आगरा')
+    .replace(/\bNoida\b/gi, 'नोएडा')
+    .replace(/\bGhaziabad\b/gi, 'गाजियाबाद')
+    .replace(/\bGorakhpur\b/gi, 'गोरखपुर')
+    .replace(/\bPrayagraj\b/gi, 'प्रयागराज')
     .replace(/\bPune\b/gi, 'पुणे')
     .replace(/\bNagpur\b/gi, lang === 'hi' ? 'नागपुर' : 'नागपूर')
     .replace(/\bMumbai\b/gi, 'मुंबई')
     .replace(/\bDelhi\b/gi, 'दिल्ली')
-    .replace(/\bBengaluru\b/gi, lang === 'hi' ? 'बेंगलुरु' : 'बेंगळुरू');
+    .replace(/\bBengaluru\b/gi, lang === 'hi' ? 'बेंगलुरु' : 'बेंगळुरू')
+    .replace(/Location on record/gi, lang === 'hi' ? 'ऑन रिकॉर्ड स्थान' : 'नोंदणीकृत स्थान');
 
   // Deduplicate consecutive identical city tokens (e.g. लखनऊ, लखनऊ -> लखनऊ)
   str = str.replace(/लखनऊ,\s*लखनऊ/g, 'लखनऊ')
@@ -311,6 +421,307 @@ export const formatAddressLocation = (address?: string, lang: Language = 'hi'): 
            .replace(/नागपूर,\s*नागपूर/g, 'नागपूर')
            .replace(/मुंबई,\s*मुंबई/g, 'मुंबई')
            .replace(/दिल्ली,\s*दिल्ली/g, 'दिल्ली');
+
+  return str;
+};
+
+export const formatAnomalyDescription = (desc?: string, lang: Language = 'hi'): string => {
+  if (!desc) return '';
+  if (lang === 'en') return desc;
+
+  const isHi = lang === 'hi';
+  const unit = isHi ? 'किग्रा' : 'किग्रॅ';
+
+  let str = desc;
+
+  // 1. Electronic Scale Tare Discrepancy / Variance
+  str = str
+    .replace(/Electronic Scale Tare Discrepancy:\s*Intake weighment\s*\(([\d.,]+)\s*kg\)\s*,?\s*declared weight\s*\(([\d.,]+)\s*kg\)\s*deviates by\s*([+-\d.,]+)\s*kg\s*\(([^)]+)\)\.\s*Electronic load cell recalibration required\./gi,
+      isHi 
+        ? 'इलेक्ट्रॉनिक कांटा वजन अंतर: इनटेक वजन ($1 किग्रा), घोषित वजन ($2 किग्रा) से $3 किग्रा ($4) भिन्न है। इलेक्ट्रॉनिक लोड सेल रीकैलिब्रेशन आवश्यक है।'
+        : 'इलेक्ट्रॉनिक काटा वजन तफावत: इनटेक वजन ($1 किग्रॅ), घोषित वजनापेक्षा ($2 किग्रॅ) $3 किग्रॅ ($4) भिन्न आहे. इलेक्ट्रॉनिक लोड सेल रिकॅलिब्रेशन आवश्यक आहे.')
+    .replace(/Electronic Scale Tare Discrepancy:\s*Intake weighment\s*\(([\d.,]+)\s*kg\)\s*,?\s*from declared weight\s*\(([\d.,]+)\s*kg\)\s*deviates by\s*([+-\d.,]+)\s*kg\s*\(([^)]+)\)\.\s*Electronic load cell recalibration required\./gi,
+      isHi 
+        ? 'इलेक्ट्रॉनिक कांटा वजन अंतर: इनटेक वजन ($1 किग्रा), घोषित वजन ($2 किग्रा) से $3 किग्रा ($4) भिन्न है। इलेक्ट्रॉनिक लोड सेल रीकैलिब्रेशन आवश्यक है।'
+        : 'इलेक्ट्रॉनिक काटा वजन तफावत: इनटेक वजन ($1 किग्रॅ), घोषित वजनापेक्षा ($2 किग्रॅ) $3 किग्रॅ ($4) भिन्न आहे. इलेक्ट्रॉनिक लोड सेल रिकॅलिब्रेशन आवश्यक आहे.');
+
+  // 2. Price Outlier Audit
+  str = str.replace(
+    /Observed market rate\s*₹([\d.,]+)\/kg\s*for\s*(.*?)\s*in\s*(.*?)\s*deviates by\s*([+-\d.,%]+)\s*from central CPCB benchmark\s*\(₹([\d.,]+)\/kg\)\.\s*Flagged for artificial price inflation audit\./gi,
+    (match, rate, mat, loc, dev, bench) => {
+      const locName = formatAddressLocation(loc.trim(), lang);
+      const matName = getCategoryLabel(mat.trim(), lang);
+      return isHi
+        ? `${locName} में ${matName} के लिए देखा गया बाजार भाव ₹${rate}/किग्रा, केंद्रीय CPCB बेंचमार्क (₹${bench}/किग्रा) से ${dev} भिन्न है। कृत्रिम मूल्य वृद्धि ऑडिट के लिए फ्लैग किया गया।`
+        : `${locName}मध्ये ${matName} साठी दर्शविलेला बाजार दर ₹${rate}/किग्रॅ, केंद्रीय CPCB बेंचमार्कपेक्षा (₹${bench}/किग्रॅ) ${dev} भिन्न आहे. कृत्रिम दर वाढ ऑडिटसाठी चिन्हांकित.`;
+    }
+  );
+
+  // 3. Computer Vision Quality Audit (MobileNet)
+  str = str.replace(
+    /Computer Vision Quality Audit:\s*MobileNet image classifier detected non-electronic domestic contamination\s*\(([^)]+)\)\s*mixed inside lot intake stream\./gi,
+    (match, contam) => {
+      return isHi
+        ? `कंप्यूटर विजन गुणवत्ता ऑडिट: मोबाइलनेट इमेज क्लासिफायर ने लॉट इनटेक फोटो में गैर-ई-कचरा घरेलू संदूषण (${contam}) का पता लगाया। मैन्युअल छंटाई निरीक्षण की सिफारिश की जाती है।`
+        : `संगणक व्हिजन गुणवत्ता ऑडिट: मोबाईलनेट इमेज क्लासिफायरने लॉट इनटेक फोटोंमध्ये गैर-ई-कचरा घरगुती दूषित घटक (${contam}) शोधले. मॅन्युअल वर्गीकरण तपासणीची शिफारस.`;
+    }
+  );
+
+  // 4. Regulatory Compliance Violation
+  str = str.replace(
+    /Regulatory Compliance Violation:\s*Suspended facility\s*"(.*?)"\s*\((.*?)\)\s*attempted scrap lot bidding during active license revocation period\./gi,
+    (match, fac, reg) => {
+      const facName = formatUserDisplayName(fac, 'RECYCLER', lang);
+      return isHi
+        ? `नियामक अनुपालन उल्लंघन: निलंबित सुविधा "${facName}" (${reg}) ने सक्रिय लाइसेंस रद्दीकरण अवधि के दौरान स्क्रैप लॉट बोली लगाने का प्रयास किया।`
+        : `नियमावली अनुपालन उल्लंघन: निलंबित सुविधा "${facName}" (${reg}) ने परवाना रद्द कालावधीत स्क्रॅप लॉट बोली लावण्याचा प्रयत्न केला.`;
+    }
+  );
+
+  // 5. Scale Zero-Tare Drift
+  str = str.replace(
+    /Scale Zero-Tare Drift:\s*Digital load cell reported pre-intake zero-tare drift of\s*([+-\d.,]+)\s*kg\s*before container placement in\s*(.*?)\s*cluster\.\s*Recalibrated against test weights\./gi,
+    (match, drift, loc) => {
+      const locName = formatAddressLocation(loc.trim(), lang);
+      return isHi
+        ? `कांटा शून्य-टेयर ड्रिफ्ट: डिजिटल लोड सेल ने ${locName} क्लस्टर में कंटेनर रखने से पहले ${drift} किग्रा का प्री-इंटेक शून्य-टेयर ड्रिफ्ट दर्ज किया। परीक्षण वजन के साथ पुनर्कैलिब्रेट किया गया।`
+        : `काटा शून्य-टेअर ड्रिफ्ट: डिजिटल लोड सेलने ${locName} क्लस्टरमध्ये कंटेनर ठेवण्यापूर्वी ${drift} किग्रॅ चा झिरो-टेअर ड्रिफ्ट नोंदवला. चाचणी वजनासह पुनर्कैलिब्रेट केले.`;
+    }
+  );
+
+  // Token Fallback replacements for dynamic descriptions
+  str = str
+    .replace(/Electronic Scale Tare Discrepancy:/gi, isHi ? 'इलेक्ट्रॉनिक कांटा वजन अंतर:' : 'इलेक्ट्रॉनिक काटा वजन तफावत:')
+    .replace(/Computer Vision Quality Audit:/gi, isHi ? 'कंप्यूटर विजन गुणवत्ता ऑडिट:' : 'संगणक व्हिजन गुणवत्ता ऑडिट:')
+    .replace(/Regulatory Compliance Violation:/gi, isHi ? 'नियामक अनुपालन उल्लंघन:' : 'नियमावली अनुपालन उल्लंघन:')
+    .replace(/Scale Zero-Tare Drift:/gi, isHi ? 'कांटा शून्य-टेयर ड्रिफ्ट:' : 'काटा शून्य-टेअर ड्रिफ्ट:')
+    .replace(/MobileNet image classifier detected/gi, isHi ? 'मोबाइलनेट इमेज क्लासिफायर ने पता लगाया' : 'मोबाईलनेट इमेज क्लासिफायरने शोधले')
+    .replace(/non-electronic domestic contamination/gi, isHi ? 'गैर-ई-कचरा घरेलू संदूषण' : 'गैर-ई-कचरा घरगुती दूषित घटक')
+    .replace(/plastic beverage containers & packaging waste/gi, isHi ? 'प्लास्टिक पेय कंटेनर और पैकेजिंग कचरा' : 'प्लॅस्टिक पेय कंटेनर आणि पॅकेजिंग कचरा')
+    .replace(/mixed inside lot intake stream/gi, isHi ? 'लॉट इनटेक फोटो में मिश्रित' : 'लॉट इनटेक प्रवाहात मिश्रित')
+    .replace(/Suspended facility/gi, isHi ? 'निलंबित सुविधा' : 'निलंबित सुविधा')
+    .replace(/attempted scrap lot bidding during active license revocation period/gi, isHi ? 'ने लाइसेंस रद्दीकरण अवधि में बोली लगाने का प्रयास किया' : 'ने परवाना रद्द कालावधीत बोली लावण्याचा प्रयत्न केला')
+    .replace(/Digital load cell reported/gi, isHi ? 'डिजिटल लोड सेल ने दर्ज किया' : 'डिजिटल लोड सेलने नोंदवले')
+    .replace(/pre-intake zero[- ]tare drift(?: of)?/gi, isHi ? 'प्री-इंटेक शून्य-टेयर ड्रिफ्ट' : 'प्री-इंटेक झिरो-टेअर ड्रिफ्ट')
+    .replace(/Scale tare auto-zero calibration routine executed and verified against standard 20kg test weight\./gi, isHi ? 'कांटा टेयर ऑटो-जीरो कैलिब्रेशन रूटीन निष्पादित किया गया और मानक 20 किग्रा टेस्ट वेट से सत्यापित हुआ।' : 'काटा टेअर ऑटो-झिरो कॅलिब्रेशन रूटीन कार्यान्वित केले आणि मानक 20 किग्रॅ टेस्ट वेटसह पडताळले.')
+    .replace(/Scale tare auto-zero calibration routine executed and verified/gi, isHi ? 'कांटा टेयर ऑटो-जीरो कैलिब्रेशन निष्पादित और सत्यापित' : 'काटा टेअर ऑटो-झिरो कॅलिब्रेशन कार्यान्वित आणि पडताळले')
+    .replace(/Minor Rate Variance:/gi, isHi ? 'मामूली दर अंतर:' : 'किरकोळ दर फरक:')
+    .replace(/Rate requested/gi, isHi ? 'अनुरोधित दर' : 'विनंती केलेला दर')
+    .replace(/vs 7-day regional moving average/gi, isHi ? 'बनाम 7-दिवसीय क्षेत्रीय सचल औसत' : 'विरुद्ध 7-दिवसांचे प्रादेशिक बदलणारे सरासरी')
+    .replace(/Rate variance within acceptable regional market fluctuation threshold \(±5%\)\. Cleared by Admin\./gi, isHi ? 'दर अंतर स्वीकार्य क्षेत्रीय बाजार उतार-चढ़ाव सीमा (±5%) के भीतर। एडमिन द्वारा स्वीकृत।' : 'दर फरक स्वीकार्य प्रादेशिक बाजार चढ-उतार मर्यादेत (±5%). ॲडमिनद्वारे मंजूर.')
+    .replace(/before container placement in/gi, isHi ? 'कंटेनर रखने से पहले' : 'कंटेनर ठेवण्यापूर्वी')
+    .replace(/Recalibrated against test weights\./gi, isHi ? 'परीक्षण वजन के साथ पुनर्कैलिब्रेट किया गया।' : 'चाचणी वजनासह पुनर्कैलिब्रेट केले.')
+    .replace(/Intake weighment/gi, isHi ? 'इनटेक वजन' : 'इनटेक वजन')
+    .replace(/deviates by/gi, isHi ? 'भिन्न है' : 'भिन्न आहे')
+    .replace(/from declared weight/gi, isHi ? 'घोषित वजन से' : 'घोषित वजनापेक्षा')
+    .replace(/Electronic load cell recalibration required\./gi, isHi ? 'इलेक्ट्रॉनिक लोड सेल रीकैलिब्रेशन आवश्यक है।' : 'इलेक्ट्रॉनिक लोड सेल रिकॅलिब्रेशन आवश्यक आहे.')
+    .replace(/Observed market rate/gi, isHi ? 'देखा गया बाजार भाव' : 'दर्शविलेला बाजार दर')
+    .replace(/from central CPCB benchmark/gi, isHi ? 'केंद्रीय CPCB बेंचमार्क से' : 'केंद्रीय CPCB बेंचमार्कपेक्षा')
+    .replace(/Flagged for artificial price inflation audit\./gi, isHi ? 'कृत्रिम मूल्य वृद्धि ऑडिट के लिए फ्लैग किया गया।' : 'कृत्रिम दर वाढ ऑडिटसाठी चिन्हांकित.')
+    .replace(/Printed Circuit Boards \(PCB\)/gi, isHi ? 'प्रिंटेड सर्किट बोर्ड (PCB)' : 'प्रिंटेड सर्किट बोर्ड (PCB)')
+    .replace(/Printed Circuit Boards/gi, isHi ? 'प्रिंटेड सर्किट बोर्ड' : 'प्रिंटेड सर्किट बोर्ड')
+    .replace(/Circuit Boards \(PCB\)/gi, isHi ? 'सर्किट बोर्ड (PCB)' : 'सर्किट बोर्ड (PCB)')
+    .replace(/Circuit Boards/gi, isHi ? 'सर्किट बोर्ड' : 'सर्किट बोर्ड')
+    .replace(/\bLucknow\b/gi, 'लखनऊ')
+    .replace(/\bPune\b/gi, 'पुणे')
+    .replace(/\bDelhi\b/gi, 'दिल्ली')
+    .replace(/\bMumbai\b/gi, 'मुंबई')
+    .replace(/\bkg\b/gi, unit);
+
+  return str;
+};
+
+export const formatLocalizedDateTime = (dateStr?: string | Date, lang: Language = 'hi'): string => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return String(dateStr);
+
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  };
+  let formatted = d.toLocaleString(lang === 'hi' ? 'hi-IN' : lang === 'mr' ? 'mr-IN' : 'en-IN', options);
+
+  if (lang === 'hi') {
+    formatted = formatted.replace(/\bpm\b/gi, 'अपराह्न').replace(/\bam\b/gi, 'पूर्वाह्न');
+  } else if (lang === 'mr') {
+    formatted = formatted.replace(/\bpm\b/gi, 'संध्याकाळी').replace(/\bam\b/gi, 'सकाळी');
+  }
+  return formatted;
+};
+
+export const formatDisputeReason = (reason?: string, lang: Language = 'hi'): string => {
+  if (!reason) return '';
+  if (lang === 'en') return reason;
+
+  const isHi = lang === 'hi';
+  const unit = isHi ? 'किग्रा' : 'किग्रॅ';
+
+  let str = reason;
+  str = str
+    .replace(/Container Tare Deduction Variance & Payout Reconciliation/gi,
+      isHi ? 'कंटेनर टियर कटौती अंतर एवं भुगतान समाधान' : 'कंटेनर टियर कपात तफावत आणि देयक जुळवणी')
+    .replace(/Container Tare Deduction Variance/gi,
+      isHi ? 'कंटेनर टियर कटौती अंतर' : 'कंटेनर टियर कपात तफावत')
+    .replace(/PCB Grade-A vs Mixed Plastics/gi,
+      isHi ? 'पीसीबी ग्रेड-ए बनाम मिश्रित प्लास्टिक' : 'पीसीबी ग्रेड-ए विरुद्ध मिश्रित प्लॅस्टिक')
+    .replace(/Market Rate Volatility & Tare Discrepancy/gi,
+      isHi ? 'बाजार दर में उतार-चढ़ाव और वजन अंतर' : 'बाजार दरातील चढ-उतार आणि वजन तफावत')
+    .replace(/Material Grading Reclassification Dispute\s*\(([^)]+)\)/gi,
+      isHi ? 'सामग्री ग्रेडिंग पुनर्वर्गीकरण विवाद ($1)' : 'सामग्री ग्रेडिंग पुनर्वर्गीकरण विवाद ($1)')
+    .replace(/Material Grading Reclassification Dispute/gi,
+      isHi ? 'सामग्री ग्रेडिंग पुनर्वर्गीकरण विवाद' : 'सामग्री ग्रेडिंग पुनर्वर्गीकरण विवाद')
+    .replace(/Instant Bank UPI Payout Timeliness & Transaction Reconciliation/gi,
+      isHi ? 'तत्काल बैंक यूपीआई भुगतान समयबद्धता एवं लेनदेन समाधान' : 'तत्काळ बँक यूपीआय देयक वेळेवर वितरण आणि व्यवहार जुळवणी')
+    .replace(/Electronic Scale Tare Weighment Variance\s*\(([^)]+)\)/gi,
+      isHi ? 'इलेक्ट्रॉनिक कांटा वजन अंतर ($1)' : 'इलेक्ट्रॉनिक काटा वजन तफावत ($1)')
+    .replace(/Electronic Scale Tare Weighment Variance/gi,
+      isHi ? 'इलेक्ट्रॉनिक कांटा वजन अंतर' : 'इलेक्ट्रॉनिक काटा वजन तफावत')
+    .replace(/Electronic Scale Tare Discrepancy/gi,
+      isHi ? 'इलेक्ट्रॉनिक कांटा वजन विसंगति' : 'इलेक्ट्रॉनिक काटा वजन तफावत')
+    .replace(/Market Price Differential \/ Outlier/gi,
+      isHi ? 'बाजार मूल्य अंतर / आउटलायर' : 'बाजार भाव तफावत / आउटलायर')
+    .replace(/Escrow Payout Delay/gi,
+      isHi ? 'एस्क्रो भुगतान में देरी' : 'एस्क्रो देयक विलंब')
+    .replace(/Material Grade Classification Audit/gi,
+      isHi ? 'सामग्री श्रेणी वर्गीकरण ऑडिट' : 'सामग्री श्रेणी वर्गीकरण ऑडिट')
+    .replace(/discrepancy/gi, isHi ? 'अंतर' : 'तफावत')
+    .replace(/\bkg\b/gi, unit);
+
+  return str;
+};
+
+export const formatDisputeDetails = (details?: string, lang: Language = 'hi'): string => {
+  if (!details) return '';
+  if (lang === 'en') return details;
+
+  const isHi = lang === 'hi';
+  const unit = isHi ? 'किग्रा' : 'किग्रॅ';
+
+  let str = details;
+
+  str = str
+    // 1. Container Tare Deduction Variance & Payout Reconciliation
+    .replace(/Clarification requested on digital platform scale tare allowance for corrugated container packaging\.\s*Electronic load cell recalibrated and digital voucher settled on site\./gi,
+      isHi
+        ? 'नालीदार कंटेनर पैकेजिंग के लिए डिजिटल प्लेटफॉर्म कांटा टेयर छूट पर स्पष्टीकरण का अनुरोध। इलेक्ट्रॉनिक लोड सेल री-कैलिब्रेट किया गया और डिजिटल वाउचर मौके पर निपटाया गया।'
+        : 'नालीदार कंटेनर पॅकेजिंगसाठी डिजिटल प्लॅटफॉर्म काटा टेअर सवलतीवर स्पष्टीकरणाची विनंती. इलेक्ट्रॉनिक लोड सेल पुन्हा कॅलिब्रेट केला आणि डिजिटल व्हाऊचर जागेवरच मिटवले.')
+
+    .replace(/Clarification requested on digital platform scale tare offset value for high-density container packaging\.\s*Load cell re-calibrated and digital voucher re-issued on-site\./gi,
+      isHi
+        ? 'उच्च घनत्व कंटेनर पैकेजिंग के लिए डिजिटल प्लेटफॉर्म तराजू टेयर ऑफसेट मान पर स्पष्टीकरण का अनुरोध। लोड सेल री-कैलिब्रेट किया गया और डिजिटल वाउचर मौके पर जारी किया गया।'
+        : 'उच्च घनता कंटेनर पॅकेजिंगसाठी डिजिटल प्लॅटफॉर्म काटा टेअर ऑफसेट मूल्यावर स्पष्टीकरणाची विनंती. लोड सेल पुन्हा कॅलिब्रेट केला आणि डिजिटल व्हाऊचर जागेवरच जारी केले.')
+
+    .replace(/Arbitration Verdict:\s*Digital scale load cell calibration record re-certified compliant with Legal Metrology Act standards\.\s*Waiver settlement credited with express digital voucher\./gi,
+      isHi
+        ? 'मध्यस्थता निर्णय: डिजिटल तराजू लोड सेल कैलिब्रेशन रिकॉर्ड विधिक माप विज्ञान अधिनियम मानकों के अनुरूप पुनः प्रमाणित। छूट निपटारा एक्सप्रेस डिजिटल वाउचर से जमा।'
+        : 'लवाद निर्णय: डिजिटल काटा लोड सेल कॅलिब्रेशन नोंद कायदेशीर मापनशास्त्र कायदा मानकांनुसार पुन्हा प्रमाणित. सवलत तडजोड एक्सप्रेस डिजिटल व्हाऊचरने जमा.')
+
+    .replace(/Classified as high-grade printed circuit board\s*\(([^)]+)\),\s*but recycler marked as mixed plastics on physical inspection\./gi,
+      isHi
+        ? 'उच्च-ग्रेड प्रिंटेड सर्किट बोर्ड ($1) के रूप में वर्गीकृत, लेकिन रीसाइक्लर ने भौतिक निरीक्षण पर मिश्रित प्लास्टिक के रूप में चिह्नित किया।'
+        : 'उच्च-ग्रेड प्रिंटेड सर्किट बोर्ड ($1) म्हणून वर्गीकृत, परंतु रिसायकलर्सने प्रत्यक्ष तपासणीत मिश्रित प्लॅस्टिक म्हणून नोंदवले.')
+
+    // 2. Material Grading Reclassification Dispute Details
+    .replace(/Collector submitted lot under high-grade telecom circuit boards\s*\(([^)]+)\)\.\s*Recycler facility downgraded\s*([\d.,%]+)\s*of the batch to mixed plastic body scrap on physical receipt\.\s*Mediation requested on rate differential\./gi,
+      isHi
+        ? 'कलेक्टर ने उच्च-ग्रेड टेलीकॉम सर्किट बोर्ड ($1) के तहत लॉट जमा किया। रीसाइक्लिंग केंद्र ने भौतिक प्राप्ति पर बैच के $2 भाग को मिश्रित प्लास्टिक बॉडी स्क्रैप में डाउनग्रेड कर दिया। दर अंतर पर मध्यस्थता का अनुरोध।'
+        : 'संकलकाने उच्च-ग्रेड टेलिकॉम सर्किट बोर्ड ($1) अंतर्गत लॉट जमा केला. रिसायकलिंग केंद्राने प्रत्यक्ष प्राप्तीवर बॅचच्या $2 भाग मिश्रित प्लॅस्टिक बॉडी स्क्रॅपमध्ये श्रेणीबद्ध केला. दर फरकावर लवादाची विनंती.')
+
+    // 3. Instant Bank UPI Payout Delay Details
+    .replace(/Instant UPI payout of\s*₹([\d.,]+)\s*delayed by banking server timeout during intake handover\.\s*Collector reported pending transaction\./gi,
+      isHi
+        ? 'हैंडओवर के दौरान बैंकिंग सर्वर टाइमआउट के कारण ₹$1 के तत्काल यूपीआई भुगतान में देरी हुई। कलेक्टर ने लंबित लेनदेन की सूचना दी।'
+        : 'हँडओव्हरदरम्यान बँक सर्व्हर टाइमआउटमुळे ₹$1 च्या तत्काळ यूपीआय देयकात विलंब झाला. संकलकाने प्रलंबित व्यवहाराची नोंद केली.')
+
+    // 4. Escrow Gateway Reconciled RRN Notes
+    .replace(/Escrow Gateway Reconciled:\s*Transaction RRN\s*#?([\d\w]+)\s*verified successful(?:\s*via bank webhook)?\.\s*Collector bank account credited in full\./gi,
+      isHi
+        ? 'एस्क्रो गेटवे रीकंसाइल्ड: बैंक वेबहुक के माध्यम से लेनदेन आरआरएन #$1 सफल सत्यापित। कलेक्टर बैंक खाते में पूरा पैसा जमा किया गया।'
+        : 'एस्क्रो गेटवे जुळवणी: बँक वेबहुकद्वारे व्यवहार आरआरएन #$1 यशस्वी सत्यापित. संकलक बँक खात्यात पूर्ण रक्कम जमा.')
+
+    // 5. Exact Scale Tare Discrepancy details matcher
+    .replace(/Collector claims declared lot weighment was\s*([\d.,]+)\s*kg,\s*but facility intake electronic platform registered net\s*([\d.,]+)\s*kg after heavy bag tare deduction\s*\(([^)]+)\)\.\s*Requesting CPCB tare verification\./gi,
+      isHi
+        ? 'कलेक्टर का दावा है कि घोषित लॉट वजन $1 किग्रा था, लेकिन संयंत्र इलेक्ट्रॉनिक कांटे ने बोरा टियर कटौती ($3) के बाद शुद्ध $2 किग्रा दर्ज किया। सीपीसीबी कांटा सत्यापन का अनुरोध।'
+        : 'संकलकाचा असा दावा आहे की घोषित लॉट वजन $1 किग्रॅ होते, परंतु सुविधा इलेक्ट्रॉनिक काट्याने पोते टियर कपातीनंतर ($3) निव्वळ $2 किग्रॅ नोंदवले. सीपीसीबी काटा पडताळणीची विनंती.')
+
+    .replace(/CPCB Legal Metrology Mediation:\s*Digital load cell calibration record certified compliant with standards\.\s*Mutual settlement confirmed\./gi,
+      isHi
+        ? 'सीपीसीबी विधिक माप विज्ञान मध्यस्थता: डिजिटल लोड सेल अंशांकन रिकॉर्ड मानकों के अनुरूप प्रमाणित। आपसी सहमति से समाधान की पुष्टि।'
+        : 'सीपीसीबी विधिक मापशास्त्र लवाद: डिजिटल लोड सेल कॅलिब्रेशन नोंद मानकांनुसार प्रमाणित. परस्पर संमतीने तोडग्याची पुष्टी.')
+
+    .replace(/Official CPCB Mediation:\s*Digital load cell calibration record certified compliant with Legal Metrology Act standards\.\s*Tare weight adjusted and digital settlement voucher issued\./gi,
+      isHi
+        ? 'आधिकारिक सीपीसीबी मध्यस्थता: विधिक माप विज्ञान अधिनियम मानकों के अनुरूप डिजिटल लोड सेल अंशांकन प्रमाणित। टियर वजन समायोजित और डिजिटल निपटारा वाउचर जारी।'
+        : 'अधिकृत सीपीसीबी लवाद: कायदेशीर मापनशास्त्र कायदा मानकांनुसार डिजिटल लोड सेल कॅलिब्रेशन प्रमाणित. टियर वजन समायोजित आणि डिजिटल तडजोड व्हाऊचर जारी.')
+
+    .replace(/Official CPCB Mediation:\s*Digital load cell calibration record certified compliant with Legal Metrology Act standards\.\s*Mutual settlement confirmed with signed digital voucher\./gi,
+      isHi
+        ? 'आधिकारिक सीपीसीबी मध्यस्थता: विधिक माप विज्ञान अधिनियम मानकों के अनुरूप डिजिटल लोड सेल अंशांकन रिकॉर्ड प्रमाणित। हस्ताक्षरित डिजिटल वाउचर के साथ आपसी सहमति से समाधान की पुष्टि।'
+        : 'अधिकृत सीपीसीबी लवाद: कायदेशीर मापनशास्त्र कायदा मानकांनुसार डिजिटल लोड सेल कॅलिब्रेशन नोंद प्रमाणित. स्वाक्षरी केलेल्या डिजिटल व्हाऊचरसह परस्पर संमतीने तोडग्याची पुष्टी.')
+
+    .replace(/Joint Inspection Audit:\s*Batch re-inspected under optical spectrometry\.\s*Rate differential adjusted according to certified composite assay report\./gi,
+      isHi
+        ? 'संयुक्त निरीक्षण ऑडिट: ऑप्टिकल स्पेक्ट्रोमेट्री के तहत बैच का पुनः निरीक्षण। प्रमाणित मिश्रित परख रिपोर्ट के अनुसार दर अंतर समायोजित।'
+        : 'संयुक्त तपासणी ऑडिट: ऑप्टिकल स्पेक्ट्रोमेट्री अंतर्गत बॅचची पुन्हा तपासणी. प्रमाणित मिश्र चाचणी अहवालानुसार दर तफावत समायोजित.')
+
+    .replace(/Technical Review:\s*Discrepancy within permissible tare tolerance\s*\(([^)]+)\)\.\s*Facility weighment verified accurate and claim dismissed\./gi,
+      isHi
+        ? 'तकनीकी समीक्षा: विसंगति अनुमेय टियर सहनशीलता ($1) के भीतर है। संयंत्र वजन सटीक सत्यापित और दावा खारिज किया गया।'
+        : 'तांत्रिक पुनरावलोकन: तफावत मान्य टियर सहनशीलतेच्या ($1) आत आहे. सुविधा वजन अचूक सत्यापित आणि दावा फेटाळला.')
+
+    // General token matchers for dynamic dispute descriptions
+    .replace(/Container Tare Deduction Variance & Payout Reconciliation/gi, isHi ? 'कंटेनर टियर कटौती अंतर एवं भुगतान समाधान' : 'कंटेनर टियर कपात तफावत आणि देयक जुळवणी')
+    .replace(/Container Tare Deduction Variance/gi, isHi ? 'कंटेनर टियर कटौती अंतर' : 'कंटेनर टियर कपात तफावत')
+    .replace(/Clarification requested on digital platform scale tare allowance for corrugated container packaging\./gi, isHi ? 'नालीदार कंटेनर पैकेजिंग के लिए डिजिटल प्लेटफॉर्म कांटा टेयर छूट पर स्पष्टीकरण का अनुरोध।' : 'नालीदार कंटेनर पॅकेजिंगसाठी डिजिटल प्लॅटफॉर्म काटा टेअर सवलतीवर स्पष्टीकरणाची विनंती.')
+    .replace(/Clarification requested on digital platform scale tare offset value for high-density container packaging\./gi, isHi ? 'उच्च घनत्व कंटेनर पैकेजिंग के लिए डिजिटल प्लेटफॉर्म कांटे के टेयर ऑफसेट मान पर स्पष्टीकरण का अनुरोध।' : 'उच्च घनता कंटेनर पॅकेजिंगसाठी डिजिटल प्लॅटफॉर्म काट्याच्या टेअर ऑफसेट मूल्यावर स्पष्टीकरणाची विनंती.')
+    .replace(/Clarification requested on/gi, isHi ? 'स्पष्टीकरण का अनुरोध' : 'स्पष्टीकरणाची विनंती')
+    .replace(/digital platform scale tare allowance/gi, isHi ? 'डिजिटल प्लेटफॉर्म कांटा टेयर छूट' : 'डिजिटल प्लॅटफॉर्म काटा टेअर सवलत')
+    .replace(/digital platform scale tare offset value/gi, isHi ? 'डिजिटल प्लेटफॉर्म कांटा टेयर ऑफसेट मान' : 'डिजिटल प्लॅटफॉर्म काटा टेअर ऑफसेट मूल्य')
+    .replace(/digital platform scale/gi, isHi ? 'डिजिटल प्लेटफॉर्म कांटा' : 'डिजिटल प्लॅटफॉर्म काटा')
+    .replace(/for corrugated container packaging/gi, isHi ? 'नालीदार कंटेनर पैकेजिंग के लिए' : 'नालीदार कंटेनर पॅकेजिंगसाठी')
+    .replace(/for high-density container packaging/gi, isHi ? 'उच्च घनत्व कंटेनर पैकेजिंग के लिए' : 'उच्च घनता कंटेनर पॅकेजिंगसाठी')
+    .replace(/Electronic load cell recalibrated and digital voucher settled on site\./gi, isHi ? 'इलेक्ट्रॉनिक लोड सेल री-कैलिब्रेट किया गया और डिजिटल वाउचर मौके पर निपटाया गया।' : 'इलेक्ट्रॉनिक लोड सेल पुन्हा कॅलिब्रेट केला आणि डिजिटल व्हाऊचर जागेवरच मिटवले.')
+    .replace(/Load cell re-calibrated and digital voucher re-issued on-site\./gi, isHi ? 'लोड सेल री-कैलिब्रेट किया गया और डिजिटल वाउचर मौके पर जारी किया गया।' : 'लोड सेल पुन्हा कॅलिब्रेट केला आणि डिजिटल व्हाऊचर जागेवरच जारी केले.')
+    .replace(/Electronic load cell recalibrated/gi, isHi ? 'इलेक्ट्रॉनिक लोड सेल री-कैलिब्रेट किया गया' : 'इलेक्ट्रॉनिक लोड सेल पुन्हा कॅलिब्रेट केला')
+    .replace(/and digital voucher settled on site/gi, isHi ? 'और डिजिटल वाउचर मौके पर निपटाया गया' : 'आणि डिजिटल व्हाऊचर जागेवरच मिटवले')
+    .replace(/Arbitration Verdict:/gi, isHi ? 'मध्यस्थता निर्णय:' : 'लवाद निर्णय:')
+    .replace(/Official CPCB Mediation:/gi, isHi ? 'आधिकारिक सीपीसीबी मध्यस्थता:' : 'अधिकृत सीपीसीबी लवाद:')
+    .replace(/Digital load cell calibration record certified compliant with Legal Metrology Act standards\./gi, isHi ? 'डिजिटल कांटा लोड सेल अंशांकन रिकॉर्ड विधिक माप विज्ञान अधिनियम मानकों के अनुरूप प्रमाणित।' : 'डिजिटल काटा लोड सेल कॅलिब्रेशन नोंद कायदेशीर मापनशास्त्र कायदा मानकांनुसार प्रमाणित.')
+    .replace(/Digital load cell calibration record certified compliant with Legal Metrology Act standards/gi, isHi ? 'डिजिटल कांटा लोड सेल अंशांकन रिकॉर्ड विधिक माप विज्ञान अधिनियम मानकों के अनुरूप प्रमाणित' : 'डिजिटल काटा लोड सेल कॅलिब्रेशन नोंद कायदेशीर मापनशास्त्र कायदा मानकांनुसार प्रमाणित')
+    .replace(/Mutual settlement confirmed with signed digital voucher\./gi, isHi ? 'हस्ताक्षरित डिजिटल वाउचर के साथ आपसी सहमति से समाधान की पुष्टि।' : 'स्वाक्षरी केलेल्या डिजिटल व्हाऊचरसह परस्पर संमतीने तोडग्याची पुष्टी.')
+    .replace(/Mutual settlement confirmed with signed digital voucher/gi, isHi ? 'हस्ताक्षरित डिजिटल वाउचर के साथ आपसी सहमति से समाधान की पुष्टि' : 'स्वाक्षरी केलेल्या डिजिटल व्हाऊचरसह परस्पर संमतीने तोडग्याची पुष्टी')
+    .replace(/Mutual settlement confirmed\./gi, isHi ? 'आपसी सहमति से समाधान की पुष्टि।' : 'परस्पर संमतीने तोडग्याची पुष्टी.')
+    .replace(/Waiver settlement credited with express digital voucher\./gi, isHi ? 'छूट निपटारा एक्सप्रेस डिजिटल वाउचर से जमा किया गया।' : 'सवलत तडजोड एक्सप्रेस डिजिटल व्हाऊचरने जमा केले.')
+    .replace(/Classified as high-grade printed circuit board/gi, isHi ? 'उच्च-ग्रेड प्रिंटेड सर्किट बोर्ड के रूप में वर्गीकृत' : 'उच्च-ग्रेड प्रिंटेड सर्किट बोर्ड म्हणून वर्गीकृत')
+    .replace(/but recycler marked as mixed plastics/gi, isHi ? 'लेकिन रीसाइक्लर ने मिश्रित प्लास्टिक के रूप में चिह्नित किया' : 'परंतु रिसायकलर्सने मिश्रित प्लॅस्टिक म्हणून नोंदवले')
+    .replace(/on physical inspection\./gi, isHi ? 'भौतिक निरीक्षण पर।' : 'प्रत्यक्ष तपासणीत.')
+    .replace(/Collector submitted lot under/gi, isHi ? 'कलेक्टर ने लॉट जमा किया' : 'संकलकाने लॉट जमा केला')
+    .replace(/high-grade telecom circuit boards/gi, isHi ? 'उच्च-ग्रेड टेलीकॉम सर्किट बोर्ड' : 'उच्च-ग्रेड टेलिकॉम सर्किट बोर्ड')
+    .replace(/Recycler facility downgraded/gi, isHi ? 'रीसाइक्लिंग केंद्र ने डाउनग्रेड किया' : 'रिसायकलिंग केंद्राने श्रेणीबद्ध केले')
+    .replace(/of the batch to mixed plastic body scrap on physical receipt\./gi, isHi ? 'बैच को भौतिक प्राप्ति पर मिश्रित प्लास्टिक बॉडी स्क्रैप में।' : 'बॅच प्रत्यक्ष प्राप्तीवर मिश्रित प्लॅस्टिक बॉडी स्क्रॅपमध्ये.')
+    .replace(/Mediation requested on rate differential\./gi, isHi ? 'दर अंतर पर मध्यस्थता का अनुरोध।' : 'दर फरकावर लवादाची विनंती.')
+    .replace(/Instant UPI payout of/gi, isHi ? 'तत्काल यूपीआई भुगतान' : 'तत्काळ यूपीआय देयक')
+    .replace(/delayed by banking server timeout during intake handover\./gi, isHi ? 'हैंडओवर में बैंकिंग सर्वर टाइमआउट के कारण देरी।' : 'हँडओव्हरदरम्यान बँक सर्व्हर टाइमआउटमुळे विलंब.')
+    .replace(/Collector reported pending transaction\./gi, isHi ? 'कलेक्टर ने लंबित लेनदेन की सूचना दी।' : 'संकलकाने प्रलंबित व्यवहाराची नोंद केली.')
+    .replace(/Escrow Gateway Reconciled:/gi, isHi ? 'एस्क्रो गेटवे रीकंसाइल्ड:' : 'एस्क्रो गेटवे जुळवणी:')
+    .replace(/Transaction RRN/gi, isHi ? 'लेनदेन आरआरएन' : 'व्यवहार आरआरएन')
+    .replace(/verified successful/gi, isHi ? 'सफल सत्यापित' : 'यशस्वी सत्यापित')
+    .replace(/Collector bank account credited in full\./gi, isHi ? 'कलेक्टर बैंक खाते में पूरा पैसा जमा किया गया।' : 'संकलक बँक खात्यात पूर्ण पैसा जमा किया गया।')
+    .replace(/Collector claims/gi, isHi ? 'कलेक्टर का दावा है' : 'संकलकाचा दावा आहे')
+    .replace(/declared lot weighment was/gi, isHi ? 'घोषित लॉट वजन था' : 'घोषित लॉट वजन होते')
+    .replace(/but facility intake electronic platform registered net/gi, isHi ? 'लेकिन संयंत्र कांटा नेट दर्ज हुआ' : 'परंतु सुविधा काटा निव्वळ नोंदवला गेला')
+    .replace(/after heavy bag tare deduction/gi, isHi ? 'बोरा टियर कटौती के बाद' : 'पोते टियर कपातीनंतर')
+    .replace(/Requesting CPCB tare verification\./gi, isHi ? 'सीपीसीबी कांटा सत्यापन का अनुरोध।' : 'सीपीसीबी काटा पडताळणीची विनंती.')
+    .replace(/All e-waste transaction handovers are running smoothly without unresolved discrepancies\./gi,
+      isHi ? 'सभी ई-कचरा लेनदेन और हैंडओवर बिना किसी अनसुलझे विवाद के सुचारू रूप से चल रहे हैं।' : 'सर्व ई-कचरा व्यवहार आणि हस्तांतरण कोणत्याही अनसुलझ वादविना सुरळीत सुरू आहेत.')
+    .replace(/\bkg\b/gi, unit);
 
   return str;
 };

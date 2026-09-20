@@ -160,7 +160,7 @@ export const YOLO_CLASSES: Array<{
 // Configurable Confidence Thresholds
 export const CONFIDENCE_THRESHOLDS = {
   HIGH: 0.65,
-  ACCEPTABLE: 0.30,
+  ACCEPTABLE: 0.50,
   CANDIDATE_MIN: 0.20,
   IOU_NMS: 0.45
 };
@@ -219,7 +219,7 @@ export async function getYoloSession(): Promise<ort.InferenceSession> {
       // Fallback try with CDN wasm paths if local wasm paths encountered resolution issue
       try {
         if (typeof window !== 'undefined') {
-          ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
+          ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ort.env.versions.web}/dist/`;
         }
         const session = await ort.InferenceSession.create(MODEL_PATH, {
           executionProviders: ['wasm']
@@ -406,7 +406,10 @@ export function decodeYoloOutput(
 ): YoloDetection[] {
   const data = outputTensor.data as Float32Array;
   const numClasses = 8;
-  const numAnchors = 3549; // 3549 columns for 416x416 input
+  if (outputTensor.dims.length !== 3 || outputTensor.dims[0] !== 1 || outputTensor.dims[1] !== 12) {
+    throw new Error('Unsupported YOLO output shape');
+  }
+  const numAnchors = outputTensor.dims[2];
   const minScoreThreshold = CONFIDENCE_THRESHOLDS.CANDIDATE_MIN;
 
   const rawCandidates: Array<{
@@ -430,7 +433,7 @@ export function decodeYoloOutput(
       }
     }
 
-    if (maxScore < minScoreThreshold || bestClass < 0) {
+    if (!Number.isFinite(maxScore) || maxScore > 1 || maxScore < minScoreThreshold || bestClass < 0) {
       continue;
     }
 
@@ -439,6 +442,7 @@ export function decodeYoloOutput(
     const cy = data[1 * numAnchors + j];
     const w = data[2 * numAnchors + j];
     const h = data[3 * numAnchors + j];
+    if (![cx, cy, w, h].every(Number.isFinite) || w <= 0 || h <= 0) continue;
 
     // Convert from letterbox space back to original image space
     const x1 = (cx - w / 2 - padX) / scale;
@@ -485,7 +489,7 @@ export function decodeYoloOutput(
       category: classMeta.category,
       cpcbCode: classMeta.cpcbCode,
       label: classMeta.label,
-      confidence: Math.min(0.99, Math.max(0.01, item.score)),
+      confidence: item.score,
       box: item.boxNorm,
       color: classMeta.color
     };
@@ -554,7 +558,7 @@ export async function runEwasteYoloInference(
         confidence: topDetection.confidence,
         isAmbiguous: false,
         model: 'YOLOv8-Nano',
-        detections,
+        detections: detections.filter(d => d.confidence >= CONFIDENCE_THRESHOLDS.ACCEPTABLE),
         inferenceTimeMs,
         message: {
           hi: `${topDetection.label.hi} की पहचान हुई (${Math.round(topDetection.confidence * 100)}%)`,

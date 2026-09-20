@@ -24,7 +24,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { RecyclerProfile, RecyclerAuthStatus } from '../../types';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName, formatAddressLocation } from '../../i18n/translations';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 
@@ -120,20 +120,22 @@ export const RecyclerVerificationPage: React.FC = () => {
     });
   }, [recyclers, activeTab, searchQuery]);
 
-  // Format clean location string without duplicate text
+  // Format clean location string without duplicate text with Devanagari localization
   const formatLocation = (rec: RecyclerProfile) => {
     const addr = rec.address || '';
     const dist = rec.district || '';
     const st = rec.state || '';
 
-    // If address already has district or state mentioned, just show address
+    let rawLoc = addr;
     if (dist && addr.toLowerCase().includes(dist.toLowerCase())) {
-      return addr;
+      rawLoc = addr;
+    } else if (addr && dist && st) {
+      rawLoc = `${addr}, ${dist}, ${st}`;
+    } else {
+      rawLoc = addr || `${dist}, ${st}` || 'Location on record';
     }
-    if (addr && dist && st) {
-      return `${addr}, ${dist}, ${st}`;
-    }
-    return addr || `${dist}, ${st}` || 'Location on record';
+
+    return formatAddressLocation(rawLoc, language);
   };
 
   return (
@@ -151,7 +153,7 @@ export const RecyclerVerificationPage: React.FC = () => {
                   {t.adminRecyclerTitle}
                 </h1>
                 <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-full bg-emerald-50 text-emerald-800 dark:bg-purple-900/80 dark:text-purple-300 border border-emerald-200 dark:border-purple-600/60">
-                  CPCB & SPCB COMPLIANCE
+                  {language === 'hi' ? 'CPCB और SPCB अनुपालन' : language === 'mr' ? 'CPCB आणि SPCB अनुपालन' : 'CPCB & SPCB COMPLIANCE'}
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">
@@ -168,11 +170,11 @@ export const RecyclerVerificationPage: React.FC = () => {
               className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-600 dark:text-purple-400' : ''}`} />
-              <span>{isRefreshing ? 'Syncing...' : 'Sync Live DB'}</span>
+              <span>{isRefreshing ? (language === 'hi' ? 'सिंक हो रहा है...' : language === 'mr' ? 'सिंक होत आहे...' : 'Syncing...') : (language === 'hi' ? 'लाइव डीबी सिंक करें' : language === 'mr' ? 'लाइव्ह डीबी सिंक करा' : 'Sync Live DB')}</span>
             </button>
             <span className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-black border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
-              <span>CENTRAL REGISTRY ACTIVE</span>
+              <span>{language === 'hi' ? 'केंद्रीय रजिस्ट्री सक्रिय' : language === 'mr' ? 'केंद्रीय नोंदणी सक्रिय' : 'CENTRAL REGISTRY ACTIVE'}</span>
             </span>
           </div>
         </div>
@@ -181,52 +183,62 @@ export const RecyclerVerificationPage: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5 pt-4 border-t border-slate-200 dark:border-slate-800/80">
           <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
-              {language === 'hi' ? 'कुल पंजीकृत प्लांट' : 'Total Registered'}
+              {language === 'hi' ? 'कुल पंजीकृत प्लांट' : language === 'mr' ? 'एकूण नोंदणीकृत प्लँट' : 'Total Registered'}
             </span>
             <span className="text-xl font-black text-slate-900 dark:text-white font-mono block">
               {kpis.total}
             </span>
-            <span className="text-[10px] text-slate-500 font-medium">Pan-India Network</span>
+            <span className="text-[10px] text-slate-500 font-medium">
+              {language === 'hi' ? 'अखिल भारतीय नेटवर्क' : language === 'mr' ? 'सर्व-भारत नेटवर्क' : 'Pan-India Network'}
+            </span>
           </div>
 
           <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
-              {language === 'hi' ? 'अधिकृत सीपीसीबी' : 'CPCB Authorized'}
+              {language === 'hi' ? 'अधिकृत सीपीसीबी' : language === 'mr' ? 'अधिकृत सीपीसीबी' : 'CPCB Authorized'}
             </span>
             <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono block">
               {kpis.authorized}
             </span>
-            <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">Active Licenses</span>
+            <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">
+              {language === 'hi' ? 'सक्रिय लाइसेंस' : language === 'mr' ? 'सक्रिय परवाने' : 'Active Licenses'}
+            </span>
           </div>
 
           <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
-              {language === 'hi' ? 'सत्यापन लंबित' : 'Pending Review'}
+              {language === 'hi' ? 'सत्यापन लंबित' : language === 'mr' ? 'पडताळणी प्रलंबित' : 'Pending Review'}
             </span>
             <span className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono block">
               {kpis.pending}
             </span>
-            <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-bold">Awaiting Approval</span>
+            <span className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-bold">
+              {language === 'hi' ? 'स्वीकृति की प्रतीक्षा' : language === 'mr' ? 'मान्यतेची प्रतीक्षा' : 'Awaiting Approval'}
+            </span>
           </div>
 
           <div className="bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
-              {language === 'hi' ? 'निलंबित इकाइयाँ' : 'Suspended Units'}
+              {language === 'hi' ? 'निलंबित इकाइयाँ' : language === 'mr' ? 'निलंबित युनिट्स' : 'Suspended Units'}
             </span>
             <span className="text-xl font-black text-red-600 dark:text-red-400 font-mono block">
               {kpis.suspended}
             </span>
-            <span className="text-[10px] text-red-600/80 dark:text-red-400/80 font-bold">License Revoked</span>
+            <span className="text-[10px] text-red-600/80 dark:text-red-400/80 font-bold">
+              {language === 'hi' ? 'लाइसेंस रद्द' : language === 'mr' ? 'परवाना रद्द' : 'License Revoked'}
+            </span>
           </div>
 
           <div className="col-span-2 sm:col-span-1 bg-white dark:bg-slate-950/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-sm space-y-0.5">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase block">
-              {language === 'hi' ? 'प्रसंस्कृत ई-कचरा' : 'Processed Scrap'}
+              {language === 'hi' ? 'प्रसंस्कृत ई-कचरा' : language === 'mr' ? 'प्रक्रिया केलेला ई-कचरा' : 'Processed Scrap'}
             </span>
             <span className="text-xl font-black text-blue-600 dark:text-blue-400 font-mono block">
-              {kpis.totalProcessedKg.toLocaleString('en-IN')} kg
+              {kpis.totalProcessedKg.toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
             </span>
-            <span className="text-[10px] text-blue-600 dark:text-blue-300 font-bold">Audited Weighment</span>
+            <span className="text-[10px] text-blue-600 dark:text-blue-300 font-bold">
+              {language === 'hi' ? 'ऑडिट किया गया वजन' : language === 'mr' ? 'तपासलेले वजन' : 'Audited Weighment'}
+            </span>
           </div>
         </div>
       </div>
@@ -244,7 +256,7 @@ export const RecyclerVerificationPage: React.FC = () => {
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-950 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
-            All Facilities ({kpis.total})
+            {language === 'hi' ? 'सभी सुविधाएं' : language === 'mr' ? 'सर्व सुविधा' : 'All Facilities'} ({kpis.total})
           </button>
 
           <button
@@ -257,7 +269,7 @@ export const RecyclerVerificationPage: React.FC = () => {
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>Authorized ({kpis.authorized})</span>
+            <span>{language === 'hi' ? 'अधिकृत' : language === 'mr' ? 'अधिकृत' : 'Authorized'} ({kpis.authorized})</span>
           </button>
 
           <button
@@ -270,7 +282,7 @@ export const RecyclerVerificationPage: React.FC = () => {
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-            <span>Pending Review ({kpis.pending})</span>
+            <span>{language === 'hi' ? 'समीक्षा लंबित' : language === 'mr' ? 'पुनरावलोकन प्रलंबित' : 'Pending Review'} ({kpis.pending})</span>
           </button>
 
           <button
@@ -283,7 +295,7 @@ export const RecyclerVerificationPage: React.FC = () => {
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-red-400"></span>
-            <span>Suspended ({kpis.suspended})</span>
+            <span>{language === 'hi' ? 'निलंबित' : language === 'mr' ? 'निलंबित' : 'Suspended'} ({kpis.suspended})</span>
           </button>
         </div>
 
@@ -346,7 +358,7 @@ export const RecyclerVerificationPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">{rec.facilityName}</h3>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">{formatUserDisplayName(rec.facilityName, 'RECYCLER', language)}</h3>
                     
                     {/* Status Badge */}
                     <span
@@ -372,7 +384,7 @@ export const RecyclerVerificationPage: React.FC = () => {
                     {isGazette && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 flex items-center gap-1 shadow-sm">
                         <Award className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                        <span>CPCB Gazette Seal</span>
+                        <span>{language === 'hi' ? 'CPCB राजपत्र सील' : language === 'mr' ? 'CPCB राजपत्र सील' : 'CPCB Gazette Seal'}</span>
                       </span>
                     )}
                   </div>
@@ -394,7 +406,7 @@ export const RecyclerVerificationPage: React.FC = () => {
                 {/* Validity Pill */}
                 <div className="bg-slate-50 dark:bg-slate-950 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shrink-0 self-start sm:self-center text-right">
                   <span className="text-[10px] text-slate-500 font-bold uppercase block">
-                    {language === 'hi' ? 'लाइसेंस वैधता' : 'License Valid Until'}
+                    {language === 'hi' ? 'लाइसेंस वैधता' : language === 'mr' ? 'परवाना वैधता' : 'License Valid Until'}
                   </span>
                   <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
                     {rec.authValidUntil || '2028-12-31'}
@@ -405,21 +417,27 @@ export const RecyclerVerificationPage: React.FC = () => {
               {/* 4-Item Real Database Metrics Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                 <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Tonnage Processed</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">
+                    {language === 'hi' ? 'प्रसंस्कृत भार' : language === 'mr' ? 'प्रक्रिया केलेले प्रमाण' : 'Tonnage Processed'}
+                  </span>
                   <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                    {(Number(rec.totalProcessedKg) || 0).toLocaleString('en-IN')} kg
+                    {(Number(rec.totalProcessedKg) || 0).toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
                   </span>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Service Radius</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">
+                    {language === 'hi' ? 'सेवा त्रिज्या' : language === 'mr' ? 'सेवा त्रिज्या' : 'Service Radius'}
+                  </span>
                   <span className="font-mono font-black text-slate-900 dark:text-white text-sm">
-                    {rec.serviceRadiusKm || 35} km
+                    {rec.serviceRadiusKm || 35} {language === 'hi' || language === 'mr' ? 'किमी' : 'km'}
                   </span>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Compliance Rating</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">
+                    {language === 'hi' ? 'अनुपालन रेटिंग' : language === 'mr' ? 'अनुपालन रेटिंग' : 'Compliance Rating'}
+                  </span>
                   <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-sm flex items-center gap-1">
                     <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                     <span>{rec.rating ? Number(rec.rating).toFixed(1) : '4.8'} / 5.0</span>
@@ -427,10 +445,16 @@ export const RecyclerVerificationPage: React.FC = () => {
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Logistics Model</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">
+                    {language === 'hi' ? 'लॉजिस्टिक्स मॉडल' : language === 'mr' ? 'लॉजिस्टिक्स मॉडेल' : 'Logistics Model'}
+                  </span>
                   <span className="font-bold text-blue-600 dark:text-blue-300 text-xs flex items-center gap-1">
                     <Truck className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
-                    <span>{rec.pickupAvailable ? 'Pickup Fleet Active' : 'Facility Drop-off'}</span>
+                    <span>
+                      {rec.pickupAvailable 
+                        ? (language === 'hi' ? 'पिकअप बेड़ा सक्रिय' : language === 'mr' ? 'पिकअप ताफा सक्रिय' : 'Pickup Fleet Active') 
+                        : (language === 'hi' ? 'संयंत्र ड्रॉप-ऑफ' : language === 'mr' ? 'सुविधा ड्रॉप-ऑफ' : 'Facility Drop-off')}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -438,8 +462,14 @@ export const RecyclerVerificationPage: React.FC = () => {
               {/* Contact Information */}
               <div className="bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px]">Operations Representative:</span>
-                  <span className="text-slate-900 dark:text-white font-semibold">{rec.contactPerson || 'Facility Operations Head'}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px]">
+                    {language === 'hi' ? 'परिचालन प्रतिनिधि:' : language === 'mr' ? 'ऑपरेशन प्रतिनिधी:' : 'Operations Representative:'}
+                  </span>
+                  <span className="text-slate-900 dark:text-white font-semibold">
+                    {rec.contactPerson 
+                      ? formatUserDisplayName(rec.contactPerson, 'RECYCLER', language) 
+                      : (language === 'hi' ? 'संयंत्र परिचालन प्रमुख' : language === 'mr' ? 'सुविधा ऑपरेशन प्रमुख' : 'Facility Operations Head')}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-emerald-700 dark:text-purple-300 font-mono font-bold">
                   <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-purple-400" />
@@ -472,7 +502,7 @@ export const RecyclerVerificationPage: React.FC = () => {
                       className="px-3.5 py-2 bg-slate-100 hover:bg-red-50 text-red-700 hover:text-red-800 dark:bg-slate-800 dark:hover:bg-red-950 dark:text-red-300 dark:hover:text-red-200 border border-slate-200 hover:border-red-200 dark:border-slate-700 dark:hover:border-red-700 font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
                     >
                       <XCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
-                      <span>Reject Application</span>
+                      <span>{language === 'hi' ? 'आवेदन अस्वीकृत करें' : language === 'mr' ? 'अर्ज नाकारा' : 'Reject Application'}</span>
                     </button>
                     <button
                       type="button"
@@ -505,7 +535,7 @@ export const RecyclerVerificationPage: React.FC = () => {
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all active:scale-95"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Re-Instate / Authorize License</span>
+                    <span>{language === 'hi' ? 'पुनर्बहाल / लाइसेंस अधिकृत करें' : language === 'mr' ? 'पुनर्संचयित / परवाना अधिकृत करा' : 'Re-Instate / Authorize License'}</span>
                   </button>
                 )}
               </div>
@@ -531,7 +561,7 @@ export const RecyclerVerificationPage: React.FC = () => {
             </div>
             
             <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-              <span className="text-slate-900 dark:text-white font-bold text-xs block">{confirmModal.recycler.facilityName}</span>
+              <span className="text-slate-900 dark:text-white font-bold text-xs block">{formatUserDisplayName(confirmModal.recycler.facilityName, 'RECYCLER', language)}</span>
               <p className="text-slate-500 dark:text-slate-400 text-xs">{formatLocation(confirmModal.recycler)}</p>
             </div>
 

@@ -21,7 +21,7 @@ export const calculateCriticalMineralYield = (
   weightKg: number = 10
 ): MineralYieldResult => {
   const cat = (categoryRaw || 'PCB').toUpperCase();
-  const weight = Math.max(0.1, weightKg);
+  const weight = weightKg <= 0 ? 0 : weightKg;
 
   let cuFactor = 0.15;        // kg Cu per kg scrap
   let auFactor = 0.25;        // grams Au per kg scrap

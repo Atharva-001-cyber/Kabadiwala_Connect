@@ -95,26 +95,33 @@ export const CollectorProfilePage: React.FC = () => {
     const fetchRealData = async () => {
       try {
         setLoadingMetrics(true);
-        const colId = collectorProfile?.id || 'col_1';
+        const colId = collectorProfile?.id || user?.id || 'col_1';
+        const isDemoProfile = colId === 'col_1' || (!collectorProfile?.id && !user?.id);
+
         const [lotsRes, ledgerRes] = await Promise.all([
           api.getLots({ collectorId: colId }).catch(() => ({ success: false, lots: [] })),
           api.getCollectorLedger(colId).catch(() => ({ success: false, summary: null }))
         ]);
 
-        let calculatedWeight = 180;
-        let calculatedEarnings = 12500;
-        let calculatedLots = 14;
+        let calculatedWeight = isDemoProfile ? 180 : 0;
+        let calculatedEarnings = isDemoProfile ? 12500 : 0;
+        let calculatedLots = isDemoProfile ? 14 : 0;
 
-        if (lotsRes.success && Array.isArray(lotsRes.lots) && lotsRes.lots.length > 0) {
-          calculatedLots = lotsRes.lots.length;
-          calculatedWeight = lotsRes.lots.reduce((acc: number, item: any) => acc + Number(item.actualWeight || item.approxWeight || 0), 0);
-        } else if (collectorProfile?.totalWeightCollected) {
+        if (lotsRes.success && Array.isArray(lotsRes.lots)) {
+          if (lotsRes.lots.length > 0) {
+            calculatedLots = lotsRes.lots.length;
+            calculatedWeight = lotsRes.lots.reduce((acc: number, item: any) => acc + Number(item.actualWeight || item.approxWeight || 0), 0);
+          } else if (!isDemoProfile) {
+            calculatedLots = 0;
+            calculatedWeight = 0;
+          }
+        } else if (collectorProfile?.totalWeightCollected != null) {
           calculatedWeight = Number(collectorProfile.totalWeightCollected);
         }
 
         if (ledgerRes.success && ledgerRes.summary) {
-          calculatedEarnings = Number(ledgerRes.summary.totalEarnings || calculatedEarnings);
-        } else if (collectorProfile?.totalEarnings) {
+          calculatedEarnings = Number(ledgerRes.summary.totalEarnings != null ? ledgerRes.summary.totalEarnings : (isDemoProfile ? 12500 : 0));
+        } else if (collectorProfile?.totalEarnings != null) {
           calculatedEarnings = Number(collectorProfile.totalEarnings);
         }
 

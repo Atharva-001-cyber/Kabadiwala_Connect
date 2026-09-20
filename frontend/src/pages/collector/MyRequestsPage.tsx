@@ -44,11 +44,14 @@ export const MyRequestsPage: React.FC = () => {
       let collectorId = '';
       try {
         const cp = localStorage.getItem('collectorProfile');
+        const u = localStorage.getItem('user');
         if (cp) collectorId = JSON.parse(cp)?.id;
+        if (!collectorId && u) collectorId = JSON.parse(u)?.id;
       } catch {}
 
+      const isRealCollector = collectorId && collectorId !== 'col_1';
       let res = await api.getLots(collectorId ? { collectorId } : {});
-      if (res.success && res.lots.length === 0 && collectorId) {
+      if (!isRealCollector && res.success && res.lots.length === 0) {
         res = await api.getLots({});
       }
 

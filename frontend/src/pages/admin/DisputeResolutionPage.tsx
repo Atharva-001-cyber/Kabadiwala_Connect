@@ -25,7 +25,14 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { Dispute, DisputeStatus } from '../../types';
-import { getStatusLabel } from '../../i18n/translations';
+import { 
+  getStatusLabel, 
+  formatUserDisplayName, 
+  formatAddressLocation, 
+  formatDisputeReason, 
+  formatDisputeDetails,
+  formatLocalizedDateTime
+} from '../../i18n/translations';
 
 export const DisputeResolutionPage: React.FC = () => {
   const { t, language } = useLanguage();
@@ -149,9 +156,9 @@ export const DisputeResolutionPage: React.FC = () => {
       if (res.success) {
         showToast(
           language === 'hi'
-            ? `विवाद '${rulingStatus}' के रूप में सफलतापूर्वक निस्तारित किया गया!`
+            ? `विवाद '${getStatusLabel(rulingStatus, language)}' के रूप में सफलतापूर्वक निस्तारित किया गया!`
             : language === 'mr'
-            ? `वाद '${rulingStatus}' म्हणून यशस्वीरीत्या निकाली काढण्यात आला!`
+            ? `वाद '${getStatusLabel(rulingStatus, language)}' म्हणून यशस्वीरीत्या निकाली काढण्यात आला!`
             : `CPCB arbitration verdict recorded as '${rulingStatus}'!`,
           'success'
         );
@@ -187,7 +194,7 @@ export const DisputeResolutionPage: React.FC = () => {
               </h1>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 uppercase">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                CENTRAL TRIBUNAL ACTIVE
+                {language === 'hi' ? 'केंद्रीय न्यायाधिकरण सक्रिय' : language === 'mr' ? 'केंद्रीय न्यायाधिकरण सक्रिय' : 'CENTRAL TRIBUNAL ACTIVE'}
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-2xl leading-relaxed">
@@ -245,10 +252,10 @@ export const DisputeResolutionPage: React.FC = () => {
             {stats.openCount > 0 ? (
               <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
-                Tribunal Mediation Pending
+                {language === 'hi' ? 'न्यायाधिकरण मध्यस्थता लंबित' : language === 'mr' ? 'न्यायाधिकरण मध्यस्थता प्रलंबित' : 'Tribunal Mediation Pending'}
               </span>
             ) : (
-              'All Actions Clear'
+              language === 'hi' ? 'सभी कार्रवाई पूर्ण' : language === 'mr' ? 'सर्व कारवाई पूर्ण' : 'All Actions Clear'
             )}
           </div>
         </div>
@@ -382,8 +389,8 @@ export const DisputeResolutionPage: React.FC = () => {
             </h3>
             <p className="text-slate-500 text-xs max-w-sm mx-auto">
               {searchQuery || statusFilter !== 'ALL'
-                ? 'Try adjusting your search criteria or active filters.'
-                : 'All e-waste transaction handovers are running smoothly without unresolved discrepancies.'}
+                ? (language === 'hi' ? 'अपनी खोज या फ़िल्टर स्थिति बदलकर प्रयास करें।' : language === 'mr' ? 'आपले शोध निकष किंवा सक्रिय फिल्टर समायोजित करण्याचा प्रयत्न करा.' : 'Try adjusting your search criteria or active filters.')
+                : (language === 'hi' ? 'सभी ई-कचरा लेनदेन और हैंडओवर बिना किसी अनसुलझे विवाद के सुचारू रूप से चल रहे हैं।' : language === 'mr' ? 'सर्व ई-कचरा व्यवहार आणि हस्तांतरण कोणत्याही अनसुलझ वादविना सुरळीत सुरू आहेत.' : 'All e-waste transaction handovers are running smoothly without unresolved discrepancies.')}
             </p>
           </div>
         ) : (
@@ -403,7 +410,7 @@ export const DisputeResolutionPage: React.FC = () => {
                   {/* Lot ID Badge */}
                   <span className="font-mono font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 px-2.5 py-1 rounded-xl text-[11px] flex items-center gap-1">
                     <span>📦</span>
-                    <span>Lot: {d.lotId}</span>
+                    <span>{language === 'hi' ? 'लॉट:' : language === 'mr' ? 'लॉट:' : 'Lot:'} {d.lotId}</span>
                   </span>
 
                   {/* Status Badge */}
@@ -429,7 +436,7 @@ export const DisputeResolutionPage: React.FC = () => {
 
                 <div className="flex items-center gap-2 text-slate-500 text-[11px] font-mono">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Filed: {new Date(d.createdAt).toLocaleString('en-IN')}</span>
+                  <span>{language === 'hi' ? 'दाखिल:' : language === 'mr' ? 'दाखल:' : 'Filed:'} {formatLocalizedDateTime(d.createdAt, language)}</span>
                 </div>
               </div>
 
@@ -437,14 +444,14 @@ export const DisputeResolutionPage: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-950/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
-                    CLAIM SUBJECT
+                    {language === 'hi' ? 'दावा विषय' : language === 'mr' ? 'दावा विषय' : 'CLAIM SUBJECT'}
                   </span>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
-                    {d.reason}
+                    {formatDisputeReason(d.reason, language)}
                   </h3>
                 </div>
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-xs">
-                  {d.details}
+                  {formatDisputeDetails(d.details, language)}
                 </p>
               </div>
 
@@ -455,15 +462,15 @@ export const DisputeResolutionPage: React.FC = () => {
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">
                     <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400">
                       <User className="w-3.5 h-3.5" />
-                      CLAIMANT (GROUND COLLECTOR)
+                      {language === 'hi' ? 'दावेदार (कलेक्टर)' : language === 'mr' ? 'दावेदार (कलेक्टर)' : 'CLAIMANT (GROUND COLLECTOR)'}
                     </span>
                     <span className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300 font-mono">
-                      {d.raisedByUserId || 'COL_REG'}
+                      {d.raisedByUserId || (language === 'hi' ? 'कलेक्टर_पंजीकृत' : language === 'mr' ? 'संकलक_नोंदणीकृत' : 'COL_REG')}
                     </span>
                   </div>
                   <div className="space-y-1">
                     <div className="font-bold text-slate-900 dark:text-white text-sm">
-                      {d.collectorName || d.raisedByName || 'Authorized Collector'}
+                      {formatUserDisplayName(d.collectorName || d.raisedByName || 'Authorized Collector', 'COLLECTOR', language)}
                     </div>
                     <div className="flex items-center gap-2 text-slate-500 text-[11px]">
                       <Phone className="w-3 h-3 text-slate-400" />
@@ -477,19 +484,19 @@ export const DisputeResolutionPage: React.FC = () => {
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">
                     <span className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-400">
                       <Building2 className="w-3.5 h-3.5" />
-                      RESPONDENT (RECYCLER FACILITY)
+                      {language === 'hi' ? 'प्रतिवादी (रीसायक्लर संयंत्र)' : language === 'mr' ? 'प्रतिवादी (रिसायकलिंग केंद्र)' : 'RESPONDENT (RECYCLER FACILITY)'}
                     </span>
                     <span className="bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300 font-mono">
-                      {d.recyclerId || 'REC_REG'}
+                      {d.recyclerId || (language === 'hi' ? 'रीसायक्लर_पंजीकृत' : language === 'mr' ? 'रिसायकलर_नोंदणीकृत' : 'REC_REG')}
                     </span>
                   </div>
                   <div className="space-y-1">
                     <div className="font-bold text-slate-900 dark:text-white text-sm">
-                      {d.recyclerName || 'GreenEarth E-Waste Solutions Pvt Ltd'}
+                      {formatUserDisplayName(d.recyclerName || 'GreenEarth E-Waste Solutions Pvt Ltd', 'RECYCLER', language)}
                     </div>
                     <div className="flex items-center gap-3 text-slate-500 text-[11px] flex-wrap">
                       {d.recyclerContact && d.recyclerContact !== 'N/A' && (
-                        <span>Contact: <b className="text-slate-700 dark:text-slate-300">{d.recyclerContact}</b></span>
+                        <span>{language === 'hi' ? 'संपर्क:' : language === 'mr' ? 'संपर्क:' : 'Contact:'} <b className="text-slate-700 dark:text-slate-300">{formatUserDisplayName(d.recyclerContact, 'RECYCLER', language)}</b></span>
                       )}
                       <div className="flex items-center gap-1">
                         <Phone className="w-3 h-3 text-slate-400" />
@@ -498,7 +505,7 @@ export const DisputeResolutionPage: React.FC = () => {
                       {d.recyclerLocation && d.recyclerLocation !== 'N/A' && (
                         <div className="flex items-center gap-1 text-slate-500">
                           <MapPin className="w-3 h-3 text-slate-400" />
-                          <span>{d.recyclerLocation}</span>
+                          <span>{formatAddressLocation(d.recyclerLocation, language)}</span>
                         </div>
                       )}
                     </div>
@@ -512,16 +519,16 @@ export const DisputeResolutionPage: React.FC = () => {
                   <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 text-[11px] font-bold">
                     <span className="flex items-center gap-1.5">
                       <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      OFFICIAL CPCB TRIBUNAL RULING & SETTLEMENT RECORD
+                      {language === 'hi' ? 'आधिकारिक सीपीसीबी न्यायाधिकरण निर्णय एवं समाधान रिकॉर्ड' : language === 'mr' ? 'अधिकृत सीपीसीबी लवाद निर्णय आणि तडजोड नोंद' : 'OFFICIAL CPCB TRIBUNAL RULING & SETTLEMENT RECORD'}
                     </span>
                     {d.resolvedAt && (
                       <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400/80">
-                        {new Date(d.resolvedAt).toLocaleString('en-IN')}
+                        {formatLocalizedDateTime(d.resolvedAt, language)}
                       </span>
                     )}
                   </div>
                   <p className="text-emerald-900 dark:text-emerald-200 text-xs leading-relaxed font-medium">
-                    {d.resolutionNotes || d.adminNotes || 'CPCB Legal Metrology Mediation: Digital load cell calibration record certified compliant with standards. Mutual settlement confirmed.'}
+                    {formatDisputeDetails(d.resolutionNotes || d.adminNotes || 'CPCB Legal Metrology Mediation: Digital load cell calibration record certified compliant with standards. Mutual settlement confirmed.', language)}
                   </p>
                 </div>
               )}
@@ -530,7 +537,7 @@ export const DisputeResolutionPage: React.FC = () => {
               <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Governed under CPCB E-Waste Management Rules & Legal Metrology Act</span>
+                  <span>{language === 'hi' ? 'सीपीसीबी ई-कचरा प्रबंधन नियम एवं विधिक माप विज्ञान अधिनियम के तहत शासित' : language === 'mr' ? 'सीपीसीबी ई-कचरा व्यवस्थापन नियम आणि कायदेशीर मापनशास्त्र कायद्यांतर्गत नियंत्रित' : 'Governed under CPCB E-Waste Management Rules & Legal Metrology Act'}</span>
                 </div>
 
                 <div className="flex items-center gap-2 self-end">
@@ -567,7 +574,7 @@ export const DisputeResolutionPage: React.FC = () => {
                     {language === 'hi' ? 'सीपीसीबी मध्यस्थता निर्णय एवं आदेश' : language === 'mr' ? 'सीपीसीबी लवाद निर्णय' : 'CPCB Statutory Arbitration Ruling'}
                   </h3>
                   <div className="text-[11px] font-mono text-cyan-700 dark:text-cyan-400">
-                    Case: {activeModalDispute.id} | Lot: {activeModalDispute.lotId}
+                    {language === 'hi' ? 'केस' : language === 'mr' ? 'केस' : 'Case'}: {activeModalDispute.id} | {language === 'hi' ? 'लॉट' : language === 'mr' ? 'लॉट' : 'Lot'}: {activeModalDispute.lotId}
                   </div>
                 </div>
               </div>
@@ -582,12 +589,14 @@ export const DisputeResolutionPage: React.FC = () => {
             {/* Case Overview Preview */}
             <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px]">CLAIM REASON</span>
+                <span className="text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px]">
+                  {language === 'hi' ? 'दावा कारण' : language === 'mr' ? 'दावा कारण' : 'CLAIM REASON'}
+                </span>
                 <span className="text-slate-600 dark:text-slate-400">
-                  Claimant: <b className="text-slate-900 dark:text-white">{activeModalDispute.collectorName || 'Collector'}</b>
+                  {language === 'hi' ? 'दावेदार:' : language === 'mr' ? 'दावेदार:' : 'Claimant:'} <b className="text-slate-900 dark:text-white">{formatUserDisplayName(activeModalDispute.collectorName || 'Collector', 'COLLECTOR', language)}</b>
                 </span>
               </div>
-              <p className="text-slate-900 dark:text-white font-medium">{activeModalDispute.reason}</p>
+              <p className="text-slate-900 dark:text-white font-medium">{formatDisputeReason(activeModalDispute.reason, language)}</p>
             </div>
 
             {/* Status Selection */}
@@ -597,10 +606,10 @@ export const DisputeResolutionPage: React.FC = () => {
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'RESOLVED', label: 'RESOLVED (SETTLED)', color: 'bg-emerald-600 border-emerald-500 text-white' },
-                  { id: 'UNDER_REVIEW', label: 'UNDER REVIEW', color: 'bg-purple-600 border-purple-500 text-white' },
-                  { id: 'REJECTED', label: 'DISMISSED / REJECTED', color: 'bg-rose-600 border-rose-500 text-white' },
-                  { id: 'OPEN', label: 'RE-OPEN CASE', color: 'bg-amber-600 border-amber-500 text-white' }
+                  { id: 'RESOLVED', label: language === 'hi' ? 'निस्तारित (सुलझाया)' : language === 'mr' ? 'निकाली (सोडवले)' : 'RESOLVED (SETTLED)', color: 'bg-emerald-600 border-emerald-500 text-white' },
+                  { id: 'UNDER_REVIEW', label: language === 'hi' ? 'जांच जारी' : language === 'mr' ? 'तपास सुरू' : 'UNDER REVIEW', color: 'bg-purple-600 border-purple-500 text-white' },
+                  { id: 'REJECTED', label: language === 'hi' ? 'खारिज / निरस्त' : language === 'mr' ? 'फेटाळलेले' : 'DISMISSED / REJECTED', color: 'bg-rose-600 border-rose-500 text-white' },
+                  { id: 'OPEN', label: language === 'hi' ? 'केस पुनः खोलें' : language === 'mr' ? 'केस पुन्हा उघडा' : 'RE-OPEN CASE', color: 'bg-amber-600 border-amber-500 text-white' }
                 ].map((st) => (
                   <button
                     key={st.id}
@@ -622,43 +631,67 @@ export const DisputeResolutionPage: React.FC = () => {
             <div className="space-y-1.5">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-indigo-500" />
-                CPCB Standard Rationale Presets (Click to Auto-fill)
+                {language === 'hi' ? 'सीपीसीबी मानक निर्णय टेम्पलेट (ऑटो-फिल के लिए क्लिक करें)' : language === 'mr' ? 'सीपीसीबी मानक निर्णय टेम्पलेट (ऑटो-फिलसाठी क्लिक करा)' : 'CPCB Standard Rationale Presets (Click to Auto-fill)'}
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => applyPreset('Official CPCB Mediation: Digital load cell calibration record certified compliant with Legal Metrology Act standards. Tare weight adjusted and digital settlement voucher issued.')}
+                  onClick={() => applyPreset(
+                    language === 'hi'
+                      ? 'आधिकारिक सीपीसीबी मध्यस्थता: विधिक माप विज्ञान अधिनियम मानकों के अनुरूप डिजिटल लोड सेल अंशांकन प्रमाणित। टियर वजन समायोजित और डिजिटल निपटारा वाउचर जारी।'
+                      : language === 'mr'
+                      ? 'अधिकृत सीपीसीबी लवाद: कायदेशीर मापनशास्त्र कायदा मानकांनुसार डिजिटल लोड सेल कॅलिब्रेशन प्रमाणित. टियर वजन समायोजित आणि डिजिटल तडजोड व्हाऊचर जारी.'
+                      : 'Official CPCB Mediation: Digital load cell calibration record certified compliant with Legal Metrology Act standards. Tare weight adjusted and digital settlement voucher issued.'
+                  )}
                   className="text-left p-2 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 text-[10px] text-slate-700 dark:text-slate-300 transition-all space-y-0.5"
                 >
-                  <div className="font-bold text-indigo-700 dark:text-indigo-400">⚖️ Digital Tare Calibration Settlement</div>
-                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">Legal Metrology certified calibration verified on site.</p>
+                  <div className="font-bold text-indigo-700 dark:text-indigo-400">⚖️ {language === 'hi' ? 'डिजिटल कांटा अंशांकन निपटारा' : language === 'mr' ? 'डिजिटल काटा कॅलिब्रेशन लवाद' : 'Digital Tare Calibration Settlement'}</div>
+                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">{language === 'hi' ? 'विधिक माप विज्ञान प्रमाणित अंशांकन सत्यापित।' : language === 'mr' ? 'कायदेशीर मापनशास्त्र प्रमाणित कॅलिब्रेशन पडताळले.' : 'Legal Metrology certified calibration verified on site.'}</p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => applyPreset('Escrow Gateway Reconciled: Transaction RRN verified successful via bank webhook. Collector bank account credited in full.')}
+                  onClick={() => applyPreset(
+                    language === 'hi'
+                      ? 'एस्क्रो गेटवे रीकंसाइल्ड: बैंक वेबहुक के माध्यम से लेनदेन आरआरएन सफल सत्यापित। कलेक्टर बैंक खाते में पूरा पैसा जमा किया गया।'
+                      : language === 'mr'
+                      ? 'एस्क्रो गेटवे जुळवणी: बँक वेबहुकद्वारे व्यवहार आरआरएन यशस्वी सत्यापित. संकलक बँक खात्यात पूर्ण रक्कम जमा.'
+                      : 'Escrow Gateway Reconciled: Transaction RRN verified successful via bank webhook. Collector bank account credited in full.'
+                  )}
                   className="text-left p-2 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 text-[10px] text-slate-700 dark:text-slate-300 transition-all space-y-0.5"
                 >
-                  <div className="font-bold text-emerald-700 dark:text-emerald-400">💳 Instant Payout Reconciled</div>
-                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">Banking UPI gateway RRN confirmed and credited.</p>
+                  <div className="font-bold text-emerald-700 dark:text-emerald-400">💳 {language === 'hi' ? 'तत्काल भुगतान रीकंसाइल्ड' : language === 'mr' ? 'झटपट देयक जुळवणी' : 'Instant Payout Reconciled'}</div>
+                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">{language === 'hi' ? 'बैंकिंग यूपीआई गेटवे आरआरएन की पुष्टि।' : language === 'mr' ? 'बँकिंग यूपीआय गेटवे आरआरएन पुष्टी.' : 'Banking UPI gateway RRN confirmed and credited.'}</p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => applyPreset('Joint Inspection Audit: Batch re-inspected under optical spectrometry. Rate differential adjusted according to certified composite assay report.')}
+                  onClick={() => applyPreset(
+                    language === 'hi'
+                      ? 'संयुक्त निरीक्षण ऑडिट: ऑप्टिकल स्पेक्ट्रोमेट्री के तहत बैच का पुनः निरीक्षण। प्रमाणित मिश्रित परख रिपोर्ट के अनुसार दर अंतर समायोजित।'
+                      : language === 'mr'
+                      ? 'संयुक्त तपासणी ऑडिट: ऑप्टिकल स्पेक्ट्रोमेट्री अंतर्गत बॅचची पुन्हा तपासणी. प्रमाणित मिश्र चाचणी अहवालानुसार दर तफावत समायोजित.'
+                      : 'Joint Inspection Audit: Batch re-inspected under optical spectrometry. Rate differential adjusted according to certified composite assay report.'
+                  )}
                   className="text-left p-2 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 text-[10px] text-slate-700 dark:text-slate-300 transition-all space-y-0.5"
                 >
-                  <div className="font-bold text-cyan-700 dark:text-cyan-400">🔬 Material Grading Assay Accord</div>
-                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">Physical spectrometry audit resolved rate classification.</p>
+                  <div className="font-bold text-cyan-700 dark:text-cyan-400">🔬 {language === 'hi' ? 'सामग्री वर्गीकरण परख समझौता' : language === 'mr' ? 'साहित्य वर्गीकरण चाचणी करार' : 'Material Grading Assay Accord'}</div>
+                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">{language === 'hi' ? 'ऑप्टिकल स्पेक्ट्रोमेट्री ऑडिट से श्रेणी का समाधान।' : language === 'mr' ? 'ऑप्टिकल स्पेक्ट्रोमेट्री ऑडिटने श्रेणी तोडगा.' : 'Physical spectrometry audit resolved rate classification.'}</p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => applyPreset('Technical Review: Discrepancy within permissible tare tolerance (+-0.5%). Facility weighment verified accurate and claim dismissed.')}
+                  onClick={() => applyPreset(
+                    language === 'hi'
+                      ? 'तकनीकी समीक्षा: विसंगति अनुमेय टियर सहनशीलता (+-0.5%) के भीतर है। संयंत्र वजन सटीक सत्यापित और दावा खारिज किया गया।'
+                      : language === 'mr'
+                      ? 'तांत्रिक पुनरावलोकन: तफावत मान्य टियर सहनशीलतेच्या (+-0.5%) आत आहे. सुविधा वजन अचूक सत्यापित आणि दावा फेटाळला.'
+                      : 'Technical Review: Discrepancy within permissible tare tolerance (+-0.5%). Facility weighment verified accurate and claim dismissed.'
+                  )}
                   className="text-left p-2 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 text-[10px] text-slate-700 dark:text-slate-300 transition-all space-y-0.5"
                 >
-                  <div className="font-bold text-rose-700 dark:text-rose-400">📋 Permissible Tolerance Dismissal</div>
-                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">Weight within legal margin, facility weighment upheld.</p>
+                  <div className="font-bold text-rose-700 dark:text-rose-400">📋 {language === 'hi' ? 'अनुमेय सहनशीलता पर दावा खारिज' : language === 'mr' ? 'मान्य सहनशीलतेवर दावा फेटाळला' : 'Permissible Tolerance Dismissal'}</div>
+                  <p className="text-slate-500 dark:text-slate-400 line-clamp-1">{language === 'hi' ? 'वजन विसंगति कानूनी सीमा के भीतर, दावा निरस्त।' : language === 'mr' ? 'वजन तफावत कायदेशीर मर्यादेत, दावा फेटाळला.' : 'Weight within legal margin, facility weighment upheld.'}</p>
                 </button>
               </div>
             </div>
@@ -672,7 +705,13 @@ export const DisputeResolutionPage: React.FC = () => {
                 rows={4}
                 value={rulingNotes}
                 onChange={(e) => setRulingNotes(e.target.value)}
-                placeholder="Enter official CPCB tribunal decision, legal metrology certificate number, or settlement details..."
+                placeholder={
+                  language === 'hi' 
+                    ? 'सीपीसीबी न्यायाधिकरण का आधिकारिक निर्णय, विधिक माप विज्ञान प्रमाण पत्र संख्या या निपटारा विवरण दर्ज करें...' 
+                    : language === 'mr' 
+                    ? 'सीपीसीबी लवाद निर्णय, विधिक मापशास्त्र प्रमाणपत्र क्रमांक किंवा तडजोड तपशील प्रविष्ट करा...' 
+                    : 'Enter official CPCB tribunal decision, legal metrology certificate number, or settlement details...'
+                }
                 className="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white text-xs focus:outline-none focus:border-indigo-500 transition-all leading-relaxed"
               />
             </div>
@@ -696,7 +735,7 @@ export const DisputeResolutionPage: React.FC = () => {
                 {submittingRuling ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Recording Ruling...</span>
+                    <span>{language === 'hi' ? 'निर्णय दर्ज हो रहा है...' : language === 'mr' ? 'निर्णय नोंदवला जात आहे...' : 'Recording Ruling...'}</span>
                   </>
                 ) : (
                   <>

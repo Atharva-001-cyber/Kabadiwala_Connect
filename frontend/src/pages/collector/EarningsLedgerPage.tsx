@@ -264,7 +264,7 @@ export const EarningsLedgerPage: React.FC = () => {
       </div>
 
       {/* 🏅 Collector Gamification & Green Badges Section */}
-      <CollectorGamificationCard totalWeight={(summary as any)?.totalWeight || 180} />
+      <CollectorGamificationCard totalWeight={(summary as any)?.totalWeight || (summary as any)?.totalWeightCollectedKg || 0} />
 
       {/* Transaction History & Interactive Filter Bar */}
       <div className="space-y-4">

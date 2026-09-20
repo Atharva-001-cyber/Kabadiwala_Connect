@@ -441,7 +441,7 @@ export const RecyclerProfilePage: React.FC = () => {
               {language === 'hi' ? 'CO₂ उत्सर्जन बचाव' : language === 'mr' ? 'CO₂ उत्सर्जन बचाव' : 'CO2 Emissions Averted'}
             </span>
             <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">
-              ~85.2 MT CO2e
+              {language === 'hi' ? '~85.2 मीट्रिक टन CO₂e' : language === 'mr' ? '~85.2 मेट्रिक टन CO₂e' : '~85.2 MT CO2e'}
             </span>
             <span className="text-[10px] text-slate-500 block">
               {language === 'hi' ? 'कच्ची धातु प्रगलन से बचाव' : language === 'mr' ? 'कच्च्या धातू वितळवण्यापासून बचाव' : 'Avoided Virgin Smelting'}

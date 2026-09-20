@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Camera, 
   Sparkles, 
@@ -34,10 +34,7 @@ import {
   analyzeScrapVision, 
   VisionAnalysisResult, 
   DetectedObjectBox, 
-  getMobileNetModel,
-  getGeminiApiKey,
-  setGeminiApiKey,
-  isCloudAiAvailable
+  prewarmVisionModel
 } from '../../utils/visionClassifier';
 
 export interface ScrapPhotoItem {
@@ -142,7 +139,21 @@ export const AddLotPage: React.FC = () => {
   // 5-Step Visual Wizard State
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
+  // Internal placeholder only; never submit or highlight until the collector confirms.
   const [selectedCategory, setSelectedCategory] = useState<MaterialCategory>('PCB');
+  const [categoryConfirmed, setCategoryConfirmed] = useState(false);
+  const confirmCategory = (category: MaterialCategory) => {
+    setSelectedCategory(category);
+    setCategoryConfirmed(true);
+  };
+  const goToStep = (step: 1 | 2 | 3 | 4 | 5) => {
+    if (step >= 3 && (!categoryConfirmed || photos.length === 0 || isClassifying)) {
+      showToast(language === 'hi' ? 'पहले फोटो जोड़ें और सामग्री की श्रेणी चुनें।' : language === 'mr' ? 'आधी फोटो जोडा आणि साहित्याची श्रेणी निवडा.' : 'Add a photo and confirm the material category first.', 'warning');
+      setWizardStep(photos.length === 0 ? 1 : 2);
+      return;
+    }
+    setWizardStep(step);
+  };
   const [approxWeight, setApproxWeight] = useState<string>('10');
   const [condition, setCondition] = useState<LotCondition>('INTACT');
   const [sourceType, setSourceType] = useState<SourceType>('HOUSEHOLD');
@@ -156,6 +167,7 @@ export const AddLotPage: React.FC = () => {
     if (photos.length > prevPhotosLenRef.current && photos.length > 0) {
       const latestIdx = photos.length - 1;
       setActivePhotoIndex(latestIdx);
+      setCategoryConfirmed(false);
       const newlyAdded = photos[latestIdx];
       if (newlyAdded?.aiPrediction?.category && !newlyAdded.nonEWasteAlert?.isNonEWaste) {
         setSelectedCategory(newlyAdded.aiPrediction.category);
@@ -203,11 +215,25 @@ export const AddLotPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [createdSuccessLotId, setCreatedSuccessLotId] = useState<string | null>(null);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.autoOpenCamera) {
+      setIsCameraModalOpen(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
 
-  // Dual-Tier Hybrid AI Co-Pilot State (Cloud Multimodal + Offline Edge)
+    const handleGlobalCameraTrigger = () => {
+      setIsCameraModalOpen(true);
+    };
+    window.addEventListener('kabadi:open_camera', handleGlobalCameraTrigger);
+
+    return () => {
+      window.removeEventListener('kabadi:open_camera', handleGlobalCameraTrigger);
+    };
+  }, [location.key, location.state, location.pathname, navigate]);
+
+  // Local model information (no cloud vision endpoint is connected).
   const [isAiConfigOpen, setIsAiConfigOpen] = useState<boolean>(false);
-  const [tempApiKey, setTempApiKey] = useState<string>(() => getGeminiApiKey());
-  const [isCloudActive, setIsCloudActive] = useState<boolean>(() => isCloudAiAvailable());
 
   // Fetch real market rates & request device GPS on boot
   useEffect(() => {
@@ -245,9 +271,9 @@ export const AddLotPage: React.FC = () => {
     }
   }, [collectorProfile]);
 
-  // Pre-warm MobileNet model in browser background so it's instantly hot for camera/gallery
+  // Warm the actual detector; failure is handled by the manual fallback.
   useEffect(() => {
-    getMobileNetModel().catch(() => {});
+    prewarmVisionModel().catch(() => {});
   }, []);
 
   // Recalculate valuation on category, weight, or condition changes
@@ -284,18 +310,8 @@ export const AddLotPage: React.FC = () => {
         setSelectedDetectionId(null);
       }
     } else {
-      // Graceful fallback to primary verified prediction if viewing an auxiliary angle photo
-      const primary = photos.find(p => p.aiPrediction && !p.nonEWasteAlert?.isNonEWaste);
-      if (primary?.aiPrediction) {
-        setAiPrediction(primary.aiPrediction);
-        const objects = primary.visionResult?.detectedObjects || primary.aiPrediction.detectedObjects || [];
-        if (objects.length > 0) {
-          setSelectedDetectionId(objects[0].id);
-        }
-      } else {
-        setAiPrediction(null);
-        setSelectedDetectionId(null);
-      }
+      setAiPrediction(null);
+      setSelectedDetectionId(null);
     }
   }, [activePhotoIndex, photos]);
 
@@ -340,7 +356,7 @@ export const AddLotPage: React.FC = () => {
 
   // Audio helper for material category tap
   const handleSelectCategory = (cat: MaterialCategory) => {
-    setSelectedCategory(cat);
+    confirmCategory(cat);
     const rate = livePrices[cat] || MATERIAL_CATEGORIES.find(m => m.key === cat)?.fallbackRate || 70;
     const catName = categoryLabels[cat]?.[language] || cat;
     const speechText = language === 'hi'
@@ -460,6 +476,7 @@ export const AddLotPage: React.FC = () => {
   };
 
   const handleRemovePhoto = (id: string, e?: React.MouseEvent) => {
+    setCategoryConfirmed(false);
     if (e) e.stopPropagation();
     setPhotos(prev => {
       const updated = prev.filter(p => p.id !== id);
@@ -515,6 +532,10 @@ export const AddLotPage: React.FC = () => {
 
   const handleCreateLot = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (!categoryConfirmed || isClassifying) {
+      goToStep(3);
+      return;
+    }
     if (photos.length === 0) {
       showToast(
         language === 'hi'
@@ -548,7 +569,7 @@ export const AddLotPage: React.FC = () => {
         language === 'hi' ? 'कृपया सही वजन दर्ज करें' : language === 'mr' ? 'कृपया योग्य वजन नोंदवा' : 'Please enter valid weight',
         'warning'
       );
-      setWizardStep(3);
+      goToStep(3);
       return;
     }
 
@@ -843,7 +864,7 @@ export const AddLotPage: React.FC = () => {
             <button
               key={item.step}
               type="button"
-              onClick={() => setWizardStep(item.step as 1 | 2 | 3 | 4 | 5)}
+              onClick={() => goToStep(item.step as 1 | 2 | 3 | 4 | 5)}
               className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
                 isActive
                   ? 'bg-emerald-600 text-white font-black shadow-md scale-105 ring-2 ring-emerald-400/50'
@@ -868,7 +889,7 @@ export const AddLotPage: React.FC = () => {
               <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">1</span>
               <span>{t.step1Heading}</span>
             </label>
-            <span className="text-[10px] text-slate-500 font-bold">{t.optionalRecommended}</span>
+            <span className="text-[10px] text-slate-500 font-bold">{language === 'hi' ? 'कम से कम 1 साफ़ फोटो ज़रूरी' : language === 'mr' ? 'किमान १ स्पष्ट फोटो आवश्यक' : 'At least 1 clear photo required'}</span>
           </div>
 
           <div className="relative rounded-2xl overflow-hidden border-2 border-dashed border-slate-700 bg-slate-950/70 p-4 text-center">
@@ -879,7 +900,7 @@ export const AddLotPage: React.FC = () => {
                   <img
                     src={photos[activePhotoIndex]?.dataUrl || photos[0]?.dataUrl}
                     alt="E-Waste Scrap Preview"
-                    className="w-full h-52 sm:h-64 object-cover rounded-2xl"
+                    className="block w-full h-auto rounded-2xl"
                   />
 
                   {/* YOLOv8-Nano Dynamic Bounding Boxes Overlay */}
@@ -893,7 +914,7 @@ export const AddLotPage: React.FC = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedDetectionId(obj.id);
-                              setSelectedCategory(obj.category);
+                              confirmCategory(obj.category);
                             }}
                             className={`absolute transition-all duration-300 rounded-xl pointer-events-auto cursor-pointer ${
                               isSelected
@@ -1019,6 +1040,7 @@ export const AddLotPage: React.FC = () => {
                       <div
                         key={p.id}
                         onClick={() => {
+                          setCategoryConfirmed(false);
                           setActivePhotoIndex(idx);
                           if (p.aiPrediction?.category) {
                             setSelectedCategory(p.aiPrediction.category);
@@ -1101,17 +1123,14 @@ export const AddLotPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setTempApiKey(getGeminiApiKey());
                       setIsAiConfigOpen(true);
                     }}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-900/90 hover:bg-slate-800 active:scale-95 text-slate-300 text-xs font-bold rounded-2xl border border-sky-500/40 shadow transition-all"
-                    title="Dual-Tier AI Settings"
+                    title="Local AI model information"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                     <span>
-                      {isCloudActive
-                        ? (language === 'hi' ? '☁️ क्लाउड को-पायलट (चालू)' : language === 'mr' ? '☁️ क्लाउड को-पायलट (सुरू)' : '☁️ Cloud Co-Pilot (ON)')
-                        : (language === 'hi' ? '⚡ एज AI (ऑफलाइन)' : language === 'mr' ? '⚡ एज AI (ऑफलाइन)' : '⚡ Edge AI (Offline)')}
+                      {language === 'hi' ? '⚡ AI की जानकारी' : language === 'mr' ? '⚡ AI माहिती' : '⚡ AI model info'}
                     </span>
                   </button>
                 </div>
@@ -1147,17 +1166,14 @@ export const AddLotPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setTempApiKey(getGeminiApiKey());
                       setIsAiConfigOpen(true);
                     }}
                     className="px-3.5 py-3 bg-slate-900/90 hover:bg-slate-800 active:scale-95 text-slate-300 text-xs font-bold rounded-2xl border border-sky-500/40 shadow flex items-center gap-1.5 transition-all"
-                    title="Dual-Tier AI Settings"
+                    title="Local AI model information"
                   >
                     <Sparkles className="w-4 h-4 text-amber-400" />
                     <span>
-                      {isCloudActive
-                        ? (language === 'hi' ? '☁️ क्लाउड को-पायलट' : language === 'mr' ? '☁️ क्लाउड को-पायलट' : '☁️ Cloud Co-Pilot')
-                        : (language === 'hi' ? '⚡ एज AI' : language === 'mr' ? '⚡ एज AI' : '⚡ Edge AI')}
+                      {language === 'hi' ? '⚡ AI की जानकारी' : language === 'mr' ? '⚡ AI माहिती' : '⚡ AI model info'}
                     </span>
                   </button>
                 </div>
@@ -1285,9 +1301,7 @@ export const AddLotPage: React.FC = () => {
           {/* Transparent Real YOLOv8-Nano Vision Suggestion Box (Restored Option 1 UI/UX) */}
           {(() => {
             const currentPhoto = photos[activePhotoIndex];
-            const primaryPhoto = currentPhoto?.aiPrediction 
-              ? currentPhoto 
-              : photos.find(p => p.aiPrediction && !p.nonEWasteAlert?.isNonEWaste);
+            const primaryPhoto = currentPhoto;
 
             if (!primaryPhoto?.aiPrediction || (currentPhoto?.nonEWasteAlert && !currentPhoto?.isSelfCertified)) {
               return null;
@@ -1304,7 +1318,7 @@ export const AddLotPage: React.FC = () => {
             const activeCpcbCode: string = activeObj?.cpcbCode || predPhoto.aiPrediction!.cpcbCode || 'SCHEDULE_I';
             const activeSubCategory: string = activeObj?.subCategory || predPhoto.aiPrediction!.subCategory || `${activeCategory} Scrap Item`;
             const displayTitle = getDetectionPillTitle(activeCategory, activeSubCategory);
-            const latencyMs: number = predPhoto.aiPrediction!.inferenceTimeMs || (predPhoto.visionResult as any)?.inferenceTimeMs || 84;
+            const latencyMs = predPhoto.aiPrediction!.inferenceTimeMs ?? predPhoto.visionResult?.inferenceTimeMs;
             const featuresList = predPhoto.aiPrediction!.features || predPhoto.visionResult?.featuresDetected || [];
 
             return (
@@ -1323,7 +1337,7 @@ export const AddLotPage: React.FC = () => {
                       CPCB: {activeCpcbCode}
                     </span>
                     <span className="text-xs text-emerald-400 font-mono font-bold">
-                      ({Math.round(activeConfidence * 100)}% Match)
+                      ({Math.round(activeConfidence * 100)}% model score)
                     </span>
                   </div>
 
@@ -1345,8 +1359,8 @@ export const AddLotPage: React.FC = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
-                      onClick={() => setSelectedCategory(activeCategory)}
-                      className={`px-4 py-2 text-xs font-black rounded-xl shadow transition-all flex items-center gap-1.5 ${selectedCategory === activeCategory ? 'bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 font-extrabold' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+                      onClick={() => confirmCategory(activeCategory)}
+                      className={`px-4 py-2 text-xs font-black rounded-xl shadow transition-all flex items-center gap-1.5 ${categoryConfirmed && selectedCategory === activeCategory ? 'bg-emerald-400 text-slate-950 ring-2 ring-emerald-300 font-extrabold' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
                     >
                       <Check className="w-4 h-4" />
                       <span>{language === 'hi' ? '✓ हाँ, सही है' : language === 'mr' ? '✓ होय, बरोबर आहे' : '✓ Yes, Correct'}</span>
@@ -1354,8 +1368,7 @@ export const AddLotPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        const el = document.getElementById('manual-category-selector');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        handleProceedToStep2();
                       }}
                       className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold rounded-xl border border-slate-700 shadow flex items-center gap-1 transition-all"
                     >
@@ -1407,7 +1420,7 @@ export const AddLotPage: React.FC = () => {
                             type="button"
                             onClick={() => {
                               setSelectedDetectionId(obj.id);
-                              setSelectedCategory(obj.category);
+                              confirmCategory(obj.category);
                             }}
                             className={`px-3 py-1.5 rounded-xl text-xs transition-all active:scale-95 flex items-center gap-1.5 shadow ${
                               isSelected
@@ -1451,11 +1464,11 @@ export const AddLotPage: React.FC = () => {
                       <>
                         <span className="px-2.5 py-1 rounded-lg bg-emerald-950/90 border border-emerald-800/70 flex items-center gap-1.5">
                           <span className="text-emerald-400 font-bold">✓</span>
-                          <span>CPCB Schedule-I ({activeCpcbCode}) certified e-waste scrap stream</span>
+                          <span>Material taxonomy reference: {activeCpcbCode} — not regulatory verification</span>
                         </span>
                         <span className="px-2.5 py-1 rounded-lg bg-emerald-950/90 border border-emerald-800/70 flex items-center gap-1.5">
                           <span className="text-emerald-400 font-bold">✓</span>
-                          <span>Real on-device ONNX WASM inference ({latencyMs}ms)</span>
+                          <span>Local ONNX inference{latencyMs != null ? ` (${latencyMs}ms)` : ''}</span>
                         </span>
                       </>
                     )}
@@ -1529,6 +1542,9 @@ export const AddLotPage: React.FC = () => {
                   : language === 'mr'
                   ? 'एआय मॉडेल फोटोमध्ये पुरेशा विश्वासाने साहित्य ओळखू शकले नाही. कृपया वस्तू स्पष्ट दिसेल असा फोटो पुन्हा काढा, किंवा खाली स्वतः साहित्य निवडा.'
                   : 'The AI could not identify the material with sufficient confidence. Please retake the photo with the item clearly visible, or select material category manually.'}
+                {photos[activePhotoIndex]?.visionResult?.message && (
+                  <span className="block mt-2">{photos[activePhotoIndex].visionResult?.message?.[language]}</span>
+                )}
               </p>
               <div className="pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-slate-800">
                 <button
@@ -1598,7 +1614,7 @@ export const AddLotPage: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {MATERIAL_CATEGORIES.map(({ key: cat, icon, cpcbCode, fallbackRate, examples }) => {
               const info = categoryLabels[cat];
-              const isSelected = selectedCategory === cat;
+              const isSelected = categoryConfirmed && selectedCategory === cat;
               const rate = livePrices[cat] || fallbackRate;
 
               return (
@@ -1651,7 +1667,7 @@ export const AddLotPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setWizardStep(3)}
+              onClick={() => goToStep(3)}
               className="w-2/3 min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-2xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5"
             >
               <span>{language === 'hi' ? 'वजन व स्थिति दर्ज करें ➔' : language === 'mr' ? 'वजन व स्थिती नोंदवा ➔' : 'Enter Weight & Condition ➔'}</span>
@@ -1844,7 +1860,7 @@ export const AddLotPage: React.FC = () => {
                   showToast(language === 'hi' ? 'कृपया सही वजन दर्ज करें' : language === 'mr' ? 'कृपया योग्य वजन नोंदवा' : 'Please enter valid weight', 'warning');
                   return;
                 }
-                setWizardStep(4);
+                goToStep(4);
               }}
               className="w-2/3 min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-2xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5"
             >
@@ -1947,7 +1963,7 @@ export const AddLotPage: React.FC = () => {
           <div className="flex items-center gap-3 pt-2">
             <button
               type="button"
-              onClick={() => setWizardStep(3)}
+              onClick={() => goToStep(3)}
               className="w-1/3 min-h-[48px] py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -1955,7 +1971,7 @@ export const AddLotPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setWizardStep(5)}
+              onClick={() => goToStep(5)}
               className="w-2/3 min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-2xl text-xs font-black shadow-lg flex items-center justify-center gap-1.5"
             >
               <span>{language === 'hi' ? 'लॉट की समीक्षा करें ➔' : language === 'mr' ? 'लॉटची तपासणी करा ➔' : 'Review Lot ➔'}</span>
@@ -2076,134 +2092,15 @@ export const AddLotPage: React.FC = () => {
         onCapture={handleCameraCapture}
       />
 
-      {/* Dual-Tier AI Co-Pilot Settings Modal (Cloud Vision + Offline Edge) */}
+      {/* Honest model information for collectors and live judging demonstrations. */}
       {isAiConfigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border-2 border-slate-700 w-full max-w-md rounded-3xl p-5 space-y-4 shadow-2xl text-left">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="p-2 rounded-xl bg-sky-950 text-sky-400 border border-sky-800">
-                  <Sparkles className="w-5 h-5" />
-                </span>
-                <div>
-                  <h3 className="text-sm font-black text-white">
-                    {language === 'hi' ? 'AI को-पायलट आर्किटेक्चर' : language === 'mr' ? 'AI को-पायलट आर्किटेक्चर' : 'AI Co-Pilot Architecture'}
-                  </h3>
-                  <span className="text-[10px] text-slate-400">
-                    Dual-Tier: Multimodal Cloud + 100% Offline Edge
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAiConfigOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Architecture Explainer */}
-            <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-2xl bg-sky-950/50 border border-sky-800/60 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-sky-300 flex items-center gap-1.5">
-                    <span>☁️</span>
-                    <span>{language === 'hi' ? 'टियर 1: क्लाउड विजन (Gemini 1.5 Flash)' : language === 'mr' ? 'टियर 1: क्लाउड व्हिजन (Gemini 1.5 Flash)' : 'Tier 1: Cloud Vision (Gemini 1.5 Flash)'}</span>
-                  </span>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-black ${
-                    isCloudActive ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {isCloudActive
-                      ? (language === 'hi' ? '● सक्रिय' : language === 'mr' ? '● सक्रिय' : '● Active')
-                      : (language === 'hi' ? '○ निष्क्रिय (की नहीं)' : language === 'mr' ? '○ निष्क्रिय (की नाही)' : '○ Disabled (No Key)')}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {language === 'hi'
-                    ? 'जटिल स्क्रैप, चिप मॉडल नंबर और CPCB नियम 19 पर 99.9% मल्टीमॉडल सटीकता।'
-                    : language === 'mr'
-                    ? 'गुंतागुंतीचे स्क्रॅप, चिप मॉडेल नंबर आणि CPCB नियमांवर ९९.९% अचूकता.'
-                    : '99.9% Multimodal precision on complex assemblies, reading chip model numbers and CPCB Schedule-I rules.'}
-                </p>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-emerald-950/50 border border-emerald-800/60 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-emerald-300 flex items-center gap-1.5">
-                    <span>⚡</span>
-                    <span>{language === 'hi' ? 'टियर 2: YOLOv8-नैनो + मोबाइलनेट' : language === 'mr' ? 'टियर 2: YOLOv8-नॅनो + मोबाईलनेट' : 'Tier 2: YOLOv8-Nano + MobileNet'}</span>
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    {language === 'hi' ? '● हमेशा तैयार (ऑफलाइन)' : language === 'mr' ? '● नेहमी तयार (ऑफलाइन)' : '● Always Ready (Offline)'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {language === 'hi'
-                    ? '100% ब्राउज़र में, क्लाइंट-साइड, बिना इंटरनेट के ग्रामीण क्षेत्रों में भी तत्काल काम करता है।'
-                    : language === 'mr'
-                    ? '१००% ब्राउझरमध्ये, क्लायंट-साइड, इंटरनेट नसलेल्या ग्रामीण भागातही त्वरित कार्य करते.'
-                    : '100% in-browser, client-side, zero latency (<50ms), works in remote rural areas with zero internet connectivity.'}
-                </p>
-              </div>
-            </div>
-
-            {/* API Key Configuration Form */}
-            <div className="space-y-2 pt-1 border-t border-slate-800">
-              <label className="text-xs font-bold text-slate-300 block">
-                {language === 'hi' ? 'Google Gemini API Key (वैकल्पिक):' : language === 'mr' ? 'Google Gemini API Key (पर्यायी):' : 'Google Gemini API Key (Optional):'}
-              </label>
-              <input
-                type="password"
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                placeholder="AIzaSy..."
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
-              />
-              <span className="text-[10px] text-slate-400 block leading-tight">
-                {language === 'hi'
-                  ? 'कुंजी दर्ज करने पर क्लाउड को-पायलट सक्रिय हो जाएगा। ऑफलाइन टेस्ट करने के लिए इसे खाली छोड़ें।'
-                  : language === 'mr'
-                  ? 'की नोंदवल्यावर क्लाउड को-पायलट सुरू होईल. ऑफलाइन तपासण्यासाठी रिक्त ठेवा.'
-                  : 'Providing a key activates Cloud Co-Pilot. Leave blank to demo 100% offline Edge AI.'}
-              </span>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setGeminiApiKey(tempApiKey);
-                  setIsCloudActive(isCloudAiAvailable());
-                  setIsAiConfigOpen(false);
-                  showToast(
-                    tempApiKey.trim().length > 0
-                      ? '☁️ Cloud Vision Co-Pilot (Gemini 1.5 Flash) configured!'
-                      : '⚡ Switched to 100% Offline Edge AI Mode!',
-                    'success'
-                  );
-                }}
-                className="flex-1 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-black shadow-lg transition-all active:scale-95"
-              >
-                {language === 'hi' ? 'सेव करें' : language === 'mr' ? 'जतन करा' : 'Save Configuration'}
-              </button>
-
-              {tempApiKey.trim().length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTempApiKey('');
-                    setGeminiApiKey('');
-                    setIsCloudActive(false);
-                    showToast('Switched to Offline Edge AI mode', 'info');
-                  }}
-                  className="px-3 py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-xl text-xs font-bold transition-all"
-                >
-                  {language === 'hi' ? 'की हटाएं (ऑफलाइन मोड)' : 'Clear Key'}
-                </button>
-              )}
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70">
+          <div role="dialog" aria-modal="true" aria-labelledby="vision-info-title" className="max-w-md w-full rounded-3xl bg-white text-slate-900 p-6 space-y-4 shadow-xl">
+            <h3 id="vision-info-title" className="text-lg font-bold">AI Vision · Live local inference</h3>
+            <p>{language === 'hi' ? 'कैमरा और अपलोड दोनों पर एक ही वास्तविक मॉडल चलता है। यह 8 सामग्री श्रेणियों का सुझाव देता है; अंतिम पुष्टि आपकी है।' : language === 'mr' ? 'कॅमेरा आणि अपलोडसाठी एकच वास्तविक मॉडेल आहे. ८ श्रेणींची सूचना मिळते; अंतिम पुष्टी तुमची.' : 'Camera and upload use the same real model. It suggests eight material classes; you confirm the final category.'}</p>
+            <p className="text-sm">PCB · Battery · CRT · LCD · Cable · Motor · Magnet · Mixed e-waste</p>
+            <p className="text-sm">Model score is not guaranteed accuracy. Complete devices, hands, clutter and poor lighting can confuse the model. No cloud vision is connected. Offline use requires model and runtime assets to be available.</p>
+            <button type="button" onClick={() => setIsAiConfigOpen(false)} className="min-h-[48px] w-full rounded-xl bg-emerald-700 text-white font-bold">{language === 'hi' ? 'समझ गया' : language === 'mr' ? 'समजले' : 'Got it'}</button>
           </div>
         </div>
       )}

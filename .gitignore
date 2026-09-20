@@ -16,3 +16,7 @@ scratch/
 .vercel
 .env*
 frontend/check_db*.mjs
+
+# Datasets and PyTorch weights
+*.pt
+dataset_*/

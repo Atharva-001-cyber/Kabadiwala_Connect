@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Camera, 
   Coins, 
@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useToast } from '../../context/ToastContext';
 import { useSync } from '../../context/SyncContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { AudioButton } from '../../components/common/AudioButton';
@@ -40,6 +41,8 @@ import { MaterialJourney } from '../../components/common/MaterialJourney';
 import { CollectorGamificationCard } from '../../components/common/CollectorGamificationCard';
 
 export const CollectorDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
   const { user, collectorProfile } = useAuth();
   const { language, t } = useLanguage();
   const { isOnline, pendingCount, syncNow, isSyncing } = useSync();
@@ -53,6 +56,58 @@ export const CollectorDashboard: React.FC = () => {
 
   const rawCollectorName = collectorProfile?.name || user?.name;
   const collectorDisplayName = formatUserDisplayName(rawCollectorName, 'COLLECTOR', language);
+
+  const handleAcceptBeaconFromDashboard = async (beaconId: string) => {
+    try {
+      let colNameRaw = collectorProfile?.name || user?.name;
+      let colPhone = collectorProfile?.phone || user?.phone;
+      let colId = collectorProfile?.id || user?.id || 'col_1';
+
+      if (!colNameRaw) {
+        const storedCol = localStorage.getItem('collectorProfile');
+        const storedUser = localStorage.getItem('user');
+        if (storedCol) {
+          try {
+            const parsed = JSON.parse(storedCol);
+            if (parsed.name) colNameRaw = parsed.name;
+            if (parsed.phone) colPhone = parsed.phone;
+            if (parsed.id) colId = parsed.id;
+          } catch {}
+        }
+        if (!colNameRaw && storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser);
+            if (parsed.name || parsed.fullName) colNameRaw = parsed.name || parsed.fullName;
+            if (parsed.phone) colPhone = parsed.phone;
+            if (parsed.id) colId = parsed.id;
+          } catch {}
+        }
+      }
+
+      if (!colNameRaw) {
+        colNameRaw = language === 'hi' || language === 'mr' ? 'अभिमन्‍यु (CPCB अधिकृत)' : 'Abhimanyu';
+      }
+
+      const colName = colNameRaw.includes('CPCB')
+        ? colNameRaw
+        : `${colNameRaw} (${language === 'hi' || language === 'mr' ? 'CPCB अधिकृत' : 'CPCB Verified'})`;
+
+      const finalPhone = colPhone || '9876543210';
+
+      const res = await api.acceptCitizenBeacon(beaconId, colId, colName, finalPhone);
+      if (res.success) {
+        showToast(
+          language === 'hi'
+            ? `👷 ${colName} ने पिकअप स्वीकार किया!`
+            : `👷 Pickup accepted by ${colName}!`,
+          'success'
+        );
+        navigate(`/citizen/track/${beaconId}`);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to accept pickup', 'error');
+    }
+  };
 
   useEffect(() => {
     const fetchData = async (silent = false) => {
@@ -382,7 +437,7 @@ export const CollectorDashboard: React.FC = () => {
 
         {/* 🏅 Collector Gamification Badge Progress Bar */}
         <div className="mt-4">
-          <CollectorGamificationCard totalWeight={totalCollectedWeight || 180} compact={true} />
+          <CollectorGamificationCard totalWeight={totalCollectedWeight || 0} compact={true} />
         </div>
       </div>
 
@@ -443,13 +498,14 @@ export const CollectorDashboard: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
-                  <Link
-                    to={`/citizen/track/${b.id}`}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow active:scale-95 transition-all shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => handleAcceptBeaconFromDashboard(b.id)}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow active:scale-95 transition-all shrink-0 cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>{language === 'hi' ? 'पिकअप स्वीकार करें' : language === 'mr' ? 'पिकअप स्वीकार करा' : 'Accept Pickup'}</span>
-                  </Link>
+                  </button>
                 </div>
               </div>
             ))}

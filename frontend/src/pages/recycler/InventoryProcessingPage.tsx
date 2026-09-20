@@ -78,15 +78,35 @@ export const InventoryProcessingPage: React.FC = () => {
     switch (stage) {
       case 'RECYCLER_RECEIVED':
       case 'RECEIVED':
-        return 'Warehouse intake scale verified; lot segregated and logged into facility ledger.';
+        return isHi
+          ? 'गोदाम अंतर्ग्रहण कांटा सत्यापित; लॉट को अलग करके सुविधा बही में दर्ज किया गया।'
+          : isMr
+            ? 'गोदाम प्रवेश काटा सत्यापित; लॉटचे वर्गीकरण करून सुविधा नोंदवहीत नोंदवले.'
+            : 'Warehouse intake scale verified; lot segregated and logged into facility ledger.';
       case 'SORTED':
-        return 'Surface-mount depopulation, component desoldering, and manual hazardous segregation completed.';
+        return isHi
+          ? 'सरफेस-माउंट डिपोपुलेशन, कंपोनेंट डिसोल्डरिंग, और हस्तचालित खतरनाक पृथक्करण पूर्ण।'
+          : isMr
+            ? 'सरफेस-माउंट डिपॉप्युलेशन, घटक डिसोल्डरिंग, आणि मॅन्युअल धोकादायक वर्गीकरण पूर्ण.'
+            : 'Surface-mount depopulation, component desoldering, and manual hazardous segregation completed.';
       case 'PROCESSING':
-        return 'Hydrometallurgical acid leaching and closed-loop electrolyte separation active.';
+        return isHi
+          ? 'जल-धातुकर्म (हाइड्रोमेटलर्जिकल) अम्ल निक्षालन एवं बंद-पाश इलेक्ट्रोलाइट पृथक्करण सक्रिय।'
+          : isMr
+            ? 'हायड्रोमेटॅलर्जिकल ॲसिड लिचिंग आणि बंद-पाश इलेक्ट्रोलाइट अलगीकरण सक्रिय.'
+            : 'Hydrometallurgical acid leaching and closed-loop electrolyte separation active.';
       case 'RECYCLED':
-        return '100% Formally Recycled. Hazardous residues neutralized. CPCB Form-6 Certificate generated.';
+        return isHi
+          ? '100% औपचारिक रूप से पुनर्चक्रित। खतरनाक अवशेषों को निष्प्रभावी किया गया। CPCB फॉर्म-6 प्रमाण पत्र जनरेट हुआ।'
+          : isMr
+            ? '100% औपचारिकपणे रिसायकल केले. धोकादायक उर्वरित घटक निष्प्रभ केले. CPCB फॉर्म-6 प्रमाणपत्र जनरेट केले.'
+            : '100% Formally Recycled. Hazardous residues neutralized. CPCB Form-6 Certificate generated.';
       default:
-        return 'Facility processing status advanced.';
+        return isHi
+          ? 'सुविधा प्रसंस्करण स्थिति उन्नत।'
+          : isMr
+            ? 'सुविधा प्रक्रियेची स्थिती प्रगत.'
+            : 'Facility processing status advanced.';
     }
   };
 

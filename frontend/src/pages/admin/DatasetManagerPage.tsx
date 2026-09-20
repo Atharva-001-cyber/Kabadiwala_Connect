@@ -65,8 +65,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'payments',
       category: 'TRADE',
       name: {
-        hi: 'लेनदेन व भुगतान डेटासेट (Payment Ledger)',
-        mr: 'व्यवहार व पेमेंट डेटासेट',
+        hi: 'लेनदेन व भुगतान डेटासेट (भुगतान बहीखाता)',
+        mr: 'व्यवहार व पेमेंट डेटासेट (देयक खाते)',
         en: 'Transaction & Settlement Ledger'
       },
       desc: {
@@ -81,8 +81,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'lots',
       category: 'LOGISTICS',
       name: {
-        hi: 'ई-कचरा सामग्री सूची डेटासेट (Intake Lots)',
-        mr: 'ई-कचरा साहित्य सूची डेटासेट',
+        hi: 'ई-कचरा सामग्री सूची डेटासेट (आवक लॉट)',
+        mr: 'ई-कचरा साहित्य सूची डेटासेट (आवक लॉट)',
         en: 'E-Waste Material Catalog & Lots'
       },
       desc: {
@@ -97,8 +97,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'prices',
       category: 'TRADE',
       name: {
-        hi: 'मूल्य निर्धारण व बेंचमार्क दर डेटासेट (Rate Corridors)',
-        mr: 'दर निश्चिती व बेंचमार्क डेटासेट',
+        hi: 'मूल्य निर्धारण व बेंचमार्क दर डेटासेट (दर कॉरिडोर)',
+        mr: 'दर निश्चिती व बेंचमार्क डेटासेट (दर कॉरिडोअर्स)',
         en: 'Price Discovery & Benchmark Corridor'
       },
       desc: {
@@ -113,12 +113,12 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'recyclers',
       category: 'REGULATORY',
       name: {
-        hi: 'अधिकृत रीसाइक्लर डायरेक्टरी (CPCB Registry)',
-        mr: 'अधिकृत रिसायकलर डिरेक्टरी डेटासेट',
+        hi: 'अधिकृत रीसाइक्लर डायरेक्टरी (CPCB रजिस्ट्री)',
+        mr: 'अधिकृत रिसायकलर डिरेक्टरी डेटासेट (CPCB नोंदणी)',
         en: 'Authorized Recycler CPCB Registry'
       },
       desc: {
-        hi: 'संयंत्र का नाम, सीपीसीबी पंजीकरण क्रमांक, सत्यापन स्थिति, सेवा त्रिज्या, दैनिक क्षमता एवं गैजेट सत्यापन स्थिति',
+        hi: 'संयंत्र का नाम, सीपीसीबी पंजीकरण क्रमांक, सत्यापन स्थिति, सेवा त्रिज्या, दैनिक क्षमता एवं राजपत्र सत्यापन स्थिति',
         mr: 'संयंत्राचे नाव, सीपीसीबी नोंदणी क्रमांक, पडताळणी स्थिती, सेवा क्षेत्र व क्षमता',
         en: 'Facility Name, CPCB Registration No, Authorization Status, GPS Coords, Service Radius, Capacity, Material Rates'
       },
@@ -129,8 +129,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'traceability_logs',
       category: 'LOGISTICS',
       name: {
-        hi: 'आजीवन ट्रैसेबिलिटी चक्र डेटासेट (Form-6 Chain of Custody)',
-        mr: 'जीवनचक्र ट्रॅसेबिलिटी डेटासेट',
+        hi: 'आजीवन ट्रैसेबिलिटी चक्र डेटासेट (फॉर्म-6 कस्टडी शृंखला)',
+        mr: 'जीवनचक्र ट्रॅसेबिलिटी डेटासेट (फॉर्म-६ ताबा साखळी)',
         en: 'Lifecycle Traceability Audit Trail'
       },
       desc: {
@@ -145,8 +145,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'collectors',
       category: 'LOGISTICS',
       name: {
-        hi: 'कलेक्टर व कबाड़ीवाला समुदाय डेटासेट (Aggregators)',
-        mr: 'कलेक्टर व कबाडीवाला डेटासेट',
+        hi: 'कलेक्टर व कबाड़ीवाला समुदाय डेटासेट (एग्रीगेटर्स)',
+        mr: 'कलेक्टर व कबाडीवाला डेटासेट (ॲग्रिगेटर्स)',
         en: 'Collector & Aggregator Network'
       },
       desc: {
@@ -161,8 +161,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'anomalies',
       category: 'REGULATORY',
       name: {
-        hi: 'एआई विसंगति एवं जोखिम मॉनिटर डेटासेट (AI Flagging Registry)',
-        mr: 'एआय विसंगती नोंद डेटासेट',
+        hi: 'एआई विसंगति एवं जोखिम मॉनिटर डेटासेट (एआई फ़्लैगिंग रजिस्ट्री)',
+        mr: 'एआय विसंगती नोंद डेटासेट (एआय फ्लॅगिंग नोंदणी)',
         en: 'AI Anomaly & Risk Detection Registry'
       },
       desc: {
@@ -177,8 +177,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'disputes',
       category: 'REGULATORY',
       name: {
-        hi: 'सीपीसीबी विवाद मध्यस्थता डेटासेट (Tribunal Arbitrations)',
-        mr: 'सीपीसीबी लवाद वाद डेटासेट',
+        hi: 'सीपीसीबी विवाद मध्यस्थता डेटासेट (न्यायाधिकरण मध्यस्थता)',
+        mr: 'सीपीसीबी लवाद वाद डेटासेट (लवाद मध्यस्थता)',
         en: 'CPCB Dispute Arbitration Records'
       },
       desc: {
@@ -193,8 +193,8 @@ export const DatasetManagerPage: React.FC = () => {
       table: 'ml_training_samples',
       category: 'AI',
       name: {
-        hi: 'एआई विजन मॉडल प्रशिक्षण डेटासेट (Ground Truth Samples)',
-        mr: 'एआय व्हिजन मॉडेल प्रशिक्षण डेटासेट',
+        hi: 'एआई विजन मॉडल प्रशिक्षण डेटासेट (सत्यापित प्रशिक्षण नमूनें)',
+        mr: 'एआय व्हिजन मॉडेल प्रशिक्षण डेटासेट (सत्यापित नमुने)',
         en: 'AI Vision Ground-Truth Dataset'
       },
       desc: {
@@ -345,7 +345,7 @@ export const DatasetManagerPage: React.FC = () => {
               </h1>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 uppercase">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                CENTRAL DATA PIPELINE ACTIVE
+                {language === 'hi' ? 'केंद्रीय डेटा पाइपलाइन सक्रिय' : language === 'mr' ? 'केंद्रीय डेटा पाइपलाइन सक्रिय' : 'CENTRAL DATA PIPELINE ACTIVE'}
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-2xl leading-relaxed">
@@ -384,7 +384,7 @@ export const DatasetManagerPage: React.FC = () => {
           </div>
           <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{datasets.length}</div>
           <div className="text-[10px] text-slate-500 mt-1 font-medium">
-            9 Statutory Schemas
+            {language === 'hi' ? '9 वैधानिक स्कीमा' : language === 'mr' ? '9 वैधानिक स्कीमा' : '9 Statutory Schemas'}
           </div>
         </div>
 
@@ -402,7 +402,7 @@ export const DatasetManagerPage: React.FC = () => {
             {loadingCounts ? '...' : totalRecordsSum.toLocaleString('en-IN')}
           </div>
           <div className="text-[10px] text-emerald-700 dark:text-emerald-400/80 mt-1 font-medium">
-            100% Live Supabase Cloud
+            {language === 'hi' ? '100% लाइव सुपाबेस क्लाउड' : language === 'mr' ? '100% लाइव्ह सुपाबेस क्लाउड' : '100% Live Supabase Cloud'}
           </div>
         </div>
 
@@ -420,7 +420,7 @@ export const DatasetManagerPage: React.FC = () => {
             {loadingCounts ? '...' : counts['ml_training'] || 73}
           </div>
           <div className="text-[10px] text-purple-700 dark:text-purple-400/80 mt-1 font-medium">
-            Human-in-the-loop Verified
+            {language === 'hi' ? 'मानव-सत्यापित नमूनें' : language === 'mr' ? 'मानव-सत्यापित नमुने' : 'Human-in-the-loop Verified'}
           </div>
         </div>
 
@@ -436,7 +436,7 @@ export const DatasetManagerPage: React.FC = () => {
           </div>
           <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">JSON + CSV</div>
           <div className="text-[10px] text-blue-700 dark:text-blue-400/80 mt-1 font-medium">
-            UTF-8 & YOLO Manifests
+            {language === 'hi' ? 'UTF-8 एवं YOLO मैनिफेस्ट' : language === 'mr' ? 'UTF-8 आणि YOLO मेनिफेस्ट' : 'UTF-8 & YOLO Manifests'}
           </div>
         </div>
 
@@ -452,7 +452,7 @@ export const DatasetManagerPage: React.FC = () => {
           </div>
           <div className="text-2xl sm:text-3xl font-black text-cyan-700 dark:text-cyan-400">&lt; 15 ms</div>
           <div className="text-[10px] text-cyan-700 dark:text-cyan-400/80 mt-1 font-medium">
-            Realtime REST & Webhooks
+            {language === 'hi' ? 'रिएल-टाइम REST व वेबहुक API' : language === 'mr' ? 'रिअल-टाइम REST व वेबहुक API' : 'Realtime REST & Webhooks'}
           </div>
         </div>
       </div>
@@ -537,7 +537,13 @@ export const DatasetManagerPage: React.FC = () => {
                           ? 'bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30'
                           : 'bg-purple-50 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30'
                       }`}>
-                        {ds.category}
+                        {ds.category === 'TRADE'
+                          ? (language === 'hi' ? 'व्यापार / मूल्य' : language === 'mr' ? 'व्यवहार / दर' : 'TRADE')
+                          : ds.category === 'LOGISTICS'
+                          ? (language === 'hi' ? 'लॉजिस्टिक्स' : language === 'mr' ? 'लॉजिस्टिक्स' : 'LOGISTICS')
+                          : ds.category === 'REGULATORY'
+                          ? (language === 'hi' ? 'सीपीसीबी विनियामक' : language === 'mr' ? 'विनियामक' : 'REGULATORY')
+                          : (language === 'hi' ? 'एआई विज़न' : language === 'mr' ? 'एआय व्हिजन' : 'AI')}
                       </span>
                       <span className="text-slate-500 font-mono text-[10px]">
                         table: {ds.table}
@@ -550,7 +556,7 @@ export const DatasetManagerPage: React.FC = () => {
 
                   {/* Live Record Count Badge */}
                   <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-xs border border-emerald-200 dark:border-emerald-800/80 shrink-0">
-                    {loadingCounts ? '...' : (recCount !== undefined ? `${recCount.toLocaleString('en-IN')} rows` : 'Active')}
+                    {loadingCounts ? '...' : (recCount !== undefined ? `${recCount.toLocaleString('en-IN')} ${language === 'hi' ? 'पंक्तियां' : language === 'mr' ? 'ओळी' : 'rows'}` : (language === 'hi' ? 'सक्रिय' : language === 'mr' ? 'सक्रिय' : 'Active'))}
                   </span>
                 </div>
 
@@ -562,7 +568,7 @@ export const DatasetManagerPage: React.FC = () => {
                 {/* Schema Field Tags */}
                 <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                    {language === 'hi' ? 'स्कीमा फील्ड्स (Schema Attributes):' : 'Schema Attributes:'}
+                    {language === 'hi' ? 'स्कीमा विशेषताएं (Schema Attributes):' : language === 'mr' ? 'तक्ता वैशिष्ट्ये (Schema Attributes):' : 'Schema Attributes:'}
                   </span>
                   <div className="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto scrollbar-none">
                     {ds.fields.map((f) => (
@@ -598,7 +604,7 @@ export const DatasetManagerPage: React.FC = () => {
                   className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow transition-all"
                 >
                   <FileCode className={`w-3.5 h-3.5 ${isExportingJson ? 'animate-spin text-blue-600 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400'}`} />
-                  <span>{isExportingJson ? 'Exporting...' : 'JSON'}</span>
+                  <span>{isExportingJson ? (language === 'hi' ? 'निर्यात हो रहा है...' : language === 'mr' ? 'निर्यात होत आहे...' : 'Exporting...') : 'JSON'}</span>
                 </button>
 
                 {/* CSV Download Button */}
@@ -609,7 +615,7 @@ export const DatasetManagerPage: React.FC = () => {
                   className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow transition-all"
                 >
                   <FileSpreadsheet className={`w-3.5 h-3.5 ${isExportingCsv ? 'animate-spin' : ''}`} />
-                  <span>{isExportingCsv ? 'Exporting...' : 'CSV'}</span>
+                  <span>{isExportingCsv ? (language === 'hi' ? 'निर्यात हो रहा है...' : language === 'mr' ? 'निर्यात होत आहे...' : 'Exporting...') : 'CSV'}</span>
                 </button>
               </div>
             </div>
@@ -641,27 +647,31 @@ export const DatasetManagerPage: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
               <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800">
-                {counts['ml_training'] || 73} Verified Samples
+                {counts['ml_training'] || 73} {language === 'hi' ? 'सत्यापित नमूनें' : language === 'mr' ? 'सत्यापित नमुने' : 'Verified Samples'}
               </span>
               <span className="px-3 py-1 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-bold text-xs border border-purple-200 dark:border-purple-800">
-                YOLOv8 & Pascal VOC Ready
+                {language === 'hi' ? 'YOLOv8 एवं पास्कल VOC तैयार' : language === 'mr' ? 'YOLOv8 व पास्कल VOC तयार' : 'YOLOv8 & Pascal VOC Ready'}
               </span>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2 text-xs pt-1">
             <span className="px-2.5 py-1 bg-white dark:bg-slate-950 rounded-lg text-slate-700 dark:text-slate-300 font-mono text-[11px] border border-slate-200 dark:border-slate-800">
-              8 Standard Classes: PCB, BATTERY, CRT, LCD, CABLE, MOTOR, MAGNET, MIXED_PLASTIC
+              {language === 'hi'
+                ? '8 मानक श्रेणियां: पीसीबी, बैटरी, सीआरटी, एलसीडी, केबल, मोटर, मैग्नेट, ई-प्लास्टिक'
+                : language === 'mr'
+                ? '८ मानके श्रेणी: पीसीबी, बॅटरी, सीआरटी, एलसीडी, केबल, मोटर, चुंबक, ई-प्लॅस्टिक'
+                : '8 Standard Classes: PCB, BATTERY, CRT, LCD, CABLE, MOTOR, MAGNET, MIXED_PLASTIC'}
             </span>
             <span className="px-2.5 py-1 bg-white dark:bg-slate-950 rounded-lg text-emerald-700 dark:text-emerald-400 font-mono text-[11px] border border-slate-200 dark:border-slate-800">
-              Human Override Auditing Included
+              {language === 'hi' ? 'मानवीय सुधार ऑडिट शामिल' : language === 'mr' ? 'मानवी दुरुस्ती ऑडिट समाविष्ट' : 'Human Override Auditing Included'}
             </span>
           </div>
 
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>Includes image metadata, confidence scores, and bounding annotations.</span>
+              <span>{language === 'hi' ? 'छवि मेटाडेटा, कॉन्फिडेंस स्कोर और बाउंडिंग एनोटेशन शामिल हैं।' : language === 'mr' ? 'प्रतिमा मेटाडेटा, आत्मविश्वास स्कोअर आणि बाउंडिंग एनोटेशन समाविष्ट.' : 'Includes image metadata, confidence scores, and bounding annotations.'}</span>
             </div>
 
             <button
@@ -695,7 +705,7 @@ export const DatasetManagerPage: React.FC = () => {
                 {language === 'hi'
                   ? 'डाउनलोड ML ट्रेनिंग मैनिफेस्ट (YOLO)'
                   : language === 'mr'
-                  ? 'डाउनलोड ML ट्रेनिंग मॅनिफेस्ट'
+                  ? 'डाउनलोड ML ट्रेनिंग मॅनिफेस्ट (YOLO)'
                   : 'Download ML Training Manifest (YOLO)'}
               </span>
             </button>
@@ -718,7 +728,11 @@ export const DatasetManagerPage: React.FC = () => {
                     {previewDataset.name[language] || previewDataset.name.en}
                   </h3>
                   <div className="text-[11px] font-mono text-slate-500">
-                    Live Supabase Sample (First 5 Rows from `{previewDataset.table}`)
+                    {language === 'hi' 
+                      ? `सुपाबेस लाइव नमूना (\`${previewDataset.table}\` तालिका की प्रथम 5 पंक्तियां)` 
+                      : language === 'mr' 
+                      ? `सुपाबेस लाइव्ह नमुना (\`${previewDataset.table}\` तक्त्यातील पहिल्या ५ ओळी)` 
+                      : `Live Supabase Sample (First 5 Rows from \`${previewDataset.table}\`)`}
                   </div>
                 </div>
               </div>
@@ -732,7 +746,7 @@ export const DatasetManagerPage: React.FC = () => {
                       previewMode === 'TABLE' ? 'bg-emerald-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    TABLE
+                    {language === 'hi' ? 'तालिका' : language === 'mr' ? 'तक्ता' : 'TABLE'}
                   </button>
                   <button
                     onClick={() => setPreviewMode('JSON')}
@@ -758,11 +772,11 @@ export const DatasetManagerPage: React.FC = () => {
               {previewLoading ? (
                 <div className="flex items-center justify-center py-12 text-slate-500 gap-2">
                   <RefreshCw className="w-5 h-5 text-emerald-500 animate-spin" />
-                  <span>Fetching live sample rows from Supabase Cloud...</span>
+                  <span>{language === 'hi' ? 'सुपाबेस क्लाउड से लाइव नमूना पंक्तियां लोड हो रही हैं...' : language === 'mr' ? 'सुपाबेस क्लाउडवरून थेट नमुना ओळी लोड होत आहेत...' : 'Fetching live sample rows from Supabase Cloud...'}</span>
                 </div>
               ) : previewRows.length === 0 ? (
                 <div className="text-center py-12 text-slate-500">
-                  No records found in this table.
+                  {language === 'hi' ? 'इस तालिका में कोई रिकॉर्ड नहीं मिला।' : language === 'mr' ? 'या तक्त्यात कोणतीही नोंद आढळली नाही.' : 'No records found in this table.'}
                 </div>
               ) : previewMode === 'TABLE' ? (
                 <div className="overflow-x-auto">
@@ -803,7 +817,11 @@ export const DatasetManagerPage: React.FC = () => {
             {/* Modal Footer */}
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
               <span className="text-[11px] text-slate-500">
-                Viewing sample. Use export buttons to download complete data.
+                {language === 'hi' 
+                  ? 'नमूना देख रहे हैं। पूरा डेटा डाउनलोड करने के लिए निर्यात बटन का उपयोग करें।' 
+                  : language === 'mr' 
+                  ? 'नमुना पाहत आहात. संपूर्ण डेटा डाउनलोड करण्यासाठी निर्यात बटणे वापरा.' 
+                  : 'Viewing sample. Use export buttons to download complete data.'}
               </span>
 
               <div className="flex items-center gap-2">
@@ -813,7 +831,7 @@ export const DatasetManagerPage: React.FC = () => {
                   className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
                 >
                   <FileCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span>Download Full JSON</span>
+                  <span>{language === 'hi' ? 'पूर्ण JSON डाउनलोड करें' : language === 'mr' ? 'पूर्ण JSON डाउनलोड करा' : 'Download Full JSON'}</span>
                 </button>
                 <button
                   type="button"
@@ -821,7 +839,7 @@ export const DatasetManagerPage: React.FC = () => {
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
-                  <span>Download Full CSV</span>
+                  <span>{language === 'hi' ? 'पूर्ण CSV डाउनलोड करें' : language === 'mr' ? 'पूर्ण CSV डाउनलोड करा' : 'Download Full CSV'}</span>
                 </button>
               </div>
             </div>

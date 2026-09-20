@@ -149,7 +149,7 @@ export const AdminDashboard: React.FC = () => {
               <span className="text-[9px] font-mono text-emerald-800 dark:text-emerald-400 font-black bg-emerald-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-emerald-300 dark:border-0">FORM-6</span>
             </div>
             <span className="text-3xl font-black text-emerald-700 dark:text-emerald-400 font-mono block mt-1">
-              {(kpis?.totalWeightRecycledKg || 0).toLocaleString('en-IN')} kg
+              {(kpis?.totalWeightRecycledKg || 0).toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
             </span>
             <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-extrabold">
               {kpis?.formalRecyclingRatePercent || 0}% {language === 'hi' ? 'औपचारिक पुनर्चक्रण दर' : language === 'mr' ? 'अधिकृत पुनर्प्रक्रिया दर' : 'Formal Diversion Rate'}
@@ -306,7 +306,7 @@ export const AdminDashboard: React.FC = () => {
                       <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black shrink-0">{pct}%</span>
                     </div>
                     <div className="text-xl font-black text-slate-900 dark:text-white font-mono">
-                      {Number(weight).toLocaleString('en-IN', { maximumFractionDigits: 1 })} kg
+                      {Number(weight).toLocaleString('en-IN', { maximumFractionDigits: 1 })} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                       <div

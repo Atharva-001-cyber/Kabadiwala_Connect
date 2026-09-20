@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { DashboardLayout } from './components/layout/DashboardLayout';
+import { SplashScreen } from './components/common/SplashScreen';
 
 // Auth
 import { LoginPage } from './pages/auth/LoginPage';
@@ -74,9 +75,11 @@ const ProtectedRoute: React.FC<{
 
 export const App: React.FC = () => {
   const { role, isAuthenticated } = useAuth();
+  const [showSplash, setShowSplash] = React.useState<boolean>(true);
 
   return (
     <BrowserRouter>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <Routes>
         {/* Root redirect based on auth & role */}
         <Route

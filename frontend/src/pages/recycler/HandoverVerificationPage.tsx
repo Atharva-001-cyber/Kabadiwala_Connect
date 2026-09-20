@@ -36,7 +36,11 @@ const DEFAULT_SCALE_IMAGE = '/calibrated_scale_reading.jpg';
 interface ScalePreset {
   id: string;
   name: string;
+  nameHi: string;
+  nameMr: string;
   badge: string;
+  badgeHi: string;
+  badgeMr: string;
   url: string;
 }
 
@@ -44,19 +48,31 @@ const SCALE_PRESETS: ScalePreset[] = [
   {
     id: 'avery-zm510',
     name: 'Avery ZM510-SD (10.00 kg)',
+    nameHi: 'एवरी ZM510-SD (10.00 किग्रा)',
+    nameMr: 'एव्हरी ZM510-SD (10.00 किग्रॅ)',
     badge: 'Legal Metrology Hologram',
+    badgeHi: 'कानूनी मापविज्ञान होलोग्राम',
+    badgeMr: 'कायदेशीर वजन-मापन होलोग्राम',
     url: '/calibrated_scale_reading.jpg'
   },
   {
     id: 'industrial-weighbridge',
     name: 'Mettler-Toledo RI-350 (10.0 kg)',
+    nameHi: 'मेटलर-टोलेडो RI-350 (10.0 किग्रा)',
+    nameMr: 'मेटलर-टोलेडो RI-350 (10.0 किग्रॅ)',
     badge: 'Industrial Floor Scale',
+    badgeHi: 'औद्योगिक फ़्लोर कांटा',
+    badgeMr: 'औद्योगिक फ्लोअर काटा',
     url: '/scale_industrial_floor.jpg'
   },
   {
     id: 'precision-bench',
     name: 'Adam ACB-10k Bench (10.00 kg)',
+    nameHi: 'एडम ACB-10k बेंच (10.00 किग्रा)',
+    nameMr: 'ऍडम ACB-10k बेंच (10.00 किग्रॅ)',
     badge: 'Electronic Tare Display',
+    badgeHi: 'इलेक्ट्रॉनिक टेयर डिस्प्ले',
+    badgeMr: 'इलेक्ट्रॉनिक टेअर डिस्प्ले',
     url: '/scale_precision_bench.jpg'
   }
 ];
@@ -281,7 +297,15 @@ export const HandoverVerificationPage: React.FC = () => {
   const handleSelectPreset = (preset: ScalePreset) => {
     setProofImage(preset.url);
     setSelectedPresetId(preset.id);
-    showToast(`Switched to ${preset.name}`, 'info');
+    const displayName = language === 'hi' ? preset.nameHi : language === 'mr' ? preset.nameMr : preset.name;
+    showToast(
+      language === 'hi'
+        ? `${displayName} पर स्विच किया गया`
+        : language === 'mr'
+          ? `${displayName} वर स्विच केले`
+          : `Switched to ${preset.name}`,
+      'info'
+    );
   };
 
   const handleOpenRazorpay = () => {
@@ -703,7 +727,14 @@ export const HandoverVerificationPage: React.FC = () => {
                 onClick={() => {
                   setProofImage(DEFAULT_SCALE_IMAGE);
                   setSelectedPresetId('avery-zm510');
-                  showToast('Reset to certified Avery ZM510-SD scale reading', 'info');
+                  showToast(
+                    language === 'hi'
+                      ? 'प्रमाणित एवरी ZM510-SD कांटा रीडिंग पर डिफ़ॉल्ट रीसेट किया गया'
+                      : language === 'mr'
+                        ? 'प्रमाणित एव्हरी ZM510-SD काटा रीडिंगवर रिसेट केले'
+                        : 'Reset to certified Avery ZM510-SD scale reading',
+                    'info'
+                  );
                 }}
                 className="px-3 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl font-medium text-[11px] flex items-center gap-1 ml-auto transition-colors"
                 title="Reset to default certified scale"
@@ -722,11 +753,8 @@ export const HandoverVerificationPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {SCALE_PRESETS.map((preset) => {
                   const isSelected = selectedPresetId === preset.id;
-                  const badgeText = language === 'hi'
-                    ? (preset.badge === 'Legal Metrology Hologram' ? 'कानूनी मापविज्ञान होलोग्राम' : preset.badge === 'Industrial Floor Scale' ? 'औद्योगिक फ़्लोर कांटा' : 'इलेक्ट्रॉनिक टेयर डिस्प्ले')
-                    : language === 'mr'
-                      ? (preset.badge === 'Legal Metrology Hologram' ? 'कायदेशीर वजन-मापन होलोग्राम' : preset.badge === 'Industrial Floor Scale' ? 'औद्योगिक फ्लोअर काटा' : 'इलेक्ट्रॉनिक टेअर डिस्प्ले')
-                      : preset.badge;
+                  const displayName = language === 'hi' ? preset.nameHi : language === 'mr' ? preset.nameMr : preset.name;
+                  const badgeText = language === 'hi' ? preset.badgeHi : language === 'mr' ? preset.badgeMr : preset.badge;
                   return (
                     <button
                       key={preset.id}
@@ -738,7 +766,7 @@ export const HandoverVerificationPage: React.FC = () => {
                           : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
-                      <div className="font-bold truncate text-[11px]">{preset.name}</div>
+                      <div className="font-bold truncate text-[11px]">{displayName}</div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{badgeText}</div>
                     </button>
                   );

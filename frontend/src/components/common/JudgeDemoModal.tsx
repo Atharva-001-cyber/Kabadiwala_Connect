@@ -288,6 +288,19 @@ export const JudgeDemoModal: React.FC<JudgeDemoModalProps> = ({ isOpen, onClose 
             </p>
           </div>
 
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-slate-900 space-y-3">
+            <h3 className="text-sm font-bold">Live AI Vision Demo</h3>
+            <p className="text-sm leading-relaxed">
+              {language === 'hi'
+                ? 'अपनी ई-कचरे की फोटो लें या अपलोड करें। वास्तविक मॉडल स्कोर और बॉक्स देखें, फिर श्रेणी की पुष्टि करें। अस्पष्ट या अपरिचित वस्तु पर मैन्युअल चयन दिखाएं। यह 8 श्रेणियों का सुझाव मॉडल है—हर वस्तु की सही पहचान की गारंटी नहीं। डेमो खाते वास्तविक भुगतान का प्रमाण नहीं हैं।'
+                : language === 'mr'
+                ? 'स्वतःचा ई-कचऱ्याचा फोटो काढा किंवा अपलोड करा. मॉडेल स्कोअर व बॉक्स पाहून श्रेणीची पुष्टी करा. अस्पष्ट वस्तूसाठी मॅन्युअल निवड दाखवा. ८ श्रेणींच्या मॉडेलची अचूकता हमी नाही. डेमो खाती वास्तविक पेमेंटचा पुरावा नाहीत.'
+                : 'Capture or upload your own e-waste photo. Inspect the real model score and boxes, then confirm the category. Show manual selection for an unclear or unfamiliar item. This eight-class suggestion model does not guarantee correct recognition. Demo accounts are not proof of real payments.'}
+            </p>
+            <button type="button" onClick={() => handleStepAction('COLLECTOR', '/collector/add')} className="min-h-[48px] px-4 rounded-xl bg-emerald-700 text-white font-bold">
+              {language === 'hi' ? 'लाइव फोटो डेमो खोलें' : language === 'mr' ? 'लाइव्ह फोटो डेमो उघडा' : 'Open live photo demo'}
+            </button>
+          </div>
           <div className="space-y-3">
             {steps.map((s) => (
               <div

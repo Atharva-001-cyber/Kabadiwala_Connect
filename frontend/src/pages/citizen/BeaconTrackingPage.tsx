@@ -17,6 +17,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { CitizenHeader } from '../../components/layout/CitizenHeader';
+import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
@@ -56,19 +57,61 @@ export const BeaconTrackingPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [beaconId]);
 
+  const { user, collectorProfile } = useAuth();
+
   const handleSimulateCollectorAccept = async () => {
     if (!beaconId) return;
     try {
-      const colName = language === 'hi' ? 'रमेश कुमार (CPCB अधिकृत)' : language === 'mr' ? 'रमेश कुमार (CPCB अधिकृत)' : 'Ramesh Kumar (CPCB Verified)';
+      const storedCol = localStorage.getItem('collectorProfile');
+      const storedUser = localStorage.getItem('user');
+
+      let colNameRaw = collectorProfile?.name || user?.name;
+      let colPhone = collectorProfile?.phone || user?.phone;
+      let colId = collectorProfile?.id || user?.id || 'col_1';
+
+      if (!colNameRaw && storedCol) {
+        try {
+          const parsed = JSON.parse(storedCol);
+          if (parsed.name) colNameRaw = parsed.name;
+          if (parsed.phone) colPhone = parsed.phone;
+          if (parsed.id) colId = parsed.id;
+        } catch {}
+      }
+      if (!colNameRaw && storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.name || parsed.fullName) colNameRaw = parsed.name || parsed.fullName;
+          if (parsed.phone) colPhone = parsed.phone;
+          if (parsed.id) colId = parsed.id;
+        } catch {}
+      }
+
+      if (!colNameRaw) {
+        colNameRaw = language === 'hi' || language === 'mr' ? 'अभिमन्‍यु (CPCB अधिकृत)' : 'Abhimanyu';
+      }
+
+      const colName = colNameRaw.includes('CPCB')
+        ? colNameRaw
+        : `${colNameRaw} (${language === 'hi' || language === 'mr' ? 'CPCB अधिकृत' : 'CPCB Verified'})`;
+
+      const finalPhone = colPhone || '9876543210';
+
       const res = await api.acceptCitizenBeacon(
         beaconId,
-        'col_1',
+        colId,
         colName,
-        '9876543210'
+        finalPhone
       );
       if (res.success && res.beacon) {
         setBeacon(res.beacon);
-        showToast(language === 'hi' ? '👷 अधिकृत कबाड़ीवाले रमेश कुमार ने आपका पिकअप स्वीकार किया!' : language === 'mr' ? '👷 अधिकृत संकलक रमेश कुमार यांनी आपला पिकअप स्वीकारला!' : '👷 Collector Ramesh Kumar accepted your pickup request!', 'success');
+        showToast(
+          language === 'hi'
+            ? `👷 अधिकृत कबाड़ीवाले ${colName} ने आपका पिकअप स्वीकार किया!`
+            : language === 'mr'
+            ? `👷 अधिकृत संकलक ${colName} यांनी आपला पिकअप स्वीकारला!`
+            : `👷 Collector ${colName} accepted your pickup request!`,
+          'success'
+        );
       }
     } catch (err: any) {
       showToast(err.message || 'Failed to accept', 'error');

@@ -397,5 +397,135 @@
   transform: translateY(0);
 }
 
+/* 3D Animated Splash Screen Keyframes - Ultra-Premium 2.5D Spec */
+@keyframes binDropSmooth {
+  0% {
+    transform: translateY(-560px) scale(0.85);
+    opacity: 0;
+  }
+  65% {
+    transform: translateY(6px) scale(1.02);
+    opacity: 1;
+  }
+  85% {
+    transform: translateY(-2px) scale(0.99);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes binVibrateRumble {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-3px, 1px) rotate(-1.5deg); }
+  30% { transform: translate(3px, -1px) rotate(1.5deg); }
+  45% { transform: translate(-4px, -1px) rotate(-2deg); }
+  60% { transform: translate(4px, 1px) rotate(2deg); }
+  75% { transform: translate(-2px, 0.5px) rotate(-1deg); }
+}
+
+@keyframes recycleSpinGlow {
+  0% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.4)); }
+  50% { transform: rotate(180deg) scale(1.18); filter: drop-shadow(0 0 20px rgba(16,185,129,0.95)); }
+  100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.4)); }
+}
+
+@keyframes ewasteFlyInLeft {
+  0% { transform: translate(-160px, -140px) scale(0.15) rotate(-45deg); opacity: 0; filter: blur(4px); }
+  70% { transform: translate(6px, 4px) scale(1.04) rotate(3deg); opacity: 1; filter: blur(0); }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; filter: blur(0); }
+}
+
+@keyframes ewasteFlyInRight {
+  0% { transform: translate(160px, -140px) scale(0.15) rotate(45deg); opacity: 0; filter: blur(4px); }
+  70% { transform: translate(-6px, 4px) scale(1.04) rotate(-3deg); opacity: 1; filter: blur(0); }
+  100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; filter: blur(0); }
+}
+
+@keyframes brandRevealRise {
+  0% {
+    transform: translateY(90px) scale(0.35);
+    opacity: 0;
+    filter: blur(16px);
+  }
+  60% {
+    transform: translateY(-10px) scale(1.05);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  85% {
+    transform: translateY(2px) scale(0.99);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes sleekTruckSweep {
+  0% {
+    transform: translateX(-140vw);
+  }
+  38% {
+    transform: translateX(-2vw);
+  }
+  62% {
+    transform: translateX(-2vw);
+  }
+  100% {
+    transform: translateX(140vw);
+  }
+}
+
+@keyframes binPickedUpByTruck {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  35% {
+    transform: translateY(-90px) scale(0.7) rotate(14deg);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(-35px) scale(0.25) rotate(40deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0) scale(0) rotate(90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bubblePopDissolve {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  35% {
+    transform: scale(1.18);
+    opacity: 0.95;
+    filter: blur(2px);
+  }
+  100% {
+    transform: scale(0.05);
+    opacity: 0;
+    filter: blur(24px);
+  }
+}
+
+@keyframes wheelRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shimmerGlow {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(200%) rotate(25deg); }
+}
+
+
 
 

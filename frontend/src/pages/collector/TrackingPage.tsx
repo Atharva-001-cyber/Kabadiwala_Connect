@@ -104,12 +104,15 @@ export const TrackingPage: React.FC = () => {
     let collectorId = '';
     try {
       const cp = localStorage.getItem('collectorProfile');
+      const u = localStorage.getItem('user');
       if (cp) collectorId = JSON.parse(cp)?.id;
+      if (!collectorId && u) collectorId = JSON.parse(u)?.id;
     } catch {}
 
     const loadLots = async () => {
+      const isRealCollector = collectorId && collectorId !== 'col_1';
       let res = await api.getLots(collectorId ? { collectorId } : {});
-      if (res.success && res.lots.length === 0 && collectorId) {
+      if (!isRealCollector && res.success && res.lots.length === 0) {
         res = await api.getLots({});
       }
       if (res.success && res.lots) {
@@ -642,7 +645,7 @@ export const TrackingPage: React.FC = () => {
 
               <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
                 <span className="text-emerald-800 dark:text-emerald-400 font-bold text-[10px] uppercase tracking-wider block">Consignee (CPCB Recycler)</span>
-                <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{recycler?.facilityName || 'GreenEarth E-Waste Solutions Pvt Ltd'}</p>
+                <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{formatUserDisplayName(recycler?.facilityName || 'GreenEarth E-Waste Solutions Pvt Ltd', 'RECYCLER', language)}</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{recycler?.registrationNo || 'CPCB/EWR/UP/LKO/2023/8812'}</p>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500">Authorized Capacity: 5,400 MTA</p>
               </div>

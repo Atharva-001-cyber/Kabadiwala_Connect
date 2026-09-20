@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
-import { getCategoryLabel } from '../../i18n/translations';
+import { getCategoryLabel, formatUserDisplayName, formatAddressLocation } from '../../i18n/translations';
 
 interface CollectionCluster {
   district: string;
@@ -284,7 +284,7 @@ export const EwasteGeoMapPage: React.FC = () => {
             </div>
             <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap px-2.5 py-0.5 rounded-lg bg-slate-950/95 border ${isSelected ? 'border-emerald-400 ring-2 ring-emerald-400/30' : 'border-emerald-500/70'} shadow-2xl pointer-events-none z-30">
               <span class="text-[10px] font-black text-white">${cluster.district}</span>
-              <span class="text-[9px] font-mono font-bold text-emerald-400 ml-1">${cluster.totalWeightKg.toLocaleString('en-IN')} kg</span>
+              <span class="text-[9px] font-mono font-bold text-emerald-400 ml-1">${cluster.totalWeightKg.toLocaleString('en-IN')} ${language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}</span>
             </div>
           </div>
         `;
@@ -324,7 +324,7 @@ export const EwasteGeoMapPage: React.FC = () => {
               🏭
             </div>
             <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 rounded bg-slate-950/95 border ${isAuth ? 'border-blue-500/60' : 'border-amber-500/60'} shadow-lg pointer-events-none z-20">
-              <span class="text-[9px] font-extrabold ${isAuth ? 'text-blue-300' : 'text-amber-300'}">${rec.facilityName.slice(0, 16)}</span>
+              <span class="text-[9px] font-extrabold ${isAuth ? 'text-blue-300' : 'text-amber-300'}">${formatUserDisplayName(rec.facilityName, 'RECYCLER', language).slice(0, 20)}</span>
             </div>
           </div>
         `;
@@ -401,11 +401,11 @@ export const EwasteGeoMapPage: React.FC = () => {
               title="Refresh Live GIS Feed"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-600 dark:text-emerald-400' : ''}`} />
-              <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Live Refresh'}</span>
+              <span className="hidden sm:inline">{isRefreshing ? (language === 'hi' ? 'सिंक हो रहा है...' : language === 'mr' ? 'सिंक होत आहे...' : 'Syncing...') : (language === 'hi' ? 'लाइव रिफ्रेश' : language === 'mr' ? 'लाइव्ह रिफ्रेश' : 'Live Refresh')}</span>
             </button>
             <span className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-black border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
-              <span>LIVE GIS SATELLITE FEED</span>
+              <span>{language === 'hi' ? 'लाइव जीआईएस सैटेलाइट फीड' : language === 'mr' ? 'लाइव्ह जीआयएस सॅटेलाइट फीड' : 'LIVE GIS SATELLITE FEED'}</span>
             </span>
           </div>
         </div>
@@ -422,7 +422,7 @@ export const EwasteGeoMapPage: React.FC = () => {
             onClick={handleFitIndia}
             className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 dark:bg-slate-900 dark:hover:bg-purple-900/50 dark:border-slate-700 dark:hover:border-purple-500 dark:text-slate-200 font-bold shrink-0 transition-all flex items-center gap-1.5 active:scale-95"
           >
-            <span>🇮🇳 All India Overview</span>
+            <span>{language === 'hi' ? '🇮🇳 अखिल भारतीय अवलोकन' : language === 'mr' ? '🇮🇳 संपूर्ण भारत विहंगमावलोकन' : '🇮🇳 All India Overview'}</span>
           </button>
 
           <button
@@ -433,7 +433,7 @@ export const EwasteGeoMapPage: React.FC = () => {
             title="Locate device real live location via GPS"
           >
             <Crosshair className={`w-3.5 h-3.5 ${locatingUser ? 'animate-spin text-cyan-600 dark:text-cyan-400' : 'text-cyan-600 dark:text-cyan-400'}`} />
-            <span>{locatingUser ? 'Locating GPS...' : userLocation ? `📍 My Live GPS (${userLocation.lat.toFixed(2)}°, ${userLocation.lng.toFixed(2)}°)` : '📍 My Live Location'}</span>
+            <span>{locatingUser ? (language === 'hi' ? 'जीपीएस खोज रहे हैं...' : language === 'mr' ? 'जीपीएस शोधत आहे...' : 'Locating GPS...') : userLocation ? `📍 ${language === 'hi' ? 'मेरा लाइव GPS' : language === 'mr' ? 'माझे लाइव्ह GPS' : 'My Live GPS'} (${userLocation.lat.toFixed(2)}°, ${userLocation.lng.toFixed(2)}°)` : `📍 ${language === 'hi' ? 'मेरा लाइव स्थान' : language === 'mr' ? 'माझे लाइव्ह स्थान' : 'My Live Location'}`}</span>
           </button>
 
           {mapData?.collectionClusters?.map((c: CollectionCluster) => (
@@ -447,8 +447,8 @@ export const EwasteGeoMapPage: React.FC = () => {
                   : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
               }`}
             >
-              <span>📍 {c.district}</span>
-              <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">({c.totalWeightKg.toLocaleString('en-IN')} kg)</span>
+              <span>📍 {formatAddressLocation(c.district, language)}</span>
+              <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">({c.totalWeightKg.toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'})</span>
             </button>
           ))}
         </div>
@@ -464,7 +464,7 @@ export const EwasteGeoMapPage: React.FC = () => {
             <div className="flex items-center gap-2 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <span className="text-[11px] font-black uppercase text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-purple-400" />
-                <span>Layers:</span>
+                <span>{language === 'hi' ? 'लेयर्स:' : language === 'mr' ? 'थर / लेयर्स:' : 'Layers:'}</span>
               </span>
 
               <button
@@ -477,7 +477,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
-                <span>Hotspots ({mapData?.collectionClusters?.length || 0})</span>
+                <span>{language === 'hi' ? 'हॉटस्पॉट' : language === 'mr' ? 'हॉटस्पॉट्स' : 'Hotspots'} ({mapData?.collectionClusters?.length || 0})</span>
               </button>
 
               <button
@@ -490,7 +490,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
-                <span>Recyclers ({mapData?.recyclers?.length || 0})</span>
+                <span>{language === 'hi' ? 'रीसायकलर्स' : language === 'mr' ? 'रिसायकलर्स' : 'Recyclers'} ({mapData?.recyclers?.length || 0})</span>
               </button>
             </div>
 
@@ -507,7 +507,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 title="ArcGIS Dark Canvas (Watermark-free)"
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span>Dark GIS</span>
+                <span>{language === 'hi' ? 'डार्क जीआईएस' : language === 'mr' ? 'डार्क जीआयएस' : 'Dark GIS'}</span>
               </button>
               <button
                 type="button"
@@ -520,7 +520,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 title="Esri World Imagery High-Res Satellite"
               >
                 <Satellite className="w-3.5 h-3.5" />
-                <span>Live Satellite</span>
+                <span>{language === 'hi' ? 'लाइव उपग्रह' : language === 'mr' ? 'लाइव्ह सॅटेलाइट' : 'Live Satellite'}</span>
               </button>
               <button
                 type="button"
@@ -533,7 +533,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 title="OpenStreetMap Standard"
               >
                 <MapPin className="w-3.5 h-3.5" />
-                <span>Street</span>
+                <span>{language === 'hi' ? 'स्ट्रीट मैप' : language === 'mr' ? 'स्ट्रीट मॅप' : 'Street'}</span>
               </button>
             </div>
 
@@ -583,7 +583,7 @@ export const EwasteGeoMapPage: React.FC = () => {
             {loading && (
               <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-2">
                 <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Synchronizing CPCB Geospatial Coordinates...</span>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{language === 'hi' ? 'CPCB भू-स्थानिक निर्देशांक सिंक हो रहे हैं...' : language === 'mr' ? 'CPCB भू-स्थानिक निर्देशांक सिंक होत आहेत...' : 'Synchronizing CPCB Geospatial Coordinates...'}</span>
               </div>
             )}
           </div>
@@ -593,15 +593,15 @@ export const EwasteGeoMapPage: React.FC = () => {
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-300 shadow-sm animate-pulse"></span>
-                <span className="font-semibold text-slate-800 dark:text-slate-300">Collection Hotspot (Live Scrap Aggregation)</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-300">{language === 'hi' ? 'संग्रह हॉटस्पॉट (लाइव स्क्रैप एकत्रीकरण)' : language === 'mr' ? 'संकलन हॉटस्पॉट (लाइव्ह स्क्रॅप संकलन)' : 'Collection Hotspot (Live Scrap Aggregation)'}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-lg bg-blue-500 border border-blue-300 shadow-sm"></span>
-                <span className="font-semibold text-slate-800 dark:text-slate-300">CPCB Authorized Recycler Plant</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-300">{language === 'hi' ? 'CPCB अधिकृत रीसाइक्लिंग प्लांट' : language === 'mr' ? 'CPCB अधिकृत रिसायकलिंग प्लांट' : 'CPCB Authorized Recycler Plant'}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-lg bg-amber-500 border border-amber-300 shadow-sm"></span>
-                <span className="font-semibold text-slate-800 dark:text-slate-300">Pending / Suspended Facility</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-300">{language === 'hi' ? 'लंबित / निलंबित सुविधा' : language === 'mr' ? 'लंबित / निलंबित सुविधा' : 'Pending / Suspended Facility'}</span>
               </span>
             </div>
             <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
@@ -618,44 +618,44 @@ export const EwasteGeoMapPage: React.FC = () => {
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
                 <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                   <Factory className="w-4 h-4" />
-                  <span>Recycler Plant Telemetry</span>
+                  <span>{language === 'hi' ? 'रीसायकलिंग प्लांट टेलीमेट्री' : language === 'mr' ? 'रिसायकलिंग प्लांट टेलिमेट्री' : 'Recycler Plant Telemetry'}</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedRecycler(null)}
                   className="text-[11px] font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white underline"
                 >
-                  ← Back to District
+                  {language === 'hi' ? '← जिले पर वापस जाएं' : language === 'mr' ? '← जिल्ह्यावर परत जा' : '← Back to District'}
                 </button>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-blue-200 dark:border-blue-900/60 space-y-2 shadow-inner">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">{selectedRecycler.facilityName}</h3>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">{formatUserDisplayName(selectedRecycler.facilityName, 'RECYCLER', language)}</h3>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     selectedRecycler.authorizationStatus === 'AUTHORIZED' 
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800' 
                       : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
                   }`}>
-                    {selectedRecycler.authorizationStatus === 'AUTHORIZED' ? 'Authorized' : 'Under Review'}
+                    {selectedRecycler.authorizationStatus === 'AUTHORIZED' ? (language === 'hi' ? 'अधिकृत' : language === 'mr' ? 'अधिकृत' : 'Authorized') : (language === 'hi' ? 'समीक्षाधीन' : language === 'mr' ? 'पुनरावलोकनाधीन' : 'Under Review')}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Reg: {selectedRecycler.registrationNo}</p>
                 <p className="text-[11px] text-blue-600 dark:text-blue-300 flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>{selectedRecycler.address || `${selectedRecycler.district}, ${selectedRecycler.state}`}</span>
+                  <span>{formatAddressLocation(selectedRecycler.address || `${selectedRecycler.district}, ${selectedRecycler.state}`, language)}</span>
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-slate-500 text-[10px] block font-extrabold uppercase">Tonnage Processed</span>
+                  <span className="text-slate-500 text-[10px] block font-extrabold uppercase">{language === 'hi' ? 'संसाधित स्क्रैप मात्रा' : language === 'mr' ? 'प्रक्रिया केलेले स्क्रॅप प्रमाण' : 'Tonnage Processed'}</span>
                   <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base">
-                    {(selectedRecycler.totalProcessedKg || 0).toLocaleString('en-IN')} kg
+                    {(selectedRecycler.totalProcessedKg || 0).toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
                   </span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span className="text-slate-500 text-[10px] block font-extrabold uppercase">Service Radius</span>
+                  <span className="text-slate-500 text-[10px] block font-extrabold uppercase">{language === 'hi' ? 'सेवा त्रिज्या' : language === 'mr' ? 'सेवा त्रिज्या' : 'Service Radius'}</span>
                   <span className="font-mono font-black text-slate-900 dark:text-white text-base">
                     {selectedRecycler.serviceRadiusKm || 35} km
                   </span>
@@ -663,15 +663,15 @@ export const EwasteGeoMapPage: React.FC = () => {
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
-                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold block uppercase">Facility Manager & Telephony</span>
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold block uppercase">{language === 'hi' ? 'सुविधा प्रबंधक एवं संपर्क' : language === 'mr' ? 'सुविधा व्यवस्थापक व संपर्क' : 'Facility Manager & Telephony'}</span>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-900 dark:text-white font-semibold">{selectedRecycler.contactPerson || 'Operations Head'}</span>
+                  <span className="text-slate-900 dark:text-white font-semibold">{formatUserDisplayName(selectedRecycler.contactPerson || 'Operations Head', 'RECYCLER', language)}</span>
                   <span className="font-mono text-emerald-700 dark:text-purple-300 font-bold">{selectedRecycler.contactPhone || '+91 98200 98200'}</span>
                 </div>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold block uppercase">Accepted E-Waste Streams</span>
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] font-bold block uppercase">{language === 'hi' ? 'स्वीकृत ई-कचरा श्रेणियां' : language === 'mr' ? 'स्वीकृत ई-कचरा वर्ग' : 'Accepted E-Waste Streams'}</span>
                 <div className="flex flex-wrap gap-1">
                   {(selectedRecycler.acceptedMaterials || ['PCB', 'BATTERY', 'CRT', 'CABLE', 'MOTOR']).map((mat: string) => (
                     <span key={mat} className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
@@ -696,7 +696,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                 <span className="text-[10px] text-slate-500 uppercase font-black tracking-wider block">
                   {language === 'hi' ? 'चयनित क्षेत्रीय क्लस्टर' : language === 'mr' ? 'निवडलेला क्लस्टर' : 'Selected Regional Hotspot'}
                 </span>
-                <h4 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{selectedCluster.district}, {selectedCluster.state}</h4>
+                <h4 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{formatAddressLocation(selectedCluster.district, language)}, {formatAddressLocation(selectedCluster.state, language)}</h4>
                 <p className="text-slate-500 dark:text-slate-400 font-mono text-[11px] flex items-center gap-1">
                   <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>GPS: {selectedCluster.lat.toFixed(4)}° N, {selectedCluster.lng.toFixed(4)}° E</span>
@@ -712,7 +712,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                   <span className="font-mono font-black text-slate-900 dark:text-white text-lg block">
                     {selectedCluster.activeCollectors}
                   </span>
-                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">100% KYC Verified</span>
+                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">{language === 'hi' ? '100% केवाईसी सत्यापित' : language === 'mr' ? '100% केवायसी पडताळणी' : '100% KYC Verified'}</span>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-0.5">
@@ -720,9 +720,9 @@ export const EwasteGeoMapPage: React.FC = () => {
                     {language === 'hi' ? 'कुल स्क्रैप वजन' : language === 'mr' ? 'एकूण स्क्रॅप वजन' : 'Total Scrap Weight'}
                   </span>
                   <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-lg block">
-                    {selectedCluster.totalWeightKg.toLocaleString('en-IN')} kg
+                    {selectedCluster.totalWeightKg.toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
                   </span>
-                  <span className="text-[9px] text-slate-500 font-mono">Digital Tare Verified</span>
+                  <span className="text-[9px] text-slate-500 font-mono">{language === 'hi' ? 'डिजिटल टेयर सत्यापित' : language === 'mr' ? 'डिजिटल वजन पडताळणी' : 'Digital Tare Verified'}</span>
                 </div>
               </div>
 
@@ -732,13 +732,13 @@ export const EwasteGeoMapPage: React.FC = () => {
                     {language === 'hi' ? 'पंजीकृत डिजिटल लॉट्स' : language === 'mr' ? 'नोंदणीकृत डिजिटल लॉट्स' : 'Registered Digital Lots'}
                   </span>
                   <span className="font-mono font-black text-slate-900 dark:text-white text-lg">
-                    {selectedCluster.totalLots} Lots
+                    {selectedCluster.totalLots} {language === 'hi' ? 'लॉट' : language === 'mr' ? 'लॉट्स' : 'Lots'}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">Recyclers in District</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">{language === 'hi' ? 'जिले में रीसायकलर्स' : language === 'mr' ? 'जिल्ह्यातील रिसायकलर्स' : 'Recyclers in District'}</span>
                   <span className="font-mono font-black text-blue-600 dark:text-blue-400 text-lg">
-                    {selectedCluster.recyclersCount} Plants
+                    {selectedCluster.recyclersCount} {language === 'hi' ? 'प्लांट' : language === 'mr' ? 'प्लांट्स' : 'Plants'}
                   </span>
                 </div>
               </div>
@@ -747,7 +747,7 @@ export const EwasteGeoMapPage: React.FC = () => {
               {Object.keys(selectedCluster.topMaterials || {}).length > 0 && (
                 <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
                   <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
-                    District Material Stream Volume
+                    {language === 'hi' ? 'ज़िला सामग्री प्रवाह मात्रा' : language === 'mr' ? 'जिल्हा साहित्य प्रवाह प्रमाण' : 'District Material Stream Volume'}
                   </span>
                   <div className="space-y-1.5">
                     {Object.entries(selectedCluster.topMaterials)
@@ -759,7 +759,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                           <div key={mat} className="space-y-0.5">
                             <div className="flex justify-between text-[11px]">
                               <span className="font-bold text-slate-700 dark:text-slate-300">{getCategoryLabel(mat, language)}</span>
-                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{wt.toLocaleString('en-IN')} kg ({pct}%)</span>
+                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{wt.toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'} ({pct}%)</span>
                             </div>
                             <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                               <div style={{ width: `${pct}%` }} className="bg-emerald-500 h-full rounded-full"></div>
@@ -774,7 +774,7 @@ export const EwasteGeoMapPage: React.FC = () => {
               {/* Facilities operating in this district */}
               <div className="space-y-1.5">
                 <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-extrabold block">
-                  CPCB Recyclers in {selectedCluster.district}
+                  {language === 'hi' ? `${formatAddressLocation(selectedCluster.district, language)} में CPCB अधिकृत रीसायकलर्स` : language === 'mr' ? `${formatAddressLocation(selectedCluster.district, language)} मधील CPCB अधिकृत रिसायकलर्स` : `CPCB Recyclers in ${selectedCluster.district}`}
                 </span>
                 <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
                   {(mapData?.recyclers || [])
@@ -792,7 +792,7 @@ export const EwasteGeoMapPage: React.FC = () => {
                         className="w-full p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-800 border border-slate-200 hover:border-blue-400 dark:border-slate-800 dark:hover:border-blue-500/50 flex items-center justify-between text-left transition-all group"
                       >
                         <div className="min-w-0">
-                          <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate block">{r.facilityName}</span>
+                          <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate block">{formatUserDisplayName(r.facilityName, 'RECYCLER', language)}</span>
                           <span className="text-[9px] font-mono text-slate-500">{r.registrationNo}</span>
                         </div>
                         <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:text-slate-600 dark:group-hover:text-blue-400 shrink-0 ml-2" />
@@ -803,7 +803,7 @@ export const EwasteGeoMapPage: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-16 text-slate-500 text-xs">
-              Click any collection hotspot or recycling plant pin on the map to inspect telemetry dossier.
+              {language === 'hi' ? 'टेलीमेट्री विवरण देखने के लिए मानचित्र पर किसी भी संग्रह हॉटस्पॉट या रीसाइक्लिंग प्लांट पिन पर क्लिक करें।' : language === 'mr' ? 'टेलिमेट्री तपशील पाहण्यासाठी नकाशावरील कोणत्याही संकलन हॉटस्पॉट किंवा रिसायकलिंग प्लांट पिनवर क्लिक करा.' : 'Click any collection hotspot or recycling plant pin on the map to inspect telemetry dossier.'}
             </div>
           )}
         </div>
@@ -812,35 +812,35 @@ export const EwasteGeoMapPage: React.FC = () => {
       {/* Bottom Command Center High-Level Telemetry Bar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
         <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
-          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">National E-Waste Monitored</span>
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">{language === 'hi' ? 'राष्ट्रीय ई-कचरा निगरानी' : language === 'mr' ? 'राष्ट्रीय ई-कचरा देखरेख' : 'National E-Waste Monitored'}</span>
           <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono block">
-            {(mapData?.summary?.nationalTotalKg || 26749.1).toLocaleString('en-IN')} kg
+            {(mapData?.summary?.nationalTotalKg || 26749.1).toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
           </span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">From 669 Verified Lots</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">{language === 'hi' ? '669 सत्यापित लॉट से' : language === 'mr' ? '669 पडताळलेल्या लॉट्समधून' : 'From 669 Verified Lots'}</span>
         </div>
 
         <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
-          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">Active Regional Hubs</span>
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">{language === 'hi' ? 'सक्रिय क्षेत्रीय हब' : language === 'mr' ? 'सक्रिय प्रादेशिक हब' : 'Active Regional Hubs'}</span>
           <span className="text-2xl font-black text-slate-900 dark:text-white font-mono block">
-            {mapData?.summary?.totalMonitoredDistricts || 3} State Clusters
+            {mapData?.summary?.totalMonitoredDistricts || 3} {language === 'hi' ? 'राज्य क्लस्टर' : language === 'mr' ? 'राज्य क्लस्टर्स' : 'State Clusters'}
           </span>
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Lucknow, Mumbai, Pune</span>
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">{language === 'hi' ? 'लखनऊ, मुंबई, पुणे' : language === 'mr' ? 'लखनऊ, मुंबई, पुणे' : 'Lucknow, Mumbai, Pune'}</span>
         </div>
 
         <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
-          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">Gazetted Recyclers Online</span>
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">{language === 'hi' ? 'राजपत्रित ऑनलाइन रीसायकलर्स' : language === 'mr' ? 'राजपत्रित ऑनलाइन रिसायकलर्स' : 'Gazetted Recyclers Online'}</span>
           <span className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono block">
             {mapData?.summary?.authorizedRecyclersCount || 4} / {mapData?.summary?.totalRecyclersCount || 10}
           </span>
-          <span className="text-[10px] text-blue-600 dark:text-blue-300 font-bold">CPCB Schedule-I Verified</span>
+          <span className="text-[10px] text-blue-600 dark:text-blue-300 font-bold">{language === 'hi' ? 'CPCB अनुसूची-I सत्यापित' : language === 'mr' ? 'CPCB वेळापत्रक-I पडताळणी' : 'CPCB Schedule-I Verified'}</span>
         </div>
 
         <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-0.5">
-          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">Traceability Integrity</span>
+          <span className="text-slate-500 dark:text-slate-400 font-extrabold uppercase text-[10px] block">{language === 'hi' ? 'ट्रेसिबिलिटी अखंडता' : language === 'mr' ? 'ट्रेसिबिलिटी अखंडता' : 'Traceability Integrity'}</span>
           <span className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono block">
             100% SHA-256
           </span>
-          <span className="text-[10px] text-purple-600 dark:text-purple-300 font-bold">Merkle Chain Validated</span>
+          <span className="text-[10px] text-purple-600 dark:text-purple-300 font-bold">{language === 'hi' ? 'मर्कल चेन सत्यापित' : language === 'mr' ? 'मर्कल चेन पडताळणी' : 'Merkle Chain Validated'}</span>
         </div>
       </div>
     </div>

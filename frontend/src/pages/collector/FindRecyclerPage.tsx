@@ -837,7 +837,7 @@ export const FindRecyclerPage: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'अधिकृत रीसाइक्लर:' : language === 'mr' ? 'अधिकृत रिसायकलर:' : 'Authorized Recycler:'}</span>
-                    <b className="text-slate-900 dark:text-white text-right">{selectedRecyclerForAction.facilityName}</b>
+                    <b className="text-slate-900 dark:text-white text-right">{formatUserDisplayName(selectedRecyclerForAction.facilityName, 'RECYCLER', language)}</b>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500 dark:text-slate-400">{language === 'hi' ? 'पंजीकरण संख्या:' : language === 'mr' ? 'नोंदणी क्रमांक:' : 'Registration No:'}</span>
