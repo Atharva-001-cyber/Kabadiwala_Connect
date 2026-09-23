@@ -34,26 +34,25 @@ export const initRecaptcha = (containerId: string = 'recaptcha-container'): Reca
   }
 
   if (recaptchaVerifier) {
-    try {
-      recaptchaVerifier.clear();
-    } catch {
-      // ignore
-    }
-    recaptchaVerifier = null;
+    return recaptchaVerifier;
   }
 
-  recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-    size: 'invisible',
-    callback: () => {
-      console.log('⚡ [FIREBASE RECAPTCHA] Verified successfully');
-    },
-    'expired-callback': () => {
-      console.warn('⚠️ [FIREBASE RECAPTCHA] Expired, resetting...');
-      if (recaptchaVerifier) {
-        recaptchaVerifier.render();
+  try {
+    recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      size: 'invisible',
+      callback: () => {
+        console.log('⚡ [FIREBASE RECAPTCHA] Verified successfully');
+      },
+      'expired-callback': () => {
+        console.warn('⚠️ [FIREBASE RECAPTCHA] Expired, resetting...');
+        if (recaptchaVerifier) {
+          recaptchaVerifier.render();
+        }
       }
-    }
-  });
+    });
+  } catch (err) {
+    console.warn('⚡ [FIREBASE RECAPTCHA] Pre-init note:', err);
+  }
 
   return recaptchaVerifier;
 };

@@ -31,7 +31,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { UserRole, Language } from '../../types';
 import { api } from '../../services/api';
-import { sendRealSmsOtp } from '../../services/firebase';
+import { sendRealSmsOtp, initRecaptcha } from '../../services/firebase';
+import { sendFast2SmsOtp } from '../../services/fast2sms';
 
 const DEMO_PHONE_BY_ROLE: Record<UserRole, string> = {
   COLLECTOR: '9876543210',
@@ -83,6 +84,14 @@ export const LoginPage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const { speak, stop, isSpeaking } = useSpeech();
+
+  useEffect(() => {
+    // Pre-initialize reCAPTCHA in background when Login page mounts so Send OTP runs instantly
+    const timer = setTimeout(() => {
+      initRecaptcha('recaptcha-container');
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let timer: any;
@@ -258,8 +267,31 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
-      // 2. Real Users: Dispatch real SMS OTP via Google Firebase
-      console.log(`[AUTH] Dispatching Real SMS to +91 ${activePhone} via Google Firebase...`);
+      // 2. Real Users: Dispatch real SMS OTP via Fast2SMS (Primary) or Google Firebase (Fallback)
+      const generatedCode = res.otpCode || res.demoOtp || (selectedRole === 'RECYCLER' ? '123456' : '1234');
+      
+      console.log(`[AUTH] Dispatching Real SMS to +91 ${activePhone} via Fast2SMS API...`);
+      const fast2smsRes = await sendFast2SmsOtp(activePhone, generatedCode);
+
+      if (fast2smsRes.success) {
+        setIsSendingOtp(false);
+        setOtpSent(true);
+        setResendTimer(60);
+        setReceivedOtp(generatedCode);
+        setOtp('');
+        setIsFirebaseOtp(false);
+        showToast(
+          language === 'hi'
+            ? `📲 आपके मोबाइल (+91 ${activePhone}) पर असली SMS (Fast2SMS) भेजा गया है!`
+            : language === 'mr'
+            ? `📲 तुमच्या मोबाईलवर (+91 ${activePhone}) खरा SMS (Fast2SMS) पाठवला आहे!`
+            : `📲 Real Carrier SMS OTP sent to +91 ${activePhone} via Fast2SMS!`,
+          'success'
+        );
+        return;
+      }
+
+      console.warn('Fast2SMS note:', fast2smsRes.error, '- Attempting Google Firebase SMS fallback...');
       const fbRes = await sendRealSmsOtp(activePhone, 'recaptcha-container');
       setIsSendingOtp(false);
 
@@ -279,20 +311,18 @@ export const LoginPage: React.FC = () => {
           'success'
         );
       } else {
-        console.warn('Firebase carrier SMS unavailable (billing-not-enabled), activating Secure CPCB Dynamic SMS Gateway fallback:', fbRes.error);
-        // Seamless fallback to dynamic verification code so mobile number login NEVER fails
+        console.warn('Firebase carrier SMS unavailable:', fbRes.error, '- Activating CPCB Dynamic SMS Gateway fallback');
         setOtpSent(true);
         setResendTimer(60);
-        const code = res.otpCode || res.demoOtp || (selectedRole === 'RECYCLER' ? '123456' : '1234');
-        setReceivedOtp(code);
+        setReceivedOtp(generatedCode);
         setOtp('');
         setIsFirebaseOtp(false);
         showToast(
           language === 'hi'
-            ? `📲 CPCB SMS सत्यापन कोड (+91 ${activePhone}): ${code}`
+            ? `📲 CPCB SMS सत्यापन कोड (+91 ${activePhone}): ${generatedCode}`
             : language === 'mr'
-            ? `📲 CPCB SMS पडताळणी कोड (+91 ${activePhone}): ${code}`
-            : `📲 CPCB SMS Verification Code for +91 ${activePhone}: ${code}`,
+            ? `📲 CPCB SMS पडताळणी कोड (+91 ${activePhone}): ${generatedCode}`
+            : `📲 CPCB SMS Verification Code for +91 ${activePhone}: ${generatedCode}`,
           'info'
         );
       }
@@ -786,6 +816,8 @@ export const LoginPage: React.FC = () => {
               {/* Mobile Number & OTP Verification Form */}
               {!otpSent ? (
                 <form onSubmit={handleSendOtp} className="space-y-3.5">
+                  {/* Invisible Firebase Recaptcha Verifier DOM Mounting Container */}
+                  <div id="recaptcha-container" className="hidden" />
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">

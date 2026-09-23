@@ -119,52 +119,52 @@ export const AdminDashboard: React.FC = () => {
 
         {/* 4 Core High-Level Ecosystem KPIs with Data Source Badges */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mt-6 text-xs">
-          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px]">{language === 'hi' ? 'पंजीकृत कबाड़ीवाले' : language === 'mr' ? 'नोंदणीकृत कबाडीवाले' : 'Registered Collectors'}</span>
-              <span className="text-[9px] font-mono text-emerald-800 dark:text-emerald-400 font-black bg-emerald-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-emerald-300 dark:border-0">LIVE DB</span>
+          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1 overflow-hidden min-w-0">
+            <div className="flex justify-between items-center gap-1">
+              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px] truncate">{language === 'hi' ? 'पंजीकृत कबाड़ीवाले' : language === 'mr' ? 'नोंदणीकृत कबाडीवाले' : 'Registered Collectors'}</span>
+              <span className="text-[9px] font-mono text-emerald-800 dark:text-emerald-400 font-black bg-emerald-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-emerald-300 dark:border-0 shrink-0">LIVE DB</span>
             </div>
-            <span className="text-3xl font-black text-slate-950 dark:text-white font-mono block mt-1">{kpis?.totalCollectors || 0}</span>
-            <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-extrabold">
+            <span className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-950 dark:text-white font-mono block mt-1 truncate">{kpis?.totalCollectors || 0}</span>
+            <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-extrabold block truncate">
               {language === 'hi' ? '100% सत्यापित केवाईसी' : language === 'mr' ? '100% पडताळणी केलेले केवायसी' : '100% KYC Profiled'}
             </span>
           </div>
 
-          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px]">{language === 'hi' ? 'अधिकृत रीसाइक्लर' : language === 'mr' ? 'अधिकृत रिसायकलर' : 'Gazetted Recyclers'}</span>
-              <span className="text-[9px] font-mono text-blue-800 dark:text-blue-400 font-black bg-blue-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-blue-300 dark:border-0">CPCB GAZETTE</span>
+          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1 overflow-hidden min-w-0">
+            <div className="flex justify-between items-center gap-1">
+              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px] truncate">{language === 'hi' ? 'अधिकृत रीसाइक्लर' : language === 'mr' ? 'अधिकृत रिसायकलर' : 'Gazetted Recyclers'}</span>
+              <span className="text-[9px] font-mono text-blue-800 dark:text-blue-400 font-black bg-blue-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-blue-300 dark:border-0 shrink-0">CPCB GAZETTE</span>
             </div>
-            <span className="text-3xl font-black text-blue-700 dark:text-blue-400 font-mono block mt-1">
+            <span className="text-xl sm:text-2xl lg:text-3xl font-black text-blue-700 dark:text-blue-400 font-mono block mt-1 truncate">
               {kpis?.authorizedRecyclers || 0} / {kpis?.totalRecyclers || 0}
             </span>
-            <span className="text-[10px] text-slate-700 dark:text-blue-300 font-bold">
+            <span className="text-[10px] text-slate-700 dark:text-blue-300 font-bold block truncate">
               {language === 'hi' ? 'अधिकृत क्षमता ट्रैकिंग' : language === 'mr' ? 'अधिकृत क्षमता ट्रॅकिंग' : 'Authorized Capacity Tracking'}
             </span>
           </div>
 
-          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px]">{language === 'hi' ? 'कुल रीसायकल कचरा' : language === 'mr' ? 'एकूण रीसायकल कचरा' : 'E-Waste Recycled'}</span>
-              <span className="text-[9px] font-mono text-emerald-800 dark:text-emerald-400 font-black bg-emerald-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-emerald-300 dark:border-0">FORM-6</span>
+          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1 overflow-hidden min-w-0">
+            <div className="flex justify-between items-center gap-1">
+              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px] truncate">{language === 'hi' ? 'कुल रीसायकल कचरा' : language === 'mr' ? 'एकूण रीसायकल कचरा' : 'E-Waste Recycled'}</span>
+              <span className="text-[9px] font-mono text-emerald-800 dark:text-emerald-400 font-black bg-emerald-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-emerald-300 dark:border-0 shrink-0">FORM-6</span>
             </div>
-            <span className="text-3xl font-black text-emerald-700 dark:text-emerald-400 font-mono block mt-1">
+            <span className="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-700 dark:text-emerald-400 font-mono block mt-1 truncate">
               {(kpis?.totalWeightRecycledKg || 0).toLocaleString('en-IN')} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
             </span>
-            <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-extrabold">
+            <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-extrabold block truncate">
               {kpis?.formalRecyclingRatePercent || 0}% {language === 'hi' ? 'औपचारिक पुनर्चक्रण दर' : language === 'mr' ? 'अधिकृत पुनर्प्रक्रिया दर' : 'Formal Diversion Rate'}
             </span>
           </div>
 
-          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px]">{language === 'hi' ? 'लेजर भुगतान' : language === 'mr' ? 'लेजर पेमेंट' : 'Ledger Settlement'}</span>
-              <span className="text-[9px] font-mono text-purple-800 dark:text-slate-400 font-black bg-purple-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-purple-300 dark:border-0">VOUCHERS</span>
+          <div className="bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm space-y-1 overflow-hidden min-w-0">
+            <div className="flex justify-between items-center gap-1">
+              <span className="text-slate-700 dark:text-slate-400 font-extrabold uppercase text-[10px] truncate">{language === 'hi' ? 'लेजर भुगतान' : language === 'mr' ? 'लेजर पेमेंट' : 'Ledger Settlement'}</span>
+              <span className="text-[9px] font-mono text-purple-800 dark:text-slate-400 font-black bg-purple-100 dark:bg-transparent px-1.5 py-0.5 rounded border border-purple-300 dark:border-0 shrink-0">VOUCHERS</span>
             </div>
-            <span className="text-3xl font-black text-emerald-700 dark:text-emerald-400 font-mono block mt-1">
+            <span className="text-lg sm:text-2xl lg:text-3xl font-black text-emerald-700 dark:text-emerald-400 font-mono block mt-1 truncate">
               ₹{(kpis?.totalDisbursedValueINR || 0).toLocaleString('en-IN')}
             </span>
-            <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono font-bold">
+            <span className="text-[10px] text-slate-700 dark:text-slate-400 font-mono font-bold block truncate">
               {language === 'hi' ? '100% सत्यापन योग्य डबल-एंट्री' : language === 'mr' ? '100% पडताळणीयोग्य डबल-एंट्री' : '100% Traceable Double-Entry'}
             </span>
           </div>

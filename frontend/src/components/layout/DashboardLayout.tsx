@@ -88,7 +88,7 @@ export const DashboardLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
         {/* Mobile Thumb Navigation */}
         <MobileBottomNav />
 
-        {/* Multilingual Voice Copilot — Universal for all roles (Collector, Recycler, Admin) */}
+        {/* Multilingual Voice Copilot Floating Widget */}
         <KabaadSaathiAssistant />
       </div>
     </div>

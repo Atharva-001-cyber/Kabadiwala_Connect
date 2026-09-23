@@ -56,6 +56,7 @@ class SpeechService {
   private audioQueue: string[] = [];
   private isSpeakingInternal = false;
   private speakingListeners: Array<(speaking: boolean) => void> = [];
+  private isListeningActive = false;
 
   constructor() {
     this.init();
@@ -548,6 +549,9 @@ class SpeechService {
     if (!text || text.trim().length === 0) return '';
     let processed = text;
     if (lang === 'hi' || lang === 'mr') {
+      if (lang === 'hi') {
+        processed = processed.replace(/\bहै\b/g, 'हैं');
+      }
       // Natural currency pronunciation: ₹500 or ₹ 500 or 500/- or Rs. 500 -> 500 रुपये
       processed = processed.replace(/(?:₹|Rs\.?|INR)\s*([0-9,]+(?:\.[0-9]+)?)/gi, '$1 रुपये');
       processed = processed.replace(/([0-9,]+(?:\.[0-9]+)?)\s*(?:\/-)/g, '$1 रुपये');
@@ -718,6 +722,13 @@ class SpeechService {
         if (options.onEnd) options.onEnd();
       };
       utterance.onerror = (e) => {
+        // Canceled or interrupted errors are expected when user stops mic or re-triggers speech
+        if (e.error === 'canceled' || e.error === 'interrupted') {
+          this.activeUtterance = null;
+          this.notifySpeaking(false);
+          return;
+        }
+
         if ((import.meta as any)?.env?.DEV) {
           console.warn(`[VOICE DIAGNOSTIC] synthesis onerror: ${e.error}`);
         }
@@ -729,8 +740,6 @@ class SpeechService {
 
         if (options.onError) {
           options.onError(e);
-        } else {
-          console.warn('Speech synthesis error event:', e);
         }
 
         // If in browser and synthesis failed for Hindi or Marathi on the native engine, seamlessly switch to Indic audio stream!
@@ -800,6 +809,11 @@ class SpeechService {
   }
 
   public startListening(options: SpeechRecognitionOptions): boolean {
+    void this.startListeningAsync(options);
+    return true;
+  }
+
+  public async startListeningAsync(options: SpeechRecognitionOptions): Promise<boolean> {
     if (!this.isRecognitionSupported()) {
       const msg = options.lang === 'hi'
         ? 'इस डिवाइस/ब्राउज़र पर वॉयस रिकग्निशन समर्थित नहीं है।'
@@ -812,14 +826,33 @@ class SpeechService {
 
     this.stopListening();
 
+    // Pre-activate hardware microphone stream to ensure Chrome hardware audio capture is active
+    if (typeof window !== 'undefined' && navigator?.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      } catch (err: any) {
+        console.warn('⚠️ [VOICE DEBUG] getUserMedia hardware mic check:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          const msg = options.lang === 'hi'
+            ? 'माइक्रोफ़ोन अनुमति बंद है — कृपया ब्राउज़र सेटिंग्स में माइक्रोफ़ोन चालू करें।'
+            : options.lang === 'mr'
+            ? 'मायक्रोफोन परवानगी नाकारली आहे. कृपया ब्राउझर सेटिंग्जमध्ये परवानगी द्या.'
+            : 'Microphone access denied. Please enable mic permissions in browser settings.';
+          if (options.onError) options.onError(msg);
+          return false;
+        }
+      }
+    }
+
     try {
       const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognitionClass();
       this.recognitionInstance = recognition;
 
-      const recLocale = LOCALE_MAP[options.lang] || 'en-IN';
+      const recLocale = LOCALE_MAP[options.lang] || 'hi-IN';
       recognition.lang = recLocale;
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
@@ -836,29 +869,30 @@ class SpeechService {
       };
 
       recognition.onresult = (event: any) => {
-        let interim = '';
-        let final = '';
+        let currentTranscript = '';
+        let isFinal = false;
+
         for (let i = 0; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            final += event.results[i][0].transcript;
-          } else {
-            interim += event.results[i][0].transcript;
+          const res = event.results[i];
+          if (res && res[0] && res[0].transcript) {
+            currentTranscript += res[0].transcript + ' ';
+            if (res.isFinal) isFinal = true;
           }
         }
-        console.log(
-          `[VOICE DEBUG]\n` +
-          `interim transcript: ${interim || '(none)'}\n` +
-          `final transcript: ${final || '(none)'}`
-        );
-        const text = (final || interim || '').trim();
-        const isFinal = Boolean(final && !interim);
-        if (options.onResult && text) {
-          options.onResult(text, isFinal);
+
+        const cleanText = currentTranscript.trim();
+        console.log(`[VOICE DEBUG] Speech stream -> text: "${cleanText}", isFinal: ${isFinal}`);
+        if (options.onResult && cleanText) {
+          options.onResult(cleanText, isFinal);
         }
       };
 
       recognition.onerror = (event: any) => {
+        if (event.error === 'no-speech' || event.error === 'aborted') {
+          return;
+        }
         console.warn(`[VOICE DEBUG]\nrecognition error: ${event.error}`);
+
         this.notifyListening(false);
         let errorMsg = 'Voice recognition error';
         if (event.error === 'not-allowed') {
@@ -867,12 +901,6 @@ class SpeechService {
             : options.lang === 'mr'
             ? 'मायक्रोफोन परवानगी नाकारली आहे. कृपया ब्राउझर सेटिंग्जमध्ये परवानगी द्या.'
             : 'Microphone permission was denied. Please allow microphone access in your browser settings.';
-        } else if (event.error === 'no-speech') {
-          errorMsg = options.lang === 'hi'
-            ? 'कोई आवाज़ सुनाई नहीं दी।'
-            : options.lang === 'mr'
-            ? 'कोणताही आवाज ऐकू आला नाही.'
-            : 'No voice was detected.';
         } else if (event.error === 'network') {
           errorMsg = options.lang === 'hi'
             ? 'नेटवर्क त्रुटि: वॉयस रिकग्निशन विफल रहा।'
@@ -897,8 +925,6 @@ class SpeechService {
             : options.lang === 'mr'
             ? 'व्हॉइस सेवेची परवानगी नाही. कृपया ब्राउझर सेटिंग्ज तपासा.'
             : 'Speech service not allowed. Please check browser settings.';
-        } else if (event.error === 'aborted') {
-          return;
         }
         if (options.onError) options.onError(errorMsg);
       };
@@ -910,6 +936,7 @@ class SpeechService {
         if (options.onEnd) options.onEnd();
       };
 
+      this.isListeningActive = true;
       recognition.start();
       return true;
     } catch (e: any) {
@@ -929,6 +956,7 @@ class SpeechService {
   }
 
   public stopListening(): void {
+    this.isListeningActive = false;
     if (this.recognitionInstance) {
       try {
         this.recognitionInstance.stop();

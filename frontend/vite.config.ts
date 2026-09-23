@@ -14,6 +14,12 @@ export default defineConfig({
       '/uploads': {
         target: 'http://127.0.0.1:5000',
         changeOrigin: true,
+      },
+      '/fast2sms-api': {
+        target: 'https://www.fast2sms.com/dev',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/fast2sms-api/, '')
       }
     }
   }

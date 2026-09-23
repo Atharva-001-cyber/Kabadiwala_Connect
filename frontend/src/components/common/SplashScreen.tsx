@@ -19,7 +19,7 @@ const PremiumEcoTruck: React.FC = () => (
       {/* Heavy Cargo Container Box */}
       <div className="relative w-60 h-28 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-3 flex flex-col justify-between overflow-hidden">
         {/* Shimmer Light Reflection Sweep */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmerGlow_3s_infinite] pointer-events-none"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer-glow pointer-events-none"></div>
 
         {/* Silver Structural Vertical Ribs */}
         <div className="flex justify-between px-4 w-full opacity-20 border-b border-emerald-400/40 pb-1">
@@ -29,10 +29,10 @@ const PremiumEcoTruck: React.FC = () => (
           <div className="w-1 h-14 bg-white rounded"></div>
         </div>
 
-        {/* Glossy 3D Recycle Symbol Emblem */}
+        {/* Custom Eco Recycle Logo Emblem */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-16 h-16 rounded-full bg-emerald-950/90 text-emerald-400 flex items-center justify-center border-2 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-            <RefreshCw className="w-9 h-9 animate-spin text-emerald-400 stroke-[2.5]" style={{ animationDuration: '3.5s' }} />
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md p-1 flex items-center justify-center border-2 border-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+            <img src="/eco-recycle-logo.png" alt="Eco Recycle Logo" className="w-full h-full object-contain rounded-xl drop-shadow animate-spin" style={{ animationDuration: '3.5s' }} />
           </div>
         </div>
 
@@ -66,13 +66,13 @@ const PremiumEcoTruck: React.FC = () => (
 
     {/* Alloy Wheels */}
     <div className="absolute -bottom-3.5 inset-x-4 flex justify-between px-2 z-20">
-      <div className="w-8 h-8 bg-slate-950 rounded-full border-2 border-emerald-400/80 shadow-2xl flex items-center justify-center animate-[wheelRotate_0.5s_linear_infinite]">
+      <div className="w-8 h-8 bg-slate-950 rounded-full border-2 border-emerald-400/80 shadow-2xl flex items-center justify-center animate-wheel-rotate">
         <div className="w-3.5 h-3.5 bg-slate-300 rounded-full border border-slate-900"></div>
       </div>
-      <div className="w-8 h-8 bg-slate-950 rounded-full border-2 border-emerald-400/80 shadow-2xl flex items-center justify-center animate-[wheelRotate_0.5s_linear_infinite]">
+      <div className="w-8 h-8 bg-slate-950 rounded-full border-2 border-emerald-400/80 shadow-2xl flex items-center justify-center animate-wheel-rotate">
         <div className="w-3.5 h-3.5 bg-slate-300 rounded-full border border-slate-900"></div>
       </div>
-      <div className="w-8 h-8 bg-slate-950 rounded-full border-2 border-emerald-400/80 shadow-2xl flex items-center justify-center animate-[wheelRotate_0.5s_linear_infinite] ml-auto mr-2">
+      <div className="w-8 h-8 bg-slate-950 rounded-full border-2 border-emerald-400/80 shadow-2xl flex items-center justify-center animate-wheel-rotate ml-auto mr-2">
         <div className="w-3.5 h-3.5 bg-slate-300 rounded-full border border-slate-900"></div>
       </div>
     </div>
@@ -93,13 +93,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
     const t3 = setTimeout(() => setScene(3), 800);   // Scene 3: E-Waste Fill
     const t4 = setTimeout(() => setScene(4), 1600);  // Scene 4: Recycle Spin
     const t5 = setTimeout(() => setScene(5), 2300);  // Scene 5: Bin Shake & Burst
-    const t6 = setTimeout(() => setScene(6), 2900);  // Scene 6: Brand Reveal
-    const t7 = setTimeout(() => setScene(7), 3600);  // Scene 7: Truck Sweep
-    const t8 = setTimeout(() => setScene(8), 4300);  // Scene 8: Bubble Pop Dissolve
+    const t6 = setTimeout(() => setScene(6), 2800);  // Scene 6: Brand Reveal
+    const t7 = setTimeout(() => setScene(7), 3500);  // Scene 7: Truck Sweep
+    const t8 = setTimeout(() => setScene(8), 5600);  // Scene 8: Bubble Pop Dissolve
     const tEnd = setTimeout(() => {
       setIsVisible(false);
       if (onComplete) onComplete();
-    }, 4700);
+    }, 6000);
 
     return () => {
       clearTimeout(t2);
@@ -140,7 +140,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
         <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-500/30 shadow-sm">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span className="text-[11px] font-bold text-slate-800 dark:text-emerald-300 tracking-wider uppercase font-mono">
-            {language === 'hi' ? 'कबाड़ीवाला कनेक्ट' : language === 'mr' ? 'कबाडीवाला कनेक्ट' : 'KabadiVala Connect'}
+            {language === 'hi' ? 'कबाड़ीवाला कनेक्ट' : language === 'mr' ? 'कबाडीवाला कनेक्ट' : 'Kabadiwala Connect'}
           </span>
         </div>
 
@@ -168,7 +168,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
             </div>
 
             <h1 className="text-4xl sm:text-6xl font-black tracking-tight drop-shadow-md">
-              <span className="text-slate-900 dark:text-white">KabadiVala </span>
+              <span className="text-slate-900 dark:text-white">Kabadiwala </span>
               <span className="text-[#10b981]">Connect</span>
             </h1>
 
@@ -240,11 +240,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
               {/* DUSTBIN EMERALD GLOSSY BODY */}
               <div className="relative w-full bg-gradient-to-b from-[#10b981] via-[#059669] to-[#047857] py-6 px-4 rounded-b-3xl border-2 border-t-0 border-emerald-400/60 shadow-[0_25px_60px_rgba(16,185,129,0.4)] flex flex-col items-center justify-center gap-3">
                 
-                {/* SCENE 4: RECYCLE SYMBOL ROTATE & GLOW */}
-                <div className={`w-16 h-16 rounded-full bg-white text-[#059669] flex items-center justify-center shadow-2xl border-2 border-emerald-100 ${
-                  scene >= 4 ? 'animate-[recycleSpinGlow_0.65s_easeInOut_infinite]' : ''
+                {/* SCENE 4: RECYCLE LOGO EMBLEM */}
+                <div className={`w-16 h-16 rounded-2xl bg-white p-1.5 flex items-center justify-center shadow-2xl border-2 border-emerald-100 ${
+                  scene >= 4 ? 'scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.8)]' : ''
                 }`}>
-                  <RefreshCw className="w-9 h-9 stroke-[2.5]" />
+                  <img src="/eco-recycle-logo.png" alt="Eco Recycle Logo" className="w-full h-full object-contain rounded-xl animate-spin" style={{ animationDuration: '3.5s' }} />
                 </div>
 
                 {/* E-WASTE BADGE */}
@@ -261,9 +261,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
             </div>
           )}
 
-          {/* SCENE 7: SLEEK TRUCK SWEEP */}
+          {/* SCENE 7: SLEEK TRUCK SWEEP (Full Viewport Left to Right) */}
           {scene === 7 && (
-            <div className="absolute -bottom-8 z-50 animate-[sleekTruckSweep_0.75s_easeInOut_forwards]">
+            <div className="fixed inset-x-0 top-[62%] -translate-y-1/2 z-50 flex justify-center pointer-events-none animate-truck-sweep">
               <PremiumEcoTruck />
             </div>
           )}

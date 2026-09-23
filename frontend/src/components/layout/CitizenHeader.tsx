@@ -54,9 +54,9 @@ export const CitizenHeader: React.FC = () => {
                   SIH #229
                 </span>
               </div>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                <span>{subtitle}</span>
+              <p className="text-[10px] sm:text-[11px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 min-w-0 truncate">
+                <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />
+                <span className="truncate">{subtitle}</span>
               </p>
             </div>
           </Link>

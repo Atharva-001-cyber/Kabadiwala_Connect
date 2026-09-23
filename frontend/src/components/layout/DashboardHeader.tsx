@@ -325,7 +325,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onToggleMobile
               title={isDemoUser ? 'Sandbox Demo Role Switcher' : 'Portal Switch & Access Control'}
             >
               <Layers className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>{isDemoUser ? t.navSwitchRole : (language === 'hi' ? 'पोर्टल बदलें' : language === 'mr' ? 'पोर्टल बदला' : 'Switch Portal')}</span>
+              <span className="hidden sm:inline">{isDemoUser ? t.navSwitchRole : (language === 'hi' ? 'पोर्टल बदलें' : language === 'mr' ? 'पोर्टल बदला' : 'Switch Portal')}</span>
+              <span className="sm:hidden font-extrabold">{isDemoUser ? 'Role' : 'Portal'}</span>
               <ChevronDown className={`w-3 h-3 text-amber-600 dark:text-amber-400 transition-transform ${showRoleMenu ? 'rotate-180' : ''}`} />
             </button>
 

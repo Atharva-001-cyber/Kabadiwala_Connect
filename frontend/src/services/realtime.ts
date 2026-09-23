@@ -9,7 +9,7 @@ class RealtimeSyncService {
   private isInitialized = false;
 
   public init() {
-    if (this.isInitialized || typeof window === 'undefined') return;
+    if (this.channel || this.isInitialized || typeof window === 'undefined') return;
     this.isInitialized = true;
 
     try {
@@ -93,8 +93,11 @@ class RealtimeSyncService {
         .subscribe((status: string, err: any) => {
           if (status === 'SUBSCRIBED') {
             console.log('⚡ [REALTIME SYNC] Connected to Supabase Realtime channel.');
-          } else if (err) {
-            console.warn('⚠️ [REALTIME SYNC] Realtime subscription status:', status, err);
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            // Silently handle socket transport disconnects; system automatically uses local offline fallback SWR cache
+            if ((import.meta as any)?.env?.DEV && err && !err.message?.includes('socket closed') && !err.message?.includes('transport failure')) {
+              console.warn('⚠️ [REALTIME SYNC] Channel status:', status);
+            }
           }
         });
     } catch (err) {

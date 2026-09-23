@@ -100,7 +100,9 @@ export const useSpeech = () => {
         if (onResultCb) onResultCb(text, isFinal);
       },
       onError: (err) => {
-        showToast(err, 'warning');
+        if (err && !err.toLowerCase().includes('no voice') && !err.includes('कोई आवाज़')) {
+          showToast(err, 'warning');
+        }
         if (onErrorCb) onErrorCb(err);
       },
       onEnd: () => {

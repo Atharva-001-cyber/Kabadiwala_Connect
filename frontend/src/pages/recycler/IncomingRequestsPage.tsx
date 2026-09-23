@@ -116,6 +116,7 @@ export const IncomingRequestsPage: React.FC = () => {
       return;
     }
     setSelectedLot(lot);
+    const existingRate = (lot as any).myOffer?.offeredRatePerKg;
     const baseRates: Record<string, number> = {
       PCB: 95,
       BATTERY: 110,
@@ -126,7 +127,7 @@ export const IncomingRequestsPage: React.FC = () => {
       MAGNET: 55,
       MIXED_PLASTIC: 18
     };
-    setOfferedRate(String(baseRates[lot.materialCategory] || 80));
+    setOfferedRate(String(existingRate || baseRates[lot.materialCategory] || 80));
     setSuccessMsg(null);
   };
 
@@ -297,15 +298,24 @@ export const IncomingRequestsPage: React.FC = () => {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               ) : (lot as any).myOffer?.status === 'PENDING' ? (
-                <div className="px-3.5 py-2 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-500/50 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span>
-                    {language === 'hi'
-                      ? `बोली सक्रिय: ₹${(lot as any).myOffer.offeredRatePerKg}/किग्रा`
-                      : language === 'mr'
-                      ? `बोली पाठवली: ₹${(lot as any).myOffer.offeredRatePerKg}/किग्रा`
-                      : `Bid Active: ₹${(lot as any).myOffer.offeredRatePerKg}/kg`}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <div className="px-3.5 py-2 bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-500/50 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>
+                      {language === 'hi'
+                        ? `बोली सक्रिय: ₹${(lot as any).myOffer.offeredRatePerKg}/किग्रा`
+                        : language === 'mr'
+                        ? `बोली पाठवली: ₹${(lot as any).myOffer.offeredRatePerKg}/किग्रा`
+                        : `Bid Active: ₹${(lot as any).myOffer.offeredRatePerKg}/kg`}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenOfferModal(lot)}
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all"
+                  >
+                    {language === 'hi' ? 'संशोधन' : language === 'mr' ? 'बदला' : 'Edit Bid'}
+                  </button>
                 </div>
               ) : (
                 <button

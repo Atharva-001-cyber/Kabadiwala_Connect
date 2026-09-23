@@ -11,17 +11,29 @@ import {
   ArrowRight,
   Volume2,
   RefreshCw,
-  Trash2
+  Trash2,
+  Key,
+  Check
 } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { api } from '../../services/api';
+import { audioRecorderService } from '../../services/audioRecorderService';
+import { getGeminiApiKey, setGeminiApiKey } from '../../utils/visionClassifier';
 import {
   VoiceCopilotEngine,
   CopilotContextData,
   CopilotResponse,
+  YieldEstimate,
+  RecyclerQuote,
+  Form6ManifestData,
+  MandiRateCardData,
+  SoundboxPayoutData,
+  CpcbEprLegalCardData,
+  GisDistanceCardData,
+  RecyclerBargainCardData,
   formatSpeechText
 } from '../../services/voiceCopilotEngine';
 
@@ -35,6 +47,15 @@ interface Message {
   source?: 'LOCAL_EDGE_BRAIN' | 'GEMINI_CLOUD_COPILOT';
   showSoundbox?: boolean;
   calculationTotal?: number;
+  yieldEstimate?: YieldEstimate;
+  recyclerQuotes?: RecyclerQuote[];
+  form6Manifest?: Form6ManifestData;
+  mandiRatesCard?: MandiRateCardData;
+  soundboxPayout?: SoundboxPayoutData;
+  cpcbEprLegalCard?: CpcbEprLegalCardData;
+  gisDistanceCard?: GisDistanceCardData;
+  recyclerBargainCard?: RecyclerBargainCardData;
+  isOfflineVillageMode?: boolean;
 }
 
 export const KabaadSaathiAssistant: React.FC = () => {
@@ -44,8 +65,40 @@ export const KabaadSaathiAssistant: React.FC = () => {
   const navigate = useNavigate();
   const { isListening, isSpeaking, startListening, stopListening, speak, stop } = useSpeech();
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('kabaad_assistant_is_open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('kabaad_assistant_is_open', String(isOpen));
+    } catch (e) {
+      console.warn('Failed to persist assistant open state:', e);
+    }
+  }, [isOpen]);
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = sessionStorage.getItem('kabaad_assistant_chat_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        sessionStorage.setItem('kabaad_assistant_chat_history', JSON.stringify(messages));
+      } catch (e) {
+        console.warn('Failed to persist assistant chat history:', e);
+      }
+    }
+  }, [messages]);
   const [inputText, setInputText] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [soundboxActive, setSoundboxActive] = useState<boolean>(false);
@@ -222,15 +275,10 @@ export const KabaadSaathiAssistant: React.FC = () => {
     return () => { cancelled = true; };
   }, [isOpen, collectorProfile, recyclerProfile, user, role, language, kycStatus, userVerified, rawCol.name]);
 
-  useEffect(() => {
-    setMessages([]);
-    setInputText('');
-  }, [user?.id, role]);
-
   // Welcome greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const name = user?.name || rawCol.name || 'Dost';
+      const name = user?.name || collectorProfile?.name || recyclerProfile?.contactPerson || rawCol.name || 'Dost';
 
       let welcomeText: string;
       if (role === 'RECYCLER') {
@@ -269,14 +317,35 @@ export const KabaadSaathiAssistant: React.FC = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isProcessing]);
 
+  const [activeDraftState, setActiveDraftState] = useState<{ category?: string; weightKg?: number } | null>(null);
+  const [showKeyDrawer, setShowKeyDrawer] = useState<boolean>(false);
+  const [apiKeyInput, setApiKeyInput] = useState<string>(() => getGeminiApiKey());
+  const [keySavedSuccess, setKeySavedSuccess] = useState<boolean>(false);
+
+  const handleSaveApiKey = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setGeminiApiKey(apiKeyInput);
+    setKeySavedSuccess(true);
+    setTimeout(() => setKeySavedSuccess(false), 2000);
+  };
+
   /**
    * Process query and dispatch actions (Camera, Navigation, Soundbox)
    */
   const processQuery = useCallback(async (queryText: string) => {
     if (!queryText.trim() || processingRef.current) return;
+    stop();
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     processingRef.current = true;
 
     setMicErrorMsg(null);
+    let effectiveQuery = queryText;
+    if (activeDraftState?.category && !queryText.toLowerCase().includes(activeDraftState.category.toLowerCase()) && /\d+/.test(queryText)) {
+      effectiveQuery = `${activeDraftState.category} ${queryText}`;
+    }
+
     const userMessage: Message = {
       id: `usr_${Date.now()}`,
       sender: 'user',
@@ -284,15 +353,20 @@ export const KabaadSaathiAssistant: React.FC = () => {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsProcessing(true);
 
     try {
       const response: CopilotResponse = await VoiceCopilotEngine.processUserQuery(
-        queryText,
+        effectiveQuery,
         { ...copilotCtx, language, history: messages.slice(-8) }
       );
+
+      if (response.pendingSlot && response.draftState) {
+        setActiveDraftState(response.draftState);
+      } else {
+        setActiveDraftState(null);
+      }
 
       // Handle Theme
       if (response.action?.type === 'TOGGLE_THEME' && response.action.targetTheme) {
@@ -324,20 +398,32 @@ export const KabaadSaathiAssistant: React.FC = () => {
         actionLabel: response.action?.label,
         source: response.source,
         showSoundbox: response.soundbox,
-        calculationTotal: response.calculation?.total
+        calculationTotal: response.calculationTotal || response.calculation?.total,
+        yieldEstimate: response.yieldEstimate,
+        recyclerQuotes: response.recyclerQuotes,
+        form6Manifest: response.form6Manifest,
+        mandiRatesCard: response.mandiRatesCard,
+        soundboxPayout: response.soundboxPayout,
+        cpcbEprLegalCard: response.cpcbEprLegalCard,
+        gisDistanceCard: response.gisDistanceCard,
+        recyclerBargainCard: response.recyclerBargainCard,
+        isOfflineVillageMode: response.isOfflineVillageMode
       };
 
-      setMessages(prev => [...prev, assistantMsg]);
-      speak(response.spokenText || response.text, language);
+      setMessages(prev => [...prev, userMessage, assistantMsg]);
+      const outputLang = response.detectedLanguage || language;
+      speak(response.spokenText || response.text, outputLang);
 
-      // Auto-navigate for explicit route/camera commands
+      // Auto-navigate for explicit route/camera commands (Keep assistant modal open)
       if (
         (response.action?.type === 'NAVIGATE' || response.action?.type === 'OPEN_CAMERA') &&
         response.action.route
       ) {
         setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            (window as any).__isVoiceNavigating = true;
+          }
           navigate(response.action!.route!, { state: { autoOpenCamera: response.action?.type === 'OPEN_CAMERA' } });
-          setIsOpen(false);
         }, 1100);
       }
     } catch (err) {
@@ -351,28 +437,192 @@ export const KabaadSaathiAssistant: React.FC = () => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         source: 'LOCAL_EDGE_BRAIN'
       };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => [...prev, userMessage, errorMsg]);
     } finally {
       processingRef.current = false;
       setIsProcessing(false);
     }
   }, [copilotCtx, language, setTheme, setLanguage, navigate, speak, messages]);
 
-  const handleToggleListening = () => {
+  const [micVolume, setMicVolume] = useState<number>(0);
+
+  const processAudioBlob = useCallback(async (base64Audio: string, mimeType: string) => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+    setIsProcessing(true);
     setMicErrorMsg(null);
-    if (isListening) {
+
+    try {
+      const response = await VoiceCopilotEngine.processUserAudioQuery(
+        base64Audio,
+        mimeType,
+        { ...copilotCtx, language, history: messages.slice(-8) }
+      );
+
+      const userMessage: Message = {
+        id: `usr_${Date.now()}`,
+        sender: 'user',
+        text: response.userText || '🎙️ (Voice Query)',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      const assistantMsg: Message = {
+        id: `ast_${Date.now()}`,
+        sender: 'assistant',
+        text: response.text,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        actionRoute: response.action?.type === 'NAVIGATE' || response.action?.type === 'OPEN_CAMERA' ? response.action.route : undefined,
+        actionLabel: response.action?.label,
+        source: response.source,
+        showSoundbox: response.soundbox,
+        calculationTotal: response.calculationTotal,
+        yieldEstimate: response.yieldEstimate,
+        recyclerQuotes: response.recyclerQuotes,
+        form6Manifest: response.form6Manifest,
+        mandiRatesCard: response.mandiRatesCard,
+        soundboxPayout: response.soundboxPayout,
+        cpcbEprLegalCard: response.cpcbEprLegalCard,
+        gisDistanceCard: response.gisDistanceCard,
+        recyclerBargainCard: response.recyclerBargainCard,
+        isOfflineVillageMode: response.isOfflineVillageMode
+      };
+
+      setMessages(prev => [...prev, userMessage, assistantMsg]);
+      const outputLang = response.detectedLanguage || language;
+      speak(response.spokenText || response.text, outputLang);
+
+      if (
+        (response.action?.type === 'NAVIGATE' || response.action?.type === 'OPEN_CAMERA') &&
+        response.action.route
+      ) {
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            (window as any).__isVoiceNavigating = true;
+          }
+          navigate(response.action!.route!, { state: { autoOpenCamera: response.action?.type === 'OPEN_CAMERA' } });
+        }, 1100);
+      }
+    } catch (err) {
+      console.error('[KabaadSaathi] Audio processing error:', err);
+    } finally {
+      processingRef.current = false;
+      setIsProcessing(false);
+    }
+  }, [copilotCtx, language, messages, speak, navigate]);
+
+  const latestRecognizedTextRef = useRef('');
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+  }, []);
+
+  // Cleanup silence timer on unmount
+  useEffect(() => {
+    return () => {
+      clearSilenceTimer();
+      audioRecorderService.stopRecordingSilent();
+    };
+  }, [clearSilenceTimer]);
+
+  const handleToggleListening = async () => {
+    stop();
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+
+    setMicErrorMsg(null);
+    clearSilenceTimer();
+
+    if (isListening || audioRecorderService.isRecording()) {
       stopListening();
+      try {
+        const audioRes = await audioRecorderService.stopRecording();
+        if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
+          const txt = latestRecognizedTextRef.current.trim();
+          latestRecognizedTextRef.current = '';
+          processQuery(txt);
+        } else if (audioRes.base64Audio && !processingRef.current) {
+          processAudioBlob(audioRes.base64Audio, audioRes.mimeType);
+        }
+      } catch (e) {
+        if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
+          const txt = latestRecognizedTextRef.current.trim();
+          latestRecognizedTextRef.current = '';
+          processQuery(txt);
+        }
+      }
     } else {
       stop();
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      latestRecognizedTextRef.current = '';
+      setInputText('');
+
+      // Wait 50ms for audio output buffer to clear completely before opening mic stream
+      await new Promise(r => setTimeout(r, 50));
+
+      // Start MediaRecorder audio capture in parallel with live Web Audio API volume visualizer
+      try {
+        await audioRecorderService.startRecording((vol) => setMicVolume(vol));
+      } catch (e) {
+        console.warn('[KabaadSaathi] MediaRecorder recording failed:', e);
+      }
+
       startListening({
         lang: language,
         onResult: (text, isFinal) => {
           setInputText(text);
-          if (isFinal && text.trim()) {
-            processQuery(text);
+          latestRecognizedTextRef.current = text;
+          clearSilenceTimer();
+
+          if (isFinal && text.trim() && !processingRef.current) {
+            const txt = text.trim();
+            latestRecognizedTextRef.current = '';
+            stopListening();
+            audioRecorderService.stopRecordingSilent();
+            processQuery(txt);
+          } else if (text.trim() && !processingRef.current) {
+            // Auto-submit ultra-fast after 600ms of user silence
+            silenceTimerRef.current = setTimeout(async () => {
+              if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
+                const txt = latestRecognizedTextRef.current.trim();
+                latestRecognizedTextRef.current = '';
+                stopListening();
+                audioRecorderService.stopRecordingSilent();
+                processQuery(txt);
+              }
+            }, 600);
+          }
+        },
+        onEnd: async () => {
+          clearSilenceTimer();
+          if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
+            const txt = latestRecognizedTextRef.current.trim();
+            latestRecognizedTextRef.current = '';
+            audioRecorderService.stopRecordingSilent();
+            processQuery(txt);
+          } else if (audioRecorderService.isRecording() && !processingRef.current) {
+            try {
+              const audioRes = await audioRecorderService.stopRecording();
+              if (audioRes.base64Audio && audioRes.blob.size > 2000) {
+                processAudioBlob(audioRes.base64Audio, audioRes.mimeType);
+              } else {
+                audioRecorderService.stopRecordingSilent();
+              }
+            } catch {
+              audioRecorderService.stopRecordingSilent();
+            }
+          } else {
+            audioRecorderService.stopRecordingSilent();
           }
         },
         onError: (err) => {
+          clearSilenceTimer();
           console.warn('[Speech] Microphone error:', err);
           if (err === 'not-allowed' || err === 'permission-denied') {
             setMicErrorMsg(
@@ -396,33 +646,85 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
   const handleClearChat = () => {
     stop();
+    audioRecorderService.stopRecordingSilent();
     setMessages([]);
     setInputText('');
+    try {
+      sessionStorage.removeItem('kabaad_assistant_chat_history');
+    } catch {}
   };
 
   // Role-aware quick example chips (Honest Judge Demo Context)
   const getQuickPills = () => {
     if (role === 'RECYCLER') {
       return [
-        { label: language === 'hi' ? '🚚 पेंडिंग पिकअप' : '🚚 Pending Pickups', q: 'Pending pickups status dikhao' },
-        { label: language === 'hi' ? '📦 कुल स्टॉक' : '📦 Total Stock', q: 'Inventory total stock kitna hai?' },
-        { label: language === 'hi' ? '💳 भुगतान लेजर' : '💳 Payout Ledger', q: 'Disbursed payment ledger dikhao' },
-        { label: language === 'hi' ? '📜 Form-6 नियम' : '📜 Form-6 Rules', q: 'Form-6 certificate kya hai?' }
+        {
+          label: language === 'hi' ? '🚚 पेंडिंग पिकअप' : language === 'mr' ? '🚚 प्रलंबित पिकअप' : '🚚 Pending Pickups',
+          q: language === 'hi' ? 'पेंडिंग पिकअप स्टेटस दिखाओ' : language === 'mr' ? 'प्रलंबित पिकअप स्टेटस दाखवा' : 'Show pending pickups status'
+        },
+        {
+          label: language === 'hi' ? '📦 कुल स्टॉक' : language === 'mr' ? '📦 एकूण साठा' : '📦 Total Stock',
+          q: language === 'hi' ? 'कुल स्टॉक कितना है' : language === 'mr' ? 'एकूण स्टॉक किती आहे' : 'What is total inventory stock?'
+        },
+        {
+          label: language === 'hi' ? '💳 भुगतान लेजर' : language === 'mr' ? '💳 भरणा लेजर' : '💳 Payout Ledger',
+          q: language === 'hi' ? 'भुगतान लेजर दिखाओ' : language === 'mr' ? 'पेआउट लेजर दाखवा' : 'Show payment ledger'
+        },
+        {
+          label: language === 'hi' ? '📜 Form-6 नियम' : language === 'mr' ? '📜 फॉर्म-६ नियम' : '📜 Form-6 Rules',
+          q: language === 'hi' ? 'Form-6 नियम क्या हैं' : language === 'mr' ? 'फॉर्म-६ नियम काय आहेत' : 'What are Form-6 rules?'
+        }
       ];
     } else if (role === 'ADMIN') {
       return [
-        { label: language === 'hi' ? '🚨 ओपन विसंगतियां' : '🚨 Open Anomalies', q: 'Open anomalies dikhao' },
-        { label: language === 'hi' ? '🏭 रजिस्टर्ड रीसाइक्लर्स' : '🏭 Recyclers', q: 'Registered recyclers count' },
-        { label: language === 'hi' ? '🌙 Dark Mode' : '🌙 Dark Mode', q: 'Dark mode karo' }
+        {
+          label: language === 'hi' ? '🚨 ओपन विसंगतियां' : language === 'mr' ? '🚨 उघड्या विसंगती' : '🚨 Open Anomalies',
+          q: language === 'hi' ? 'ओपन विसंगतियां दिखाओ' : language === 'mr' ? 'ओपन विसंगती दाखवा' : 'Show open anomalies'
+        },
+        {
+          label: language === 'hi' ? '🏭 रजिस्टर्ड रीसाइक्लर्स' : language === 'mr' ? '🏭 नोंदणीकृत रीसायकलर्स' : '🏭 Recyclers',
+          q: language === 'hi' ? 'रजिस्टर्ड रीसाइक्लर्स संख्या बताओ' : language === 'mr' ? 'नोंदणीकृत रीसायकलर्स दाखवा' : 'Show registered recyclers'
+        },
+        {
+          label: language === 'hi' ? '🌙 Dark Mode' : language === 'mr' ? '🌙 डार्क मोड' : '🌙 Dark Mode',
+          q: language === 'hi' ? 'डार्क मोड करो' : language === 'mr' ? 'डार्क मोड करा' : 'Enable dark mode'
+        }
       ];
     }
     // Default: COLLECTOR
     return [
-      { label: language === 'hi' ? '🧮 10kg PCB भाव' : '🧮 10kg PCB Rate', q: '10 kilo PCB ka kitna banega' },
-      { label: language === 'hi' ? '💰 मेरी कुल कमाई' : '💰 My Earnings', q: 'meri total kamai kitni hai' },
-      { label: language === 'hi' ? '📸 कैमरा स्कैनर' : '📸 Camera Scanner', q: 'camera kholo' },
-      { label: language === 'hi' ? '📷 कैमरा सहायता' : '📷 Camera Help', q: 'camera ki problem kya hai' },
-      { label: language === 'hi' ? '📜 KYC स्थिति' : '📜 KYC Status', q: 'mera KYC verified hai kya' }
+      {
+        label: language === 'hi' ? '📦 50kg PCB लॉट' : language === 'mr' ? '📦 50kg PCB लॉट' : '📦 50kg PCB Lot',
+        q: language === 'hi' ? 'मेरे पास 50 किलो PCB है' : language === 'mr' ? 'माझ्याकडे 50 किलो PCB आहे' : 'I have 50 kg PCB lot'
+      },
+      {
+        label: language === 'hi' ? '🤝 रेट बार्गेनिंग' : language === 'mr' ? '🤝 दर बोलणी' : '🤝 Bargain Rate',
+        q: language === 'hi' ? 'रीसाइक्लर से ज्यादा रेट दिलाओ' : language === 'mr' ? 'रीसायकलर कडून जास्त दर मिळवून द्या' : 'Get me a bargain rate from recycler'
+      },
+      {
+        label: language === 'hi' ? '🧮 10kg PCB भाव' : language === 'mr' ? '🧮 10kg PCB दर' : '🧮 10kg PCB Rate',
+        q: language === 'hi' ? '10 किलो PCB का कितना बनेगा' : language === 'mr' ? '10 किलो PCB चे किती मिळतील' : 'What is the rate for 10 kg PCB?'
+      },
+      {
+        label: language === 'hi' ? '📶 ऑफलाइन विलेज मोड' : language === 'mr' ? '📶 ऑफलाईन व्हिलेज मोड' : '📶 Offline Mode',
+        q: language === 'hi' ? 'ऑफलाइन विलेज मोड चेक' : language === 'mr' ? 'ऑफलाईन व्हिलेज मोड तपासा' : 'Check offline village mode'
+      },
+      {
+        label: language === 'hi' ? '⚖️ CPCB EPR नियम' : language === 'mr' ? '⚖️ CPCB EPR नियम' : '⚖️ CPCB EPR Rules',
+        q: language === 'hi' ? 'EPR नियम क्या हैं' : language === 'mr' ? 'EPR नियम काय आहेत' : 'What are CPCB EPR rules?'
+      },
+      {
+        label: language === 'hi' ? '🗺️ पास का रीसाइक्लर' : language === 'mr' ? '🗺️ जवळचा रीसायकलर' : '🗺️ Nearest Recycler',
+        q: language === 'hi' ? 'पास का रीसाइक्लर लोकेशन दिखाओ' : language === 'mr' ? 'जवळचा रीसायकलर दाखवा' : 'Show nearest recycler location'
+      },
+      {
+        label: language === 'hi' ? '💰 मेरी कुल कमाई' : language === 'mr' ? '💰 माझी एकूण कमाई' : '💰 My Earnings',
+        q: language === 'hi' ? 'मेरी कुल कमाई कितनी है' : language === 'mr' ? 'माझी एकूण कमाई किती आहे' : 'What is my total earnings?'
+      },
+      {
+        label: language === 'hi' ? '📸 कैमरा स्कैनर' : language === 'mr' ? '📸 कॅमेरा स्कॅनर' : '📸 Camera Scanner',
+        q: language === 'hi' ? 'कैमरा खोलो' : language === 'mr' ? 'कॅमेरा उघडा' : 'Open camera scanner'
+      }
     ];
   };
 
@@ -445,7 +747,13 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            if (isOpen) {
+              stop();
+              audioRecorderService.stopRecordingSilent();
+            }
+            setIsOpen(!isOpen);
+          }}
           className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 relative active:scale-95 ${
             isOpen
               ? 'bg-red-600 hover:bg-red-500 rotate-90'
@@ -499,6 +807,19 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
                 <button
                   type="button"
+                  onClick={() => setShowKeyDrawer(!showKeyDrawer)}
+                  className={`p-1.5 rounded-lg border transition-all ${
+                    showKeyDrawer || apiKeyInput
+                      ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                      : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
+                  }`}
+                  title="Configure Gemini 2.0 API Key"
+                >
+                  <Key className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleClearChat}
                   className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
                   title="Clear Chat"
@@ -508,13 +829,49 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    stop();
+                    audioRecorderService.stopRecordingSilent();
+                    setIsOpen(false);
+                  }}
                   className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
+
+            {/* Gemini 2.0 Multimodal API Key Drawer */}
+            {showKeyDrawer && (
+              <form onSubmit={handleSaveApiKey} className="p-3 bg-slate-950 border-b border-emerald-900/80 flex flex-col gap-2 animate-fadeIn">
+                <div className="flex items-center justify-between text-xs font-bold text-emerald-400">
+                  <span className="flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Gemini 2.0 Cloud Multimodal Voice AI Key</span>
+                  </span>
+                  {keySavedSuccess && (
+                    <span className="text-[10px] text-emerald-300 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-700 flex items-center gap-1">
+                      <Check className="w-3 h-3 text-emerald-400" /> Saved!
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="password"
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    placeholder="Paste Google Gemini API Key (AIzaSy...)"
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+            )}
 
             {/* Soundbox Receipt Alert Indicator */}
             {soundboxActive && (
@@ -585,13 +942,265 @@ export const KabaadSaathiAssistant: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Yield Recovery Card */}
+                    {m.yieldEstimate && (
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 border border-emerald-500/60 text-slate-200 shadow-xl space-y-2">
+                        <div className="flex items-center justify-between border-b border-emerald-800/60 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider flex items-center gap-1">
+                            ✨ YIELD RECOVERY ESTIMATOR
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-900 text-emerald-200 border border-emerald-700">
+                            {m.yieldEstimate.weightKg} KG {m.yieldEstimate.materialCategory}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-1.5 text-[10px] pt-1">
+                          <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex justify-between">
+                            <span className="text-slate-400">⚡ Copper:</span>
+                            <span className="font-bold text-amber-300 font-mono">~{m.yieldEstimate.copperKg} kg</span>
+                          </div>
+                          <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex justify-between">
+                            <span className="text-slate-400">✨ Gold:</span>
+                            <span className="font-bold text-amber-300 font-mono">~{m.yieldEstimate.goldGrams} g</span>
+                          </div>
+                          <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex justify-between">
+                            <span className="text-slate-400">🔷 Metals:</span>
+                            <span className="font-bold text-emerald-300 font-mono">~{m.yieldEstimate.metalsKg} kg</span>
+                          </div>
+                          <div className="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 flex justify-between">
+                            <span className="text-slate-400">♻️ Plastics:</span>
+                            <span className="font-bold text-teal-300 font-mono">~{m.yieldEstimate.plasticsKg} kg</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-slate-800 pt-1.5">
+                          <span className="text-[10px] text-slate-300 font-medium">
+                            {language === 'hi' ? 'अनुमानित रिकवरी मूल्य:' : 'Est. Recovery Value:'}
+                          </span>
+                          <span className="text-xs font-black text-emerald-400 font-mono">
+                            ₹{m.yieldEstimate.valMin.toLocaleString('en-IN')} - ₹{m.yieldEstimate.valMax.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Authorized Recycler Quotes Card */}
+                    {m.recyclerQuotes && m.recyclerQuotes.length > 0 && (
+                      <div className="mt-2 p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-200 shadow-xl space-y-2">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">
+                            🏬 AUTHORIZED RECYCLER QUOTES
+                          </span>
+                          <span className="text-[9px] font-mono text-slate-400">CPCB VERIFIED</span>
+                        </div>
+
+                        <div className="space-y-1.5 pt-1">
+                          {m.recyclerQuotes.map((q, idx) => (
+                            <div key={q.recyclerId} className={`p-2 rounded-xl border flex items-center justify-between ${idx === 0 ? 'bg-emerald-950/70 border-emerald-500/60' : 'bg-slate-900/80 border-slate-800'}`}>
+                              <div>
+                                <span className="text-[11px] font-bold text-white block">{q.facilityName}</span>
+                                <span className="text-[9px] text-slate-400 font-mono">{q.distanceKm} km away • ⭐ {q.rating}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-xs font-black text-emerald-400 font-mono block">₹{q.totalQuoteAmount.toLocaleString('en-IN')}</span>
+                                <span className="text-[9px] text-slate-400">₹{q.quotePricePerKg}/kg</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CPCB Form-6 Manifest Certificate Card */}
+                    {m.form6Manifest && (
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 border-2 border-emerald-500/80 text-slate-200 shadow-xl space-y-2">
+                        <div className="flex items-center justify-between border-b border-emerald-800/80 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider flex items-center gap-1">
+                            📜 CPCB FORM-6 TRANSPORT MANIFEST
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-900 text-emerald-200 border border-emerald-700">
+                            {m.form6Manifest.status}
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] space-y-1 pt-0.5">
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Manifest ID:</span>
+                            <span className="font-mono text-emerald-300 font-bold">{m.form6Manifest.manifestId}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">CPCB Reg No:</span>
+                            <span className="font-mono text-slate-300">{m.form6Manifest.cpcbRegistrationNo}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Generator / Collector:</span>
+                            <span className="font-medium text-white">{m.form6Manifest.generatorName}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Recycler Facility:</span>
+                            <span className="font-medium text-white">{m.form6Manifest.recyclerFacility}</span>
+                          </div>
+                        </div>
+
+                        <div className="p-2 rounded-xl bg-slate-900 border border-emerald-900/60 flex items-center justify-between">
+                          <span className="text-[9px] text-emerald-400 font-mono flex items-center gap-1">
+                            <span>🛡️</span> EPR Legal Traceability Certificate
+                          </span>
+                          <span className="text-[9px] px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 font-bold text-emerald-300">
+                            VERIFIED QR
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mandi Benchmark Rate Card */}
+                    {m.mandiRatesCard && (
+                      <div className="mt-2 p-3 rounded-2xl bg-slate-950 border border-emerald-500/60 text-slate-200 shadow-xl space-y-2">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider flex items-center gap-1">
+                            📊 CPCB MANDI BENCHMARK RATES ({m.mandiRatesCard.district})
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-1.5 pt-1">
+                          {m.mandiRatesCard.rates.map((r) => (
+                            <div key={r.category} className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                              <div>
+                                <span className="text-[10px] font-bold text-white block">{r.category}</span>
+                                <span className="text-[8px] text-slate-400">{r.label.en}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-xs font-black text-emerald-400 font-mono block">₹{r.ratePerKg}/kg</span>
+                                <span className={`text-[8px] font-bold ${r.isUp ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  {r.isUp ? '▲' : '▼'} {r.changePercentage}%
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Soundbox Payout Card */}
+                    {m.soundboxPayout && (
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border-2 border-emerald-400 text-slate-200 shadow-2xl space-y-2 animate-fadeIn">
+                        <div className="flex items-center justify-between border-b border-emerald-800 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider flex items-center gap-1">
+                            🔊 SOUNDBOX UPI PAYOUT RECEIPT
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-900 text-emerald-200 border border-emerald-700">
+                            SUCCESS
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <div>
+                            <span className="text-[9px] text-slate-400 block font-mono">TXN: {m.soundboxPayout.transactionId}</span>
+                            <span className="text-[10px] text-slate-300">Payer: {m.soundboxPayout.payerName}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-base font-black text-emerald-300 font-mono">₹{m.soundboxPayout.amount.toLocaleString('en-IN')}</span>
+                            <span className="text-[9px] text-emerald-400 block font-bold">Instant UPI Credit</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CPCB EPR Legal Compliance & Penalty Calculator Card */}
+                    {m.cpcbEprLegalCard && (
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-br from-rose-950/80 via-slate-950 to-emerald-950 border-2 border-rose-500/80 text-slate-200 shadow-2xl space-y-2 animate-fadeIn">
+                        <div className="flex items-center justify-between border-b border-rose-800/80 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider flex items-center gap-1">
+                            ⚖️ CPCB LEGAL & EPR COMPLIANCE CARD
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-900 text-rose-200 border border-rose-700 font-bold">
+                            LEGAL MANDATE
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] space-y-1.5 pt-1">
+                          <div className="flex justify-between items-center bg-rose-950/60 p-2 rounded-xl border border-rose-800/60">
+                            <span className="text-rose-200 font-bold">Uncertified Burning Penalty:</span>
+                            <span className="font-mono text-rose-400 font-black text-xs">{m.cpcbEprLegalCard.maxPenaltyFine}</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-emerald-950/60 p-2 rounded-xl border border-emerald-800/60">
+                            <span className="text-emerald-200 font-bold">Authorized Recycling Reward:</span>
+                            <span className="font-mono text-emerald-300 font-black text-xs">+{m.cpcbEprLegalCard.eprCreditsEarned} EPR Credits</span>
+                          </div>
+                          <div className="text-[9px] text-slate-400 italic pt-0.5">
+                            {m.cpcbEprLegalCard.legalNotice.hi}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Live Recycler Price Negotiator & Bargaining Strategy Card */}
+                    {m.recyclerBargainCard && (
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-br from-amber-950 via-slate-900 to-slate-950 border-2 border-amber-500/80 text-slate-200 shadow-xl space-y-2 animate-fadeIn">
+                        <div className="flex items-center justify-between border-b border-amber-800 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider flex items-center gap-1">
+                            🤝 LIVE RECYCLER BARGAIN STRATEGY
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-900 text-amber-200 border border-amber-700 font-bold">
+                            +{m.recyclerBargainCard.bonusPercentage}% BONUS BID
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] space-y-1 pt-1">
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Mandi Benchmark:</span>
+                            <span className="font-mono text-slate-300 font-bold">₹{m.recyclerBargainCard.baseMandiRate}/kg</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Top Bidding Recycler:</span>
+                            <span className="font-bold text-emerald-300">{m.recyclerBargainCard.topBiddingRecycler}</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-amber-950/80 p-2 rounded-xl border border-amber-800/80">
+                            <span className="text-amber-200 font-bold">Negotiated Premium Rate:</span>
+                            <span className="font-mono text-amber-300 font-black text-xs">₹{m.recyclerBargainCard.bestBidRate}/kg</span>
+                          </div>
+                          <div className="text-[9px] text-amber-200/90 italic pt-0.5">
+                            💡 {m.recyclerBargainCard.negotiationTip.hi}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* GIS Recycler Distance & Route Lookup Card */}
+                    {m.gisDistanceCard && (
+                      <div className="mt-2 p-3 rounded-2xl bg-gradient-to-br from-cyan-950 via-slate-900 to-slate-950 border-2 border-cyan-500/80 text-slate-200 shadow-xl space-y-2 animate-fadeIn">
+                        <div className="flex items-center justify-between border-b border-cyan-800 pb-1.5">
+                          <span className="text-[10px] font-black uppercase text-cyan-300 tracking-wider flex items-center gap-1">
+                            🗺️ GIS DISTANCE & ROUTE INDICATOR
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-900 text-cyan-200 border border-cyan-700 font-bold">
+                            CPCB CERTIFIED
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] space-y-1 pt-1">
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Facility:</span>
+                            <span className="font-bold text-white">{m.gisDistanceCard.destinationFacility}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">GIS Proximity:</span>
+                            <span className="font-mono text-cyan-300 font-black">{m.gisDistanceCard.distanceKm} km ({m.gisDistanceCard.estimatedDriveMinutes} mins)</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span className="text-slate-400">Fastest Route:</span>
+                            <span className="font-mono text-slate-300">{m.gisDistanceCard.routeHighway}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Navigation / Action Button */}
                     {m.actionRoute && (
                       <button
                         type="button"
                         onClick={() => {
                           navigate(m.actionRoute!);
-                          setIsOpen(false);
                         }}
                         className="w-full py-1.5 px-2.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-600 text-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                       >
@@ -628,14 +1237,21 @@ export const KabaadSaathiAssistant: React.FC = () => {
               <div ref={chatBottomRef} />
             </div>
 
-            {/* Quick Action Suggestion Pills (Honest Demo Example Queries) */}
-            <div className="px-3 py-2 bg-slate-950/60 border-t border-slate-800/80 overflow-x-auto flex items-center gap-1.5 text-[11px] font-bold shrink-0">
+            {/* Quick Action Suggestion Pills (1-Tap Voice AI Prompts) */}
+            <div className="px-3 py-2 bg-slate-950/80 border-t border-slate-800/80 overflow-x-auto flex items-center gap-1.5 text-[11px] font-bold shrink-0">
+              <span className="text-[10px] uppercase font-black tracking-wider text-emerald-400 shrink-0 mr-1 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400 animate-spin-slow" />
+                <span>{language === 'hi' ? 'क्विक वॉइस प्रश्न:' : language === 'mr' ? 'व्हॉइस प्रश्न:' : 'Voice Prompts:'}</span>
+              </span>
               {getQuickPills().map((pill, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => processQuery(pill.q)}
-                  className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 shrink-0 active:scale-95 transition-all text-[10px]"
+                  onClick={() => {
+                    setInputText(pill.q);
+                    processQuery(pill.q);
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-emerald-950 text-slate-200 hover:text-emerald-300 border border-slate-700 hover:border-emerald-500 shrink-0 active:scale-95 transition-all text-[10px] font-bold shadow-sm"
                 >
                   {pill.label}
                 </button>
@@ -646,28 +1262,37 @@ export const KabaadSaathiAssistant: React.FC = () => {
             <div className="p-3 bg-slate-950 border-t border-slate-800 space-y-2">
               {/* Dynamic Status Waveform Bar */}
               <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full ${
                     isListening
                       ? 'bg-red-500 animate-ping'
                       : isSpeaking
                       ? 'bg-emerald-400 animate-pulse'
-                      : 'bg-slate-600'
+                      : 'bg-emerald-500/60'
                   }`} />
-                  <span className="text-[11px] font-bold text-slate-300">
+                  <span className="text-[11px] font-extrabold text-slate-200">
                     {isListening
-                      ? (language === 'hi' ? 'सुन रहे हैं... बोलिए' : 'Listening... Speak now')
+                      ? (language === 'hi' ? '🎙️ माइक्रोफ़ोन एक्टिव • बोलिए...' : language === 'mr' ? '🎙️ मायक्रोफोन सुरू • बोला...' : '🎙️ Microphone Live • Speak now...')
                       : isSpeaking
-                      ? (language === 'hi' ? 'साथी उत्तर दे रहा है...' : 'Speaking answer...')
-                      : (language === 'hi' ? 'माइक दबाकर बोलें' : 'Tap mic to talk')}
+                      ? (language === 'hi' ? '🔊 कबाड़ साथी उत्तर दे रहा है...' : language === 'mr' ? '🔊 कोपायलट उत्तर देत आहे...' : '🔊 Kabaad Saathi is speaking...')
+                      : (language === 'hi' ? '🎙️ माइक दबाकर बोलें या टाइप करें' : language === 'mr' ? '🎙️ बोला किंवा टाइप करा' : '🎙️ Tap mic to speak or type query')}
                   </span>
                 </div>
 
-                {(isListening || isSpeaking) && (
+                {(isListening || isSpeaking || micVolume > 0) && (
                   <div className="flex items-center gap-1 h-4">
-                    <span className="w-1 bg-emerald-400 rounded-full animate-bounce h-3" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1 bg-teal-400 rounded-full animate-bounce h-4" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1 bg-emerald-300 rounded-full animate-bounce h-2" style={{ animationDelay: '300ms' }} />
+                    <span
+                      className="w-1 bg-emerald-400 rounded-full transition-all duration-75"
+                      style={{ height: `${Math.max(4, Math.min(16, (micVolume / 100) * 16))}px` }}
+                    />
+                    <span
+                      className="w-1 bg-teal-400 rounded-full transition-all duration-75"
+                      style={{ height: `${Math.max(6, Math.min(20, (micVolume / 100) * 20))}px` }}
+                    />
+                    <span
+                      className="w-1 bg-emerald-300 rounded-full transition-all duration-75"
+                      style={{ height: `${Math.max(4, Math.min(14, (micVolume / 100) * 14))}px` }}
+                    />
                   </div>
                 )}
               </div>
@@ -679,8 +1304,8 @@ export const KabaadSaathiAssistant: React.FC = () => {
                   onClick={handleToggleListening}
                   className={`p-3 rounded-2xl flex items-center justify-center transition-all shadow-lg active:scale-95 shrink-0 ${
                     isListening
-                      ? 'bg-red-600 text-white animate-pulse border-2 border-red-400'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-400'
+                      ? 'bg-red-600 text-white animate-pulse border-2 border-red-400 ring-2 ring-red-400/40'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-400 shadow-emerald-950'
                   }`}
                   title={isListening ? 'Stop Listening' : 'Tap to Speak'}
                 >
@@ -704,7 +1329,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!inputText.trim()}
-                  className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 disabled:text-slate-600 transition-colors shrink-0"
+                  className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white disabled:text-slate-600 transition-all shrink-0 active:scale-95"
                 >
                   <Send className="w-4 h-4" />
                 </button>

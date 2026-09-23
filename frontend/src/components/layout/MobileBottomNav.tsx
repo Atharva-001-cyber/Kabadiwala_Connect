@@ -21,7 +21,7 @@ import { UserRole } from '../../types';
 
 export const MobileBottomNav: React.FC = () => {
   const { role } = useAuth();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const location = useLocation();
   const path = location.pathname;
 
@@ -47,11 +47,11 @@ export const MobileBottomNav: React.FC = () => {
 
       case 'ADMIN':
         return [
-          { to: '/admin', label: t.navDashboard, icon: LayoutDashboard, exact: true },
-          { to: '/admin/recyclers', label: t.navRecyclerVerify, icon: ShieldCheck },
-          { to: '/admin/map', label: t.navGeoMap, icon: Globe2, isCenter: true },
-          { to: '/admin/anomalies', label: t.navAnomaly, icon: AlertTriangle },
-          { to: '/admin/datasets', label: t.navDatasets, icon: Database }
+          { to: '/admin', label: language === 'hi' ? 'डैशबोर्ड' : language === 'mr' ? 'डॅशबोर्ड' : 'Overview', icon: LayoutDashboard, exact: true },
+          { to: '/admin/recyclers', label: language === 'hi' ? 'रीसाइक्लर्स' : language === 'mr' ? 'रिसायकलर' : 'Recyclers', icon: ShieldCheck },
+          { to: '/admin/map', label: language === 'hi' ? 'जीआईएस मैप' : language === 'mr' ? 'नकाशा' : 'GIS Map', icon: Globe2, isCenter: true },
+          { to: '/admin/anomalies', label: language === 'hi' ? 'विसंगतियां' : language === 'mr' ? 'विसंगती' : 'Anomalies', icon: AlertTriangle },
+          { to: '/admin/datasets', label: language === 'hi' ? 'डेटासेट' : language === 'mr' ? 'डेटासेट' : 'Datasets', icon: Database }
         ];
 
       default:

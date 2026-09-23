@@ -73,12 +73,34 @@ const ProtectedRoute: React.FC<{
   return children ? <>{children}</> : <Outlet />;
 };
 
+import { speechService } from './services/speechService';
+
+const GlobalVoiceRouteCleaner: React.FC = () => {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ((window as any).__isVoiceNavigating) {
+        (window as any).__isVoiceNavigating = false;
+      } else {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        speechService.stop();
+      }
+    }
+  }, [location.pathname]);
+
+  return null;
+};
+
 export const App: React.FC = () => {
   const { role, isAuthenticated } = useAuth();
   const [showSplash, setShowSplash] = React.useState<boolean>(true);
 
   return (
     <BrowserRouter>
+      <GlobalVoiceRouteCleaner />
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <Routes>
         {/* Root redirect based on auth & role */}

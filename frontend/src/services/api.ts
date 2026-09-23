@@ -1007,18 +1007,15 @@ export const api = {
     const cleanPhone = data.googleUser.phoneNumber ? data.googleUser.phoneNumber.replace(/\D/g, '') : '';
     const defaultName = data.googleUser.displayName?.trim() || (role === 'RECYCLER' ? 'Authorized Recycler' : (role === 'ADMIN' ? 'Regulatory Officer' : 'E-Waste Collector'));
 
-    // 1. Look for existing user in Supabase by Google UID, phone or fallback
+    // 1. Look for existing user in Supabase by Google UID or phone in parallel for zero latency
     let user: any = null;
 
-    if (data.googleUser.uid) {
-      const { data: uById } = await supabase.from('users').select('*').eq('id', data.googleUser.uid).maybeSingle();
-      if (uById) user = uById;
-    }
+    const [uByIdRes, uByPhoneRes] = await Promise.all([
+      data.googleUser.uid ? supabase.from('users').select('*').eq('id', data.googleUser.uid).maybeSingle() : Promise.resolve({ data: null }),
+      cleanPhone ? supabase.from('users').select('*').eq('phone', cleanPhone).maybeSingle() : Promise.resolve({ data: null })
+    ]);
 
-    if (!user && cleanPhone) {
-      const { data: uByPhone } = await supabase.from('users').select('*').eq('phone', cleanPhone).maybeSingle();
-      if (uByPhone) user = uByPhone;
-    }
+    user = uByIdRes.data || uByPhoneRes.data;
 
     // Role conflict check
     if (user && user.role !== role) {
@@ -1962,27 +1959,61 @@ export const api = {
     activeRecId = activeRecId || 'rec_abc_1';
     activeRecName = activeRecName || 'ABC E-Waste Recycling Pvt Ltd';
 
-    const offerId = `off_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     const weight = Number(lot.approx_weight) || 1;
     const total = Math.round(weight * data.offeredRatePerKg);
 
-    const newOffer = {
-      id: offerId,
-      lot_id: data.lotId,
-      recycler_id: activeRecId,
-      recycler_name: activeRecName,
-      material_category: lot.material_category,
-      offered_rate_per_kg: data.offeredRatePerKg,
-      quoted_total_price: total,
-      pickup_offered: data.pickupOffered ?? true,
-      pickup_charge_deduction: 0,
-      net_collector_payout: total,
-      status: 'PENDING',
-      created_at: new Date().toISOString()
-    };
+    // Idempotent Check: Check if an active offer already exists for this lot and recycler
+    const { data: existingOffer } = await supabase
+      .from('offers')
+      .select('*')
+      .eq('lot_id', data.lotId)
+      .eq('recycler_id', activeRecId)
+      .maybeSingle();
 
-    const { data: inserted, error } = await supabase.from('offers').insert(newOffer).select().single();
-    if (error) throw error;
+    let finalOfferData: any;
+
+    if (existingOffer) {
+      // Update existing offer rather than creating duplicate row
+      const updateOfferPayload = {
+        offered_rate_per_kg: data.offeredRatePerKg,
+        quoted_total_price: total,
+        net_collector_payout: total,
+        pickup_offered: data.pickupOffered ?? true,
+        pickup_eta_hours: data.pickupEtaHours ?? 24,
+        notes: data.notes || '',
+        status: 'PENDING',
+        created_at: new Date().toISOString()
+      };
+
+      const { data: updated, error: updErr } = await supabase
+        .from('offers')
+        .update(updateOfferPayload)
+        .eq('id', existingOffer.id)
+        .select()
+        .single();
+      if (updErr) throw updErr;
+      finalOfferData = updated;
+    } else {
+      const offerId = `off_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      const newOffer = {
+        id: offerId,
+        lot_id: data.lotId,
+        recycler_id: activeRecId,
+        recycler_name: activeRecName,
+        material_category: lot.material_category,
+        offered_rate_per_kg: data.offeredRatePerKg,
+        quoted_total_price: total,
+        pickup_offered: data.pickupOffered ?? true,
+        pickup_charge_deduction: 0,
+        net_collector_payout: total,
+        status: 'PENDING',
+        created_at: new Date().toISOString()
+      };
+
+      const { data: inserted, error: insErr } = await supabase.from('offers').insert(newOffer).select().single();
+      if (insErr) throw insErr;
+      finalOfferData = inserted;
+    }
 
     // Only update lot status to OFFER_RECEIVED if currently in CREATED state
     const lotUpdatePayload: any = { quoted_price: total };
@@ -1991,14 +2022,13 @@ export const api = {
     }
     await supabase.from('lots').update(lotUpdatePayload).eq('id', data.lotId);
 
-    invalidateCache('offers');
-    invalidateCache('lots');
-    invalidateCache('lot_detail_');
+    // Invalidate all SWR caches (including offers_active_pool)
+    invalidateCache();
 
     return {
       success: true,
-      message: 'Offer created successfully',
-      offer: mapDbOfferToOffer(inserted)
+      message: 'Offer submitted successfully',
+      offer: mapDbOfferToOffer(finalOfferData)
     };
   },
 

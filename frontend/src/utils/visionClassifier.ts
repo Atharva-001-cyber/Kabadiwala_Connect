@@ -56,20 +56,26 @@ let memoryApiKey = '';
  * Helper: Retrieve configured Gemini API Key (if any)
  */
 export function getGeminiApiKey(): string {
-  if (memoryApiKey) return memoryApiKey;
+  const isValidKey = (k: string) => typeof k === 'string' && k.trim().startsWith('AIzaSy');
+  if (isValidKey(memoryApiKey)) return memoryApiKey.trim();
+
   try {
-    if (typeof (import.meta as any)?.env?.VITE_GEMINI_API_KEY === 'string') {
-      return (import.meta as any).env.VITE_GEMINI_API_KEY;
-    }
+    const envKey = (import.meta as any)?.env?.VITE_GEMINI_API_KEY;
+    if (isValidKey(envKey)) return envKey.trim();
   } catch {}
+
   try {
-    if (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) {
-      return process.env.VITE_GEMINI_API_KEY;
-    }
+    const procKey = typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY;
+    if (isValidKey(procKey)) return (procKey as string).trim();
   } catch {}
+
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-    return localStorage.getItem('gemini_api_key') || localStorage.getItem('VITE_GEMINI_API_KEY') || '';
+    const local1 = localStorage.getItem('gemini_api_key');
+    if (isValidKey(local1 || '')) return (local1 as string).trim();
+    const local2 = localStorage.getItem('VITE_GEMINI_API_KEY');
+    if (isValidKey(local2 || '')) return (local2 as string).trim();
   }
+
   return '';
 }
 

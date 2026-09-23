@@ -98,6 +98,7 @@ export const MyRequestsPage: React.FC = () => {
 
   const handleConfirmAcceptOffer = async () => {
     if (!selectedOfferForAcceptance) return;
+    const acceptedLotId = selectedOfferForAcceptance.lot.id;
     setAcceptingInProgress(true);
     try {
       const res = await api.acceptOffer(selectedOfferForAcceptance.offer.id);
@@ -112,6 +113,7 @@ export const MyRequestsPage: React.FC = () => {
           'success'
         );
         fetchData();
+        navigate(`/collector/tracking/${acceptedLotId}`);
       }
     } catch (err: any) {
       showToast(err.message || (language === 'hi' ? 'ऑफर स्वीकारना विफल रहा' : language === 'mr' ? 'ऑफर स्वीकारणे अयशस्वी' : 'Failed to accept offer'), 'error');
@@ -195,15 +197,16 @@ export const MyRequestsPage: React.FC = () => {
             const pendingOffers = offers.filter((o) => o.status === 'PENDING');
             const acceptedOffer = offers.find((o) => o.status === 'ACCEPTED');
 
-            // Find highest rate among pending offers
-            const highestRate = pendingOffers.length > 0
-              ? Math.max(...pendingOffers.map((o) => o.offeredRatePerKg))
-              : 0;
+            // Sort pending offers descending by rate, then timestamp ascending to break ties deterministically
+            const sortedPendingOffers = [...pendingOffers].sort((a, b) => b.offeredRatePerKg - a.offeredRatePerKg || (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+            const bestOfferId = sortedPendingOffers.length > 0 ? sortedPendingOffers[0].id : null;
 
             const statusBadges: Record<string, { label: string; color: string }> = {
               CREATED: { label: language === 'hi' ? 'रीसाइक्लर की प्रतीक्षा' : language === 'mr' ? 'रिसायकलरची प्रतीक्षा' : 'Awaiting Bids', color: 'bg-slate-800 text-slate-300 border-slate-700' },
               OFFER_RECEIVED: {
-                label: `${pendingOffers.length} ${language === 'hi' ? 'नए ऑफर आए हैं!' : language === 'mr' ? 'नवीन ऑफर्स आल्या आहेत!' : 'New Offers Received!'}`,
+                label: pendingOffers.length === 1
+                  ? (language === 'hi' ? '1 नया ऑफर आया है!' : language === 'mr' ? '1 नवीन ऑफर आली आहे!' : '1 New Offer Received!')
+                  : `${pendingOffers.length} ${language === 'hi' ? 'नए ऑफर आए हैं!' : language === 'mr' ? 'नवीन ऑफर्स आल्या आहेत!' : 'New Offers Received!'}`,
                 color: 'bg-amber-950 text-amber-300 border-amber-800'
               },
               ACCEPTED: { label: language === 'hi' ? 'ऑफर स्वीकृत' : language === 'mr' ? 'ऑफर स्वीकृत' : 'Offer Accepted', color: 'bg-blue-950 text-blue-300 border-blue-800' },
@@ -288,15 +291,6 @@ export const MyRequestsPage: React.FC = () => {
                       <span>{language === 'hi' ? 'लाइव ट्रैकिंग' : language === 'mr' ? 'थेट ट्रॅकिंग' : 'Live Tracking'}</span>
                       <ExternalLink className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     </Link>
-
-                    {(lot.status === 'ACCEPTED' || lot.status === 'PICKUP_SCHEDULED' || lot.status === 'RECEIVED' || lot.status === 'RECYCLED') && (
-                      <Link
-                        to={`/collector/handover/${lot.id}`}
-                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
-                      >
-                        <span>{language === 'hi' ? 'हैंडओवर पर्ची' : language === 'mr' ? 'हँडओव्हर पावती' : 'Handover Receipt'}</span>
-                      </Link>
-                    )}
                   </div>
                 </div>
 
@@ -315,7 +309,7 @@ export const MyRequestsPage: React.FC = () => {
 
                     <div className="space-y-2.5">
                       {pendingOffers.map((offer) => {
-                        const isTopRate = offer.offeredRatePerKg === highestRate;
+                        const isTopRate = offer.id === bestOfferId;
                         return (
                           <div
                             key={offer.id}
