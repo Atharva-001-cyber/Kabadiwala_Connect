@@ -18,6 +18,23 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <!-- Razorpay Checkout Gateway SDK -->
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('kabadi_theme');
+          if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+            if (!savedTheme) {
+              localStorage.setItem('kabadi_theme', 'light');
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-[#0b0f19] dark:text-slate-100 antialiased selection:bg-brand-500 selection:text-white font-sans min-h-screen min-h-[100dvh] w-full max-w-full overflow-x-hidden">
     <div id="root" class="w-full max-w-full overflow-x-hidden"></div>
