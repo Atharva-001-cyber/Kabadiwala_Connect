@@ -112,7 +112,7 @@ export const CollectorDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async (silent = false) => {
       try {
-        if (!silent) setLoading(true);
+        if (!silent && lots.length === 0 && !ledgerSummary) setLoading(true);
         const district = collectorProfile?.district || 'Lucknow';
         const colId = collectorProfile?.id;
         const lotsQuery = colId ? api.getLots({ collectorId: colId }) : api.getLots({});
@@ -149,7 +149,24 @@ export const CollectorDashboard: React.FC = () => {
     };
   }, [collectorProfile]);
 
-  const totalCollectedWeight = lots.reduce((sum, l) => sum + (l.approxWeight || 0), 0);
+  const lotsScrapWeight = lots.reduce((sum, l) => sum + (l.actualWeight || l.approxWeight || 0), 0);
+  const totalCollectedWeight = Math.max(
+    ledgerSummary?.totalWeightCollectedKg || 0,
+    lotsScrapWeight
+  );
+
+  const completedLotsEarnings = lots.reduce((sum, l) => {
+    if (['RECYCLED', 'ACCEPTED', 'PICKUP_SCHEDULED', 'PICKED_UP', 'RECEIVED', 'PROCESSING', 'SORTED', 'RECOVERED'].includes(l.status)) {
+      return sum + (l.finalSaleValue || l.quotedPrice || l.estimatedValueAvg || ((l.actualWeight || l.approxWeight || 0) * 110));
+    }
+    return sum;
+  }, 0);
+
+  const totalEarnedAmount = Math.max(
+    ledgerSummary?.totalEarnings ?? ledgerSummary?.totalPaid ?? 0,
+    completedLotsEarnings
+  );
+
   const activeLots = lots.filter(l => l.status !== 'RECYCLED');
   const latestActiveLot = lots.find(l => l.status !== 'RECYCLED');
 
@@ -160,7 +177,7 @@ export const CollectorDashboard: React.FC = () => {
 
   const speakOverview = () => {
     const todayEarn = (ledgerSummary?.todayEarnings || 0).toLocaleString('en-IN');
-    const totalEarn = (ledgerSummary?.totalEarnings ?? ledgerSummary?.totalPaid ?? 0).toLocaleString('en-IN');
+    const totalEarn = totalEarnedAmount.toLocaleString('en-IN');
     const scrapWeight = formatWeight(totalCollectedWeight);
     const activeCount = activeLots.length;
 
@@ -384,18 +401,18 @@ export const CollectorDashboard: React.FC = () => {
 
         {/* Metric Summary Cards */}
         <div className="grid grid-cols-3 gap-2.5 sm:gap-4 mt-5">
-          {/* Today's / Lifetime Earnings */}
+          {/* Lifetime / Today's Earnings */}
           <div className="bg-white/15 dark:bg-slate-950/80 border border-white/20 dark:border-slate-800/80 p-3 sm:p-3.5 rounded-2xl min-w-0 flex flex-col justify-between overflow-hidden backdrop-blur-sm">
             <span className="text-[11px] font-extrabold text-emerald-100/90 dark:text-slate-400 block truncate">
-              {content.todayEarnings}
+              {content.totalEarned}
             </span>
             <div className="flex items-baseline gap-1 mt-1 min-w-0 max-w-full overflow-hidden">
-              <span className="text-base sm:text-2xl font-black text-emerald-200 dark:text-emerald-400 truncate max-w-full tracking-tight break-all sm:break-normal" title={`₹${(ledgerSummary?.todayEarnings || 0).toLocaleString('en-IN')}`}>
-                ₹{(ledgerSummary?.todayEarnings || 0).toLocaleString('en-IN')}
+              <span className="text-base sm:text-2xl font-black text-emerald-200 dark:text-emerald-400 truncate max-w-full tracking-tight break-all sm:break-normal" title={`₹${totalEarnedAmount.toLocaleString('en-IN')}`}>
+                ₹{totalEarnedAmount.toLocaleString('en-IN')}
               </span>
             </div>
             <span className="text-[10px] text-emerald-200/80 dark:text-slate-500 block mt-0.5 truncate">
-              {content.totalEarned}: ₹{(ledgerSummary?.totalEarnings ?? ledgerSummary?.totalPaid ?? 0).toLocaleString('en-IN')}
+              {content.todayEarnings}: ₹{(ledgerSummary?.todayEarnings || 0).toLocaleString('en-IN')}
             </span>
           </div>
 

@@ -23,7 +23,7 @@ import { Lot } from '../../types';
 import { getStatusLabel, getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
 import { GreenCertificateModal } from '../../components/common/GreenCertificateModal';
 
-const FACILITY_STATUSES = ['RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED', 'RECYCLED'];
+const FACILITY_STATUSES = ['ACCEPTED', 'PICKUP_SCHEDULED', 'RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED', 'RECYCLED'];
 
 const PIPELINE_STEPS = [
   { stage: 'RECEIVED', num: '1', title: 'Intake Scale', desc: 'Tare Verified' },
@@ -112,6 +112,8 @@ export const InventoryProcessingPage: React.FC = () => {
 
   const getNextDefaultStage = (currentStatus?: string): string => {
     switch (currentStatus) {
+      case 'ACCEPTED':
+      case 'PICKUP_SCHEDULED':
       case 'RECEIVED':
       case 'RECYCLER_RECEIVED':
         return 'SORTED';
@@ -132,7 +134,35 @@ export const InventoryProcessingPage: React.FC = () => {
     try {
       const res = await api.getLots();
       if (res.success) {
-        setLots(res.lots);
+        let fetched = res.lots;
+        if (queryLotId && !fetched.some(l => l.id === queryLotId)) {
+          try {
+            const lotRes = await api.getLotById(queryLotId);
+            if (lotRes.success && lotRes.lot) {
+              fetched = [lotRes.lot, ...fetched];
+            }
+          } catch (err) {
+            console.warn('Direct lot fetch failed:', err);
+          }
+        }
+        
+        // Preserve forward stage progression: never let background sync jump a lot backwards to an older stage
+        setLots(currentLots => {
+          if (currentLots.length === 0) return fetched;
+          const currentMap = new Map(currentLots.map(l => [l.id, l]));
+
+          return fetched.map(fetchedLot => {
+            const localLot = currentMap.get(fetchedLot.id);
+            if (localLot) {
+              const localStep = getStageStepIndex(localLot.status);
+              const fetchedStep = getStageStepIndex(fetchedLot.status);
+              if (localStep > fetchedStep) {
+                return { ...fetchedLot, status: localLot.status };
+              }
+            }
+            return fetchedLot;
+          });
+        });
       }
     } catch (e) {
       console.warn('Inventory fetch error:', e);
@@ -154,11 +184,11 @@ export const InventoryProcessingPage: React.FC = () => {
       unsubscribeSync();
       clearInterval(interval);
     };
-  }, []);
+  }, [queryLotId]);
 
-  // Filter lots belonging strictly to this recycler facility
+  // Filter lots belonging to this recycler facility
   const facilityLots = lots.filter(l => {
-    const isMine = (!l.selectedRecyclerId || l.selectedRecyclerId === myRecyclerId);
+    const isMine = l.id === queryLotId || !l.selectedRecyclerId || l.selectedRecyclerId === myRecyclerId || l.selectedOfferId != null;
     return isMine && FACILITY_STATUSES.includes(l.status);
   });
 
@@ -262,6 +292,8 @@ export const InventoryProcessingPage: React.FC = () => {
     ];
 
     switch (lot.status) {
+      case 'ACCEPTED':
+      case 'PICKUP_SCHEDULED':
       case 'RECEIVED':
       case 'RECYCLER_RECEIVED':
         return all;
@@ -311,47 +343,54 @@ export const InventoryProcessingPage: React.FC = () => {
     e.preventDefault();
     if (!selectedLotId || submitting || isLotFullyRecycled) return;
 
+    const currentTargetStage = targetStage;
+    const currentLotObj = lots.find(l => l.id === selectedLotId);
+    if (!currentLotObj) return;
+
+    // 1. INSTANT OPTIMISTIC UI UPDATE (0ms) - Stepper, Dropdown, Inventory update immediately!
+    const optimisticallyUpdatedLot: Lot = {
+      ...currentLotObj,
+      status: currentTargetStage as any,
+      updatedAt: new Date().toISOString()
+    };
+
+    setLots(prev => prev.map(l => l.id === selectedLotId ? optimisticallyUpdatedLot : l));
+    
+    const nextStage = getNextDefaultStage(currentTargetStage);
+    setTargetStage(nextStage);
+    setRecoveredDetails(getStageDefaultNote(
+      nextStage, 
+      currentLotObj.materialCategory, 
+      currentLotObj.actualWeight || currentLotObj.approxWeight
+    ));
+
+    if (currentTargetStage === 'RECYCLED' && filterTab === 'IN_PROCESS') {
+      setFilterTab('ALL');
+    }
+
+    showToast(
+      language === 'hi' 
+        ? `लॉट स्थिति सफलतापूर्वक '${currentTargetStage}' में अपडेट हो गई!`
+        : `Lot status successfully advanced to '${currentTargetStage}'!`,
+      'success'
+    );
+
     setSubmitting(true);
     try {
       const res = await api.updateProcessingStage({
         lotId: selectedLotId,
-        stage: targetStage,
+        stage: currentTargetStage,
         recoveredDetails,
         facilityLocation: `${recyclerProfile?.facilityName || 'Authorized Recycling Plant'}, ${recyclerProfile?.district || 'Lucknow'}`
       });
 
       if (res.success && res.lot) {
-        const updatedLot = res.lot;
-
-        // 1. INSTANT LOCAL STATE UPDATE (0ms) - Stepper, Dropdown, Inventory all update in this very frame!
-        setLots(prev => prev.map(l => l.id === updatedLot.id ? updatedLot : l));
-
-        // 2. Prepare next stage inputs immediately
-        const nextStage = getNextDefaultStage(updatedLot.status);
-        setTargetStage(nextStage);
-        setRecoveredDetails(getStageDefaultNote(
-          nextStage, 
-          updatedLot.materialCategory, 
-          updatedLot.actualWeight || updatedLot.approxWeight
-        ));
-
-        // 3. If lot reached RECYCLED while on IN_PROCESS tab, switch to ALL so user sees the Form-6 Green Certificate card!
-        if (updatedLot.status === 'RECYCLED' && filterTab === 'IN_PROCESS') {
-          setFilterTab('ALL');
-        }
-
-        showToast(
-          language === 'hi' 
-            ? `लॉट स्थिति सफलतापूर्वक '${targetStage}' में अपडेट हो गई!`
-            : `Lot status successfully advanced to '${targetStage}'!`,
-          'success'
-        );
-
-        // 4. Background fresh sync
-        fetchLots();
+        setLots(prev => prev.map(l => l.id === res.lot.id ? res.lot : l));
       }
     } catch (err: any) {
       showToast(err.message || 'Stage update failed', 'error');
+      // Revert to original lot on error
+      setLots(prev => prev.map(l => l.id === selectedLotId ? currentLotObj : l));
     } finally {
       setSubmitting(false);
     }

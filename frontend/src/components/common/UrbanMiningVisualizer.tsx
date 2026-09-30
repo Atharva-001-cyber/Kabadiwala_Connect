@@ -32,6 +32,7 @@ interface EwasteYieldProfile {
   hazardousNeutralizedKgPerKg: number;
   hazardousName: { en: string; hi: string; mr: string };
   co2SavedKgPerKg: number;
+  circularRatePercent: number;
 }
 
 const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
@@ -83,7 +84,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'सीसा (लेड) व ब्रोमिनेटेड ज्वालामंदक रसायन', 
       mr: 'लेड व विषारी रसायने' 
     },
-    co2SavedKgPerKg: 2.4
+    co2SavedKgPerKg: 2.4,
+    circularRatePercent: 94.2
   },
   BATTERY: {
     minerals: [
@@ -130,7 +132,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'ज्वलनशील लिथियम लवण व विषैला इलेक्ट्रोलाइट', 
       mr: 'ज्वलनशील लिथियम क्षार व आम्ल' 
     },
-    co2SavedKgPerKg: 3.2
+    co2SavedKgPerKg: 3.2,
+    circularRatePercent: 96.4
   },
   CABLE: {
     minerals: [
@@ -168,7 +171,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'डायऑक्सिन बनाने वाले प्लास्टिक प्लास्टिसाइज़र', 
       mr: 'डायऑक्सिन निर्माण करणारे प्लास्टिक' 
     },
-    co2SavedKgPerKg: 2.8
+    co2SavedKgPerKg: 2.8,
+    circularRatePercent: 98.1
   },
   MOTOR: {
     minerals: [
@@ -206,7 +210,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'इंसुलेटिंग वार्निश व पुराना ग्रीस', 
       mr: 'इन्सुलेटिंग वार्निश व जुने वंगण' 
     },
-    co2SavedKgPerKg: 2.1
+    co2SavedKgPerKg: 2.1,
+    circularRatePercent: 95.8
   },
   MAGNET: {
     minerals: [
@@ -244,7 +249,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'संक्षारक निकेल-कॉपर कोटिंग', 
       mr: 'गंजरोधक निकेल कोटिंग' 
     },
-    co2SavedKgPerKg: 4.5
+    co2SavedKgPerKg: 4.5,
+    circularRatePercent: 97.5
   },
   CRT: {
     minerals: [
@@ -273,7 +279,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'सीसा युक्त कांच व विषैला फास्फोरस चूर्ण', 
       mr: 'लेडयुक्त काच व फॉस्फरस' 
     },
-    co2SavedKgPerKg: 1.2
+    co2SavedKgPerKg: 1.2,
+    circularRatePercent: 88.6
   },
   LCD: {
     minerals: [
@@ -311,7 +318,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'पारा (मर्करी) वाष्प ट्यूब्स', 
       mr: 'पारा (मर्क्युरी) बाष्प' 
     },
-    co2SavedKgPerKg: 1.7
+    co2SavedKgPerKg: 1.7,
+    circularRatePercent: 91.4
   },
   MIXED_PLASTIC: {
     minerals: [
@@ -340,7 +348,8 @@ const RECOVERY_BENCHMARKS: Record<MaterialCategory, EwasteYieldProfile> = {
       hi: 'स्थायी जैविक प्रदूषक (POPs)', 
       mr: 'पर्यावरणास घातक प्लास्टिक घटक' 
     },
-    co2SavedKgPerKg: 1.5
+    co2SavedKgPerKg: 1.5,
+    circularRatePercent: 93.0
   }
 };
 
@@ -395,7 +404,7 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
 
   return (
     <div
-      className={`rounded-3xl bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 border-2 border-emerald-500/30 dark:border-emerald-500/40 p-5 sm:p-6 shadow-md dark:shadow-2xl space-y-4 relative overflow-hidden group transition-colors ${className}`}
+      className={`rounded-3xl bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 border-2 border-emerald-500/30 dark:border-emerald-500/40 p-4 sm:p-6 shadow-md dark:shadow-2xl space-y-4 relative overflow-hidden group transition-colors ${className}`}
     >
       {/* Background Subtle Shimmer Accents */}
       <div className="absolute -top-16 -right-16 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -403,20 +412,23 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
 
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3.5 relative z-10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/40 flex items-center justify-center font-bold shadow-inner">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/40 flex items-center justify-center font-bold shadow-inner shrink-0">
             <Sparkles className="w-5 h-5 text-amber-500 dark:text-amber-400 animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
                 <span>{language === 'hi' ? 'शहरी खनन एवं रणनीतिक खनिज रिकवरी' : language === 'mr' ? 'शहरी खाणकाम व खनिज पुनर्प्राप्ती' : 'Urban Mining & Critical Mineral Yield'}</span>
               </h4>
               <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
                 JNARDDC & CPCB
               </span>
+              <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                Yield Value: ~₹{totalMineralValue.toLocaleString('en-IN')}
+              </span>
             </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 truncate">
               {language === 'hi'
                 ? `${validWeight} किग्रा ${getCategoryLabel(category, language)} से निकलने वाले प्रमाणित मूल्यवान धातु`
                 : language === 'mr'
@@ -430,7 +442,7 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 active:scale-95 transition-all text-xs flex items-center gap-1 font-bold"
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 active:scale-95 transition-all text-xs flex items-center gap-1 font-bold shrink-0"
           >
             <span>{isExpanded ? 'Hide' : 'Inspect Yield'}</span>
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -441,18 +453,18 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
       {/* Body: Strategic Minerals Grid */}
       {isExpanded && (
         <div className="space-y-4 pt-1 relative z-10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className={`grid ${compact ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'} gap-2.5`}>
             {calculatedMinerals.map((mineral, idx) => (
               <div
                 key={idx}
-                className={`p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/90 border ${mineral.borderColor} hover:border-emerald-500/80 transition-all duration-300 space-y-2 shadow-sm dark:shadow-inner group/card relative`}
+                className={`p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/90 border ${mineral.borderColor} hover:border-emerald-500/80 transition-all duration-300 space-y-1.5 shadow-sm dark:shadow-inner group/card relative min-w-0`}
               >
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-md font-mono ${mineral.badgeColor}`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-md font-mono shrink-0 ${mineral.badgeColor}`}>
                     {mineral.symbol}
                   </span>
                   {mineral.isPrecious && (
-                    <span className="text-[9px] font-bold text-amber-600 dark:text-amber-300 flex items-center gap-0.5">
+                    <span className="text-[9px] font-bold text-amber-600 dark:text-amber-300 flex items-center gap-0.5 shrink-0">
                       <Award className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                       <span>{language === 'hi' ? 'कीमती' : 'Precious'}</span>
                     </span>
@@ -463,28 +475,28 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
                   <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block truncate">
                     {mineral.name[language] || mineral.name.en}
                   </span>
-                  <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-mono block mt-0.5">
+                  <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono block mt-0.5 truncate">
                     {mineral.displayYield}
                   </span>
                 </div>
 
-                <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 pt-1 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
-                  <span className="text-slate-500">Value:</span>
-                  <span className="font-bold">~₹{mineral.estimatedValue.toLocaleString('en-IN')}</span>
+                <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 pt-1 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-1">
+                  <span className="text-slate-500 shrink-0">Value:</span>
+                  <span className="font-bold truncate">~₹{mineral.estimatedValue.toLocaleString('en-IN')}</span>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Environmental Net Positive Safeguards Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+          <div className={`grid ${compact ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'} gap-2.5 text-xs`}>
             <div className="bg-emerald-50/80 dark:bg-slate-950/80 p-3 rounded-2xl border border-emerald-200 dark:border-emerald-900/60 flex items-center gap-2.5 shadow-sm">
               <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">
                 <Leaf className="w-4 h-4" />
               </div>
-              <div className="min-w-0">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-bold">CO₂ Footprint Avoided</span>
-                <span className="font-black text-emerald-800 dark:text-emerald-300 text-sm font-mono">{co2PreventedKg} kg CO₂e</span>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-bold truncate">CO₂ Footprint Avoided</span>
+                <span className="font-black text-emerald-800 dark:text-emerald-300 text-sm font-mono block truncate">{co2PreventedKg} kg CO₂e</span>
               </div>
             </div>
 
@@ -492,9 +504,9 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
               <div className="p-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-800 shrink-0">
                 <TreeDeciduous className="w-4 h-4" />
               </div>
-              <div className="min-w-0">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-bold">Tree Equivalence</span>
-                <span className="font-black text-teal-800 dark:text-teal-300 text-sm font-mono">~{treesEquivalent} Mature Trees</span>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-bold truncate">Tree Equivalence</span>
+                <span className="font-black text-teal-800 dark:text-teal-300 text-sm font-mono block truncate">~{treesEquivalent} Mature Trees</span>
               </div>
             </div>
 
@@ -502,16 +514,16 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
               <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 shrink-0">
                 <ShieldCheck className="w-4 h-4" />
               </div>
-              <div className="min-w-0">
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-bold">Toxics Safely Neutralized</span>
-                <span className="font-black text-rose-800 dark:text-rose-300 text-sm font-mono">{toxicNeutralizedKg} kg</span>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 block uppercase font-bold truncate">Toxics Safely Neutralized</span>
+                <span className="font-black text-rose-800 dark:text-rose-300 text-sm font-mono block truncate">{toxicNeutralizedKg} kg</span>
               </div>
             </div>
           </div>
 
           {/* Scientific Credibility Footnote */}
           <div className="bg-slate-100 dark:bg-slate-950/95 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 flex-wrap gap-2 shadow-sm">
-            <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <Info className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="truncate">
                 {language === 'hi'
@@ -520,7 +532,7 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
               </span>
             </div>
             <span className="font-mono text-emerald-800 dark:text-emerald-400 font-bold bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 shrink-0">
-              Circular Rate: 96.4%
+              Circular Rate: {profile.circularRatePercent}%
             </span>
           </div>
         </div>

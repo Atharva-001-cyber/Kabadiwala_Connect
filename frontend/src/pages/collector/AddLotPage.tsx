@@ -747,7 +747,9 @@ export const AddLotPage: React.FC = () => {
             <span className="font-extrabold text-slate-900 dark:text-white text-sm">{approxWeight} kg</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-slate-500 dark:text-slate-400 font-bold">{t.estRangeLabel}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-bold">
+              {language === 'hi' ? 'कबाड़ खरीद अनुमानित मूल्य:' : language === 'mr' ? 'कबाड खरेदी अंदाजे मूल्य:' : 'Scrap Purchase Est. Value:'}
+            </span>
             <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">
               ₹{valuation.min} – ₹{valuation.max}
             </span>
@@ -2077,7 +2079,7 @@ export const AddLotPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setWizardStep(1)}
-              className="w-full min-h-[44px] py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-2xl text-xs font-bold"
+              className="w-full min-h-[44px] py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold transition-all"
             >
               {language === 'hi' ? '⬅ विवरण संशोधित करें' : language === 'mr' ? '⬅ तपशील बदला' : '⬅ Edit Details'}
             </button>

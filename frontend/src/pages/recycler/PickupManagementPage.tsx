@@ -32,17 +32,19 @@ export const PickupManagementPage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [feedFilter, setFeedFilter] = useState<'ALL' | 'SCHEDULED' | 'COMPLETED'>('ALL');
 
+  const [scheduledSuccessLotId, setScheduledSuccessLotId] = useState<string | null>(null);
+
   const fetchData = async () => {
     try {
       const [lotsRes, pickupsRes] = await Promise.all([
         api.getLots(),
-        api.getPickups({ recyclerId: activeRecId })
+        api.getPickups({})
       ]);
       if (lotsRes.success) {
         setLots(lotsRes.lots);
         const accepted = lotsRes.lots.filter(l => 
-          (l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId && l.status !== 'PICKUP_SCHEDULED' && l.status !== 'RECEIVED' && l.status !== 'RECYCLED' && l.status !== 'PROCESSING')) &&
-          (!l.selectedRecyclerId || l.selectedRecyclerId === activeRecId)
+          (l.id === queryLotId || l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId)) &&
+          l.status !== 'PICKUP_SCHEDULED' && l.status !== 'RECEIVED' && l.status !== 'RECYCLED' && l.status !== 'PROCESSING'
         );
         if (queryLotId && lotsRes.lots.some(l => l.id === queryLotId)) {
           setSelectedLotId(queryLotId);
@@ -99,6 +101,7 @@ export const PickupManagementPage: React.FC = () => {
         vehicleNumber
       });
       if (res.success) {
+        setScheduledSuccessLotId(selectedLotId);
         showToast(
           language === 'hi'
             ? 'पिकअप सफलतापूर्वक शेड्यूल हो गया है!'
@@ -118,8 +121,8 @@ export const PickupManagementPage: React.FC = () => {
   };
 
   const acceptedLots = lots.filter(l => 
-    (l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId && l.status !== 'PICKUP_SCHEDULED' && l.status !== 'RECEIVED' && l.status !== 'RECYCLED' && l.status !== 'PROCESSING')) &&
-    (!l.selectedRecyclerId || l.selectedRecyclerId === activeRecId)
+    (l.id === queryLotId || l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId)) &&
+    l.status !== 'PICKUP_SCHEDULED' && l.status !== 'RECEIVED' && l.status !== 'RECYCLED' && l.status !== 'PROCESSING'
   );
 
   const displayedPickups = pickups.filter(p => {
@@ -157,6 +160,31 @@ export const PickupManagementPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Next Step Banner after Scheduling */}
+      {scheduledSuccessLotId && (
+        <div className="bg-emerald-50 dark:bg-emerald-950/90 border-2 border-emerald-500 rounded-3xl p-5 shadow-xl text-center space-y-3">
+          <div className="flex items-center justify-center gap-2 text-emerald-800 dark:text-emerald-300 font-black text-base">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <span>{language === 'hi' ? '🎉 पिकअप सफलतापूर्वक शेड्यूल हो गया है!' : '🎉 Doorstep Pickup Successfully Scheduled!'}</span>
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-xl mx-auto">
+            {language === 'hi'
+              ? `लॉट ${scheduledSuccessLotId} के लिए पिकअप असाइन हो गया है। अगला चरण: डिजिटल कांटा वजन एवं OTP सत्यापन पूरा करने के लिए नीचे क्लिक करें।`
+              : `Pickup dispatched for Lot ${scheduledSuccessLotId}. Next Step: Proceed to Digital Scale Weighment & Handover Verification.`}
+          </p>
+          <div className="pt-1">
+            <Link
+              to={`/recycler/handover?lotId=${scheduledSuccessLotId}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-sm rounded-2xl shadow-lg transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+              <span>{language === 'hi' ? 'कांटा और हैंडओवर पर जाएँ (अगला चरण) ➔' : 'Proceed to Scale & Handover (Next Step) ➔'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Schedule Form */}

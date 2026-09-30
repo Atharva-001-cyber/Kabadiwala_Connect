@@ -32,36 +32,36 @@ export const calculateCriticalMineralYield = (
   let eprCreditRate = 7.0;    // INR bonus per kg scrap
 
   if (cat.includes('PCB') || cat.includes('CIRCUIT') || cat.includes('MOTHERBOARD') || cat.includes('SMARTPHONE')) {
-    cuFactor = 0.22;
-    auFactor = 0.38;
-    agFactor = 2.45;
-    coliFactor = 0.05;
-    co2Factor = 1.85;
-    leadFactor = 0.06;
+    cuFactor = 0.14;
+    auFactor = 0.024;
+    agFactor = 0.18;
+    coliFactor = 0.005;
+    co2Factor = 2.40;
+    leadFactor = 0.075;
     eprCreditRate = 8.5;
   } else if (cat.includes('BATTERY') || cat.includes('LITHIUM') || cat.includes('EV')) {
-    cuFactor = 0.10;
-    auFactor = 0.02;
-    agFactor = 0.15;
-    coliFactor = 0.22; // High Cobalt/Lithium yield
+    cuFactor = 0.07;
+    auFactor = 0.00;
+    agFactor = 0.00;
+    coliFactor = 0.12; // Combined Li (0.035) & Co (0.085)
     co2Factor = 3.20;
-    leadFactor = 0.02;
+    leadFactor = 0.32;
     eprCreditRate = 12.0;
   } else if (cat.includes('CABLE') || cat.includes('WIRE') || cat.includes('COPPER')) {
-    cuFactor = 0.65; // High Copper yield
-    auFactor = 0.01;
-    agFactor = 0.10;
+    cuFactor = 0.58; // High Copper yield
+    auFactor = 0.00;
+    agFactor = 0.00;
     coliFactor = 0.00;
-    co2Factor = 1.40;
-    leadFactor = 0.01;
+    co2Factor = 2.80;
+    leadFactor = 0.03;
     eprCreditRate = 6.0;
-  } else if (cat.includes('SCREEN') || cat.includes('DISPLAY') || cat.includes('MONITOR') || cat.includes('TV')) {
+  } else if (cat.includes('SCREEN') || cat.includes('DISPLAY') || cat.includes('MONITOR') || cat.includes('TV') || cat.includes('CRT')) {
     cuFactor = 0.08;
-    auFactor = 0.05;
-    agFactor = 0.40;
-    coliFactor = 0.01;
-    co2Factor = 0.95;
-    leadFactor = 0.08; // High lead glass prevention
+    auFactor = 0.00;
+    agFactor = 0.00;
+    coliFactor = 0.00;
+    co2Factor = 1.20;
+    leadFactor = 0.65; // High lead glass prevention
     eprCreditRate = 5.0;
   }
 

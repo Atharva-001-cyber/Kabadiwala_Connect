@@ -156,21 +156,39 @@ export const HandoverVerificationPage: React.FC = () => {
     try {
       const res = await api.getLots();
       if (res.success) {
-        // Filter lots in ACCEPTED or PICKUP_SCHEDULED status ready for physical handover
-        const pending = res.lots.filter((l: Lot) => 
-          (l.status === 'ACCEPTED' || l.status === 'PICKUP_SCHEDULED') &&
+        // Filter lots in ACCEPTED, PICKUP_SCHEDULED, or PICKED_UP status, or matching queryLotId
+        let pending = res.lots.filter((l: Lot) => 
+          l.id === queryLotId ||
+          l.status === 'ACCEPTED' || 
+          l.status === 'PICKUP_SCHEDULED' ||
+          l.status === 'PICKED_UP' ||
           (!l.selectedRecyclerId || l.selectedRecyclerId === myRecyclerId)
         );
+
+        // If a specific queryLotId (e.g. EW-LKO-2026-850244) is passed in URL but not in list, fetch directly
+        if (queryLotId && !pending.some(l => l.id === queryLotId)) {
+          try {
+            const detailRes = await api.getLotById(queryLotId);
+            if (detailRes.success && detailRes.lot) {
+              pending = [detailRes.lot, ...pending];
+            }
+          } catch (e) {
+            console.warn('Direct fetch for queryLotId failed:', e);
+          }
+        }
+
         setLots(pending);
-        if (queryLotId && pending.some(l => l.id === queryLotId)) {
-          const matched = pending.find(l => l.id === queryLotId)!;
-          setSelectedLotId(matched.id);
-          setActualWeight(String(matched.approxWeight));
-          setHandoverOtp(''); // Blank for authentic verification
-        } else if (pending.length > 0 && !selectedLotId) {
-          setSelectedLotId(pending[0].id);
-          setActualWeight(String(pending[0].approxWeight));
-          setHandoverOtp(''); // Blank for authentic verification
+
+        // Only set initial selectedLotId, actualWeight, and OTP if not already selected by user
+        if (!selectedLotId) {
+          if (queryLotId && pending.some(l => l.id === queryLotId)) {
+            const matched = pending.find(l => l.id === queryLotId)!;
+            setSelectedLotId(matched.id);
+            setActualWeight(String(matched.approxWeight));
+          } else if (pending.length > 0) {
+            setSelectedLotId(pending[0].id);
+            setActualWeight(String(pending[0].approxWeight));
+          }
         }
       }
     } catch (err) {
@@ -218,7 +236,7 @@ export const HandoverVerificationPage: React.FC = () => {
       clearInterval(interval);
       stopCamera();
     };
-  }, []);
+  }, [queryLotId]);
 
   const selectedLot = lots.find(l => l.id === selectedLotId);
   const approx = selectedLot ? selectedLot.approxWeight : 10;

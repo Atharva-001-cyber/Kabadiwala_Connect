@@ -1178,14 +1178,9 @@ export const LoginPage: React.FC = () => {
                         <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">
                           {language === 'hi' ? 'एबीसी ई-वेस्ट रीसायकलिंग प्रा. लि.' : language === 'mr' ? 'एबीसी ई-कचरा रीसायकलिंग प्रा. लि.' : 'ABC E-Waste Recycling Pvt Ltd'}
                         </span>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block truncate">
-                            {language === 'hi' ? 'CPCB अधिकृत रीसाइक्लर' : language === 'mr' ? 'CPCB अधिकृत रिसायकलर' : 'CPCB Authorized'}
-                          </span>
-                          <span className="text-[9px] font-mono font-black text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-700/60">
-                            OTP: 123456
-                          </span>
-                        </div>
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block truncate">
+                          {language === 'hi' ? 'CPCB अधिकृत रीसाइक्लर' : language === 'mr' ? 'CPCB अधिकृत रिसायकलर' : 'CPCB Authorized'}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <button

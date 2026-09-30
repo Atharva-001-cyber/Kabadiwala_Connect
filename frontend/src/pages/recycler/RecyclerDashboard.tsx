@@ -21,7 +21,8 @@ export const RecyclerDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async (silent = false) => {
-      if (!silent) setLoading(true);
+      // If we already have lots data, perform background refresh without locking UI
+      if (!silent && lots.length === 0) setLoading(true);
       try {
         const [lotsRes, pickupsRes] = await Promise.all([
           api.getLots(),
@@ -55,9 +56,10 @@ export const RecyclerDashboard: React.FC = () => {
 
   const newRequests = lots.filter(l => l.status === 'CREATED' || l.status === 'OFFER_RECEIVED');
   const pendingPickups = lots.filter(l => l.status === 'ACCEPTED' || l.status === 'PICKUP_SCHEDULED');
-  const processingLots = lots.filter(l => ['RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED'].includes(l.status));
+  const processingLots = lots.filter(l => ['PICKED_UP', 'RECEIVED', 'RECYCLER_RECEIVED', 'SORTED', 'PROCESSING', 'RECOVERED'].includes(l.status));
   const completedLots = lots.filter(l => l.status === 'RECYCLED');
-  const totalRecycledKg = completedLots.reduce((sum, l) => sum + (l.approxWeight || 0), 0);
+  const totalRecycledKg = completedLots.reduce((sum, l) => sum + (l.actualWeight || l.approxWeight || 0), 0);
+  const formattedRecycledKg = Number(totalRecycledKg.toFixed(1)).toLocaleString('en-IN');
 
   const authStatus = recyclerProfile?.authorizationStatus || 'AUTHORIZED';
   const isSuspended = authStatus === 'SUSPENDED';
@@ -170,7 +172,7 @@ export const RecyclerDashboard: React.FC = () => {
           <div className="bg-slate-50 dark:bg-slate-950/70 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl transition-all shadow-xs">
             <span className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-wider block">{t.totalFormallyRecycled}</span>
             <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 block font-mono">
-              {totalRecycledKg} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
+              {formattedRecycledKg} {language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}
             </span>
             <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold">{t.form6Certified}</span>
           </div>
@@ -178,87 +180,87 @@ export const RecyclerDashboard: React.FC = () => {
       </div>
 
       {/* VISUAL RECYCLING BATCH LIFECYCLE PIPELINE DIAGRAM */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-950 border-2 border-blue-500/60 rounded-3xl p-5 shadow-xl text-white">
+      <div className="bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:via-blue-950 dark:to-slate-950 border-2 border-slate-200 dark:border-blue-500/60 rounded-3xl p-5 shadow-md dark:shadow-xl text-slate-900 dark:text-white transition-all">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-xl">🏭</span>
-            <h3 className="font-black text-sm sm:text-base text-white tracking-tight">
+            <h3 className="font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-tight">
               {language === 'hi' ? '4-चरणीय रीसाइक्लिंग जीवनचक्र (Batch Lifecycle Pipeline)' : language === 'mr' ? '4-टप्प्यांची रिसायकलिंग प्रक्रिया' : '4-Stage Recycling Batch Pipeline'}
             </h3>
           </div>
-          <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-black uppercase tracking-wider">
+          <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/40 text-[10px] font-black uppercase tracking-wider">
             {language === 'hi' ? 'CPCB अनुपालित' : language === 'mr' ? 'CPCB अनुपालन' : 'CPCB Statutory Workflow'}
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative">
           {/* Stage 1 */}
-          <div className="bg-white/10 dark:bg-slate-950/80 border border-purple-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-purple-400 transition-all">
+          <div className="bg-purple-50/60 dark:bg-slate-950/80 border border-purple-200 dark:border-purple-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-purple-400 transition-all">
             <div className="flex items-center justify-between">
-              <span className="w-8 h-8 rounded-xl bg-purple-500/30 text-purple-300 flex items-center justify-center font-black text-base border border-purple-400/30">
+              <span className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-500/30 text-purple-700 dark:text-purple-300 flex items-center justify-center font-black text-base border border-purple-300 dark:border-purple-400/30">
                 1
               </span>
               <span className="text-xl">🚚</span>
             </div>
             <div className="mt-3">
-              <span className="text-[10px] font-black text-purple-300 uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider block">
                 {language === 'hi' ? 'संग्रह एवं पिकअप' : language === 'mr' ? 'संकलन व पिकअप' : 'Fleet Dispatch'}
               </span>
-              <h4 className="font-extrabold text-xs text-white mt-0.5">
+              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white mt-0.5">
                 {language === 'hi' ? 'सत्यापित डिजिटल तौल' : language === 'mr' ? 'सत्यापित डिजिटल वजन' : 'Scale Verification'}
               </h4>
             </div>
           </div>
 
           {/* Stage 2 */}
-          <div className="bg-white/10 dark:bg-slate-950/80 border border-blue-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-blue-400 transition-all">
+          <div className="bg-blue-50/60 dark:bg-slate-950/80 border border-blue-200 dark:border-blue-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-blue-400 transition-all">
             <div className="flex items-center justify-between">
-              <span className="w-8 h-8 rounded-xl bg-blue-500/30 text-blue-300 flex items-center justify-center font-black text-base border border-blue-400/30">
+              <span className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-500/30 text-blue-700 dark:text-blue-300 flex items-center justify-center font-black text-base border border-blue-300 dark:border-blue-400/30">
                 2
               </span>
               <span className="text-xl">🔬</span>
             </div>
             <div className="mt-3">
-              <span className="text-[10px] font-black text-blue-300 uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-wider block">
                 {language === 'hi' ? 'सामग्री छंटाई' : language === 'mr' ? 'साहित्य वर्गीकरण' : 'Material Sorting'}
               </span>
-              <h4 className="font-extrabold text-xs text-white mt-0.5">
+              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white mt-0.5">
                 {language === 'hi' ? 'सर्किट बोर्ड (PCB), मेटल व प्लास्टिक पृथक्करण' : language === 'mr' ? 'सर्किट बोर्ड (PCB), धातू व प्लास्टिक वर्गीकरण' : 'PCB & Alloy Segregation'}
               </h4>
             </div>
           </div>
 
           {/* Stage 3 */}
-          <div className="bg-white/10 dark:bg-slate-950/80 border border-cyan-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-cyan-400 transition-all">
+          <div className="bg-cyan-50/60 dark:bg-slate-950/80 border border-cyan-200 dark:border-cyan-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-cyan-400 transition-all">
             <div className="flex items-center justify-between">
-              <span className="w-8 h-8 rounded-xl bg-cyan-500/30 text-cyan-300 flex items-center justify-center font-black text-base border border-cyan-400/30">
+              <span className="w-8 h-8 rounded-xl bg-cyan-100 dark:bg-cyan-500/30 text-cyan-700 dark:text-cyan-300 flex items-center justify-center font-black text-base border border-cyan-300 dark:border-cyan-400/30">
                 3
               </span>
               <span className="text-xl">⚙️</span>
             </div>
             <div className="mt-3">
-              <span className="text-[10px] font-black text-cyan-300 uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-cyan-700 dark:text-cyan-300 uppercase tracking-wider block">
                 {language === 'hi' ? 'हाइड्रो-धातुकर्म प्रसंस्करण' : language === 'mr' ? 'हायड्रो-प्रक्रिया' : 'Processing Unit'}
               </span>
-              <h4 className="font-extrabold text-xs text-white mt-0.5">
+              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white mt-0.5">
                 {language === 'hi' ? 'कीमती धातुओं की रिकवरी' : language === 'mr' ? 'मूल्यवान धातू पुनर्प्राप्ती' : 'Precious Metal Extraction'}
               </h4>
             </div>
           </div>
 
           {/* Stage 4 */}
-          <div className="bg-white/10 dark:bg-slate-950/80 border border-emerald-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-emerald-400 transition-all">
+          <div className="bg-emerald-50/60 dark:bg-slate-950/80 border border-emerald-200 dark:border-emerald-400/40 rounded-2xl p-3.5 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group hover:border-emerald-400 transition-all">
             <div className="flex items-center justify-between">
-              <span className="w-8 h-8 rounded-xl bg-emerald-500/30 text-emerald-300 flex items-center justify-center font-black text-base border border-emerald-400/30">
+              <span className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-black text-base border border-emerald-300 dark:border-emerald-400/30">
                 4
               </span>
               <span className="text-xl">📜</span>
             </div>
             <div className="mt-3">
-              <span className="text-[10px] font-black text-emerald-300 uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
                 {language === 'hi' ? 'फॉर्म-6 EPR प्रमाण' : language === 'mr' ? 'फॉर्म-६ EPR पुरावा' : 'Form-6 Certificate'}
               </span>
-              <h4 className="font-extrabold text-xs text-white mt-0.5">
+              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white mt-0.5">
                 {language === 'hi' ? 'कानूनी CPCB क्रेडिट जारी' : language === 'mr' ? 'कायदेशीर CPCB क्रेडिट्स' : 'Statutory Credit Issuance'}
               </h4>
             </div>

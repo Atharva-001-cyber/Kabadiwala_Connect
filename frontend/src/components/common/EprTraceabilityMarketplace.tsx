@@ -154,28 +154,28 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
   }
 
   return (
-    <div className="bg-slate-950 text-white border-2 border-emerald-500/60 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6 relative overflow-hidden">
+    <div className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white border-2 border-emerald-500/60 rounded-3xl p-5 sm:p-7 shadow-sm dark:shadow-2xl space-y-6 relative overflow-hidden">
       {/* Background Neon Glow */}
       <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header & Feature Toggle Switch */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-2xl shadow-lg border border-emerald-400 shrink-0">
             <ShieldCheck className="w-7 h-7" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base sm:text-lg font-black text-white">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                 {language === 'hi'
                   ? 'EPR मैटेरियल ट्रैसेबिलिटी एवं ग्रीन डिविडेंड प्रोटोकॉल'
                   : 'EPR Material Traceability & Green Dividend Protocol'}
               </h3>
-              <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
+              <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-500/40 font-bold">
                 PROPOSED CPCB FRAMEWORK — PROTOTYPE
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5 font-medium">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-medium">
               {language === 'hi'
                 ? 'CPCB नियम 19 मैटेरियल ट्रैसेबिलिटी ऑैडिट एवं दुर्लभ खनिज (Critical Minerals) रिकवरी यील्ड मॉडल।'
                 : 'CPCB Rule 19 E-Waste Material Provenance & Critical Mineral Mass Balance Estimator.'}
@@ -184,25 +184,25 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
         </div>
 
         {/* Feature Toggle Switch ON / OFF */}
-        <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800 self-start sm:self-center">
-          <span className="text-[11px] font-mono font-bold text-slate-300">Feature Status:</span>
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 self-start sm:self-center">
+          <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">Feature Status:</span>
           <button
             type="button"
             onClick={handleToggle}
-            className={`px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all shadow ${
+            className={`px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 transition-all shadow-xs ${
               isEnabled 
-                ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400' 
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950 hover:bg-emerald-700 dark:hover:bg-emerald-400' 
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700'
             }`}
           >
             {isEnabled ? (
               <>
-                <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                <CheckCircle2 className="w-4 h-4 text-white dark:text-slate-950" />
                 <span>ON ✅</span>
               </>
             ) : (
               <>
-                <ToggleLeft className="w-4 h-4 text-slate-400" />
+                <ToggleLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 <span>OFF 📴</span>
               </>
             )}
@@ -211,33 +211,33 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
       </div>
 
       {/* Primary Settlement vs Secondary Proposed Dividend Card */}
-      <div className="bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-emerald-500/40 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
-          <span className="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
-            <Coins className="w-4 h-4 text-emerald-400" />
+      <div className="bg-slate-50 dark:bg-slate-900/90 p-4 sm:p-5 rounded-2xl border border-emerald-500/40 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+          <span className="text-xs font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
+            <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>{language === 'hi' ? 'द्विस्तरीय भुगतान संरचना (Two-Tier Settlement Architecture)' : 'Two-Tier Payment Settlement Architecture'}</span>
           </span>
-          <span className="text-[10px] font-mono text-slate-400">
-            {language === 'hi' ? 'Collector:' : language === 'mr' ? 'संकलक:' : 'Collector:'} <b className="text-white">{formatUserDisplayName(collectorName, 'COLLECTOR', language)}</b>
+          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+            {language === 'hi' ? 'Collector:' : language === 'mr' ? 'संकलक:' : 'Collector:'} <b className="text-slate-900 dark:text-white">{formatUserDisplayName(collectorName, 'COLLECTOR', language)}</b>
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           {/* Tier 1: Primary Guaranteed Settlement */}
-          <div className="p-3.5 bg-emerald-950/60 rounded-xl border border-emerald-500/40 space-y-1">
+          <div className="p-3.5 bg-emerald-50/90 dark:bg-emerald-950/60 rounded-xl border border-emerald-300 dark:border-emerald-500/40 space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-emerald-300 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>{language === 'hi' ? '1. प्राथमिक गारंटीकृत भुगतान' : language === 'mr' ? '1. प्राथमिक हमी दिलेले पेमेंट' : '1. Primary Guaranteed Settlement'}</span>
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[9px] font-black uppercase">
+              <span className="px-2 py-0.5 rounded bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 text-[9px] font-black uppercase">
                 {language === 'hi' ? 'तत्काल नकद/UPI' : language === 'mr' ? 'झटपट रोख/UPI' : 'INSTANT CASH/UPI'}
               </span>
             </div>
-            <div className="text-2xl font-black text-white font-mono pt-1">
+            <div className="text-2xl font-black text-slate-900 dark:text-white font-mono pt-1">
               ₹{primaryPayoutAmount.toLocaleString('en-IN')}
             </div>
-            <p className="text-[10px] text-emerald-200/80">
+            <p className="text-[10px] text-emerald-800 dark:text-emerald-200/80 font-medium">
               {language === 'hi'
                 ? `डिलीवरी पर रीसाइक्लर (${formatUserDisplayName(recyclerName, 'RECYCLER', language)}) द्वारा प्रत्यक्ष वजन पैमाने का भुगतान।`
                 : language === 'mr'
@@ -247,25 +247,25 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
           </div>
 
           {/* Tier 2: Secondary Proposed EPR Royalty Bonus */}
-          <div className="p-3.5 bg-amber-950/40 rounded-xl border border-amber-500/40 space-y-1">
+          <div className="p-3.5 bg-amber-50/90 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-500/40 space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 <span>{language === 'hi' ? '2. द्वितीयक प्रस्तावित ईपीआर रॉयल्टी' : language === 'mr' ? '2. द्वितीयक प्रस्तावित EPR रॉयल्टी' : '2. Secondary Proposed EPR Royalty'}</span>
               </span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[9px] font-mono font-bold">
+              <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/50 text-[9px] font-mono font-bold">
                 {language === 'hi' ? 'प्रस्तावित बोनस' : language === 'mr' ? 'प्रस्तावित बोनस' : 'PROPOSED BONUS'}
               </span>
             </div>
-            <div className="text-2xl font-black text-amber-300 font-mono pt-1 flex items-center gap-2">
+            <div className="text-2xl font-black text-amber-800 dark:text-amber-300 font-mono pt-1 flex items-center gap-2">
               <span>+₹{yieldData.estimatedEprCreditValue}</span>
               {purchasedOemId && (
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-700">
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border-emerald-300 dark:text-emerald-400 dark:bg-emerald-950 px-2 py-0.5 rounded dark:border-emerald-700">
                   {language === 'hi' ? 'सत्यापित ✓' : language === 'mr' ? 'जुळले ✓' : 'MATCHED ✓'}
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-amber-200/80">
+            <p className="text-[10px] text-amber-800 dark:text-amber-200/80 font-medium">
               {language === 'hi'
                 ? 'कॉर्पोरेट ब्रांड्स द्वारा सामग्री साक्ष्य क्रेडिट खरीदने पर द्वितीयक बोनस भुगतान।'
                 : language === 'mr'
@@ -277,17 +277,17 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
       </div>
 
       {/* Internal Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto text-xs font-bold">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto text-xs font-bold">
         <button
           type="button"
           onClick={() => setActiveTab('MINERALS')}
           className={`px-3.5 py-2 rounded-xl transition-all active:scale-95 flex items-center gap-1.5 ${
             activeTab === 'MINERALS'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-800'
           }`}
         >
-          <Zap className="w-4 h-4 text-amber-400" />
+          <Zap className="w-4 h-4 text-amber-500 dark:text-amber-400" />
           <span>
             {language === 'hi'
               ? `दुर्लभ खनिज निष्कर्षण (${lotWeightKg} किग्रा ${getCategoryLabel(lotCategory, language)})`
@@ -302,11 +302,11 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
           onClick={() => setActiveTab('PROVENANCE')}
           className={`px-3.5 py-2 rounded-xl transition-all active:scale-95 flex items-center gap-1.5 ${
             activeTab === 'PROVENANCE'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-800'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 text-teal-400" />
+          <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400" />
           <span>{language === 'hi' ? 'CPCB नियम 19 साक्ष्य पास' : language === 'mr' ? 'CPCB नियम १९ पुरावा पास' : 'CPCB Rule 19 Provenance Pass'}</span>
         </button>
 
@@ -315,11 +315,11 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
           onClick={() => setActiveTab('B2B_DEMO')}
           className={`px-3.5 py-2 rounded-xl transition-all active:scale-95 flex items-center gap-1.5 ${
             activeTab === 'B2B_DEMO'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-800'
           }`}
         >
-          <Building2 className="w-4 h-4 text-blue-400" />
+          <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span>{language === 'hi' ? 'कॉर्पोरेट B2B हब' : language === 'mr' ? 'कॉर्पोरेट B2B हब' : 'Simulated Corporate B2B Hub'}</span>
         </button>
       </div>
@@ -328,50 +328,50 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
       {activeTab === 'MINERALS' && (
         <div className="space-y-4 animate-fadeIn">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="p-3.5 bg-slate-900 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 block font-bold">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">
                 ⚡ {language === 'hi' ? 'इलेक्ट्रिकल तांबा (Cu)' : language === 'mr' ? 'इलेक्ट्रोलाइटिक तांबे (Cu)' : 'Electrolytic Copper (Cu)'}
               </span>
-              <p className="text-xl font-black text-amber-400">
-                {yieldData.copperKg} <span className="text-xs text-slate-400">{language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}</span>
+              <p className="text-xl font-black text-amber-700 dark:text-amber-400">
+                {yieldData.copperKg} <span className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}</span>
               </p>
               <span className="text-[9px] text-slate-500 block">{language === 'hi' ? 'उच्च शुद्धता ग्रेड' : language === 'mr' ? 'उच्च शुद्धता ग्रेड' : 'High Purity Grade'}</span>
             </div>
 
-            <div className="p-3.5 bg-slate-900 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 block font-bold">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">
                 🟡 {language === 'hi' ? '24K शुद्ध सोना (Au)' : language === 'mr' ? '24K शुद्ध सोने (Au)' : '24K Gold Yield (Au)'}
               </span>
-              <p className="text-xl font-black text-yellow-300">
-                {yieldData.goldGrams} <span className="text-xs text-slate-400">{language === 'hi' || language === 'mr' ? 'ग्राम' : 'grams'}</span>
+              <p className="text-xl font-black text-amber-600 dark:text-yellow-300">
+                {yieldData.goldGrams} <span className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' || language === 'mr' ? 'ग्राम' : 'grams'}</span>
               </p>
               <span className="text-[9px] text-slate-500 block">{language === 'hi' ? 'पीसीबी पिन सोना' : language === 'mr' ? 'पीसीबी पिन सोने' : 'PCB Contact Pin Gold'}</span>
             </div>
 
-            <div className="p-3.5 bg-slate-900 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 block font-bold">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">
                 ⚪ {language === 'hi' ? 'शुद्ध चांदी (Ag)' : language === 'mr' ? 'शुद्ध चांदी (Ag)' : 'Fine Silver Yield (Ag)'}
               </span>
-              <p className="text-xl font-black text-slate-200">
-                {yieldData.silverGrams} <span className="text-xs text-slate-400">{language === 'hi' || language === 'mr' ? 'ग्राम' : 'grams'}</span>
+              <p className="text-xl font-black text-slate-700 dark:text-slate-200">
+                {yieldData.silverGrams} <span className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' || language === 'mr' ? 'ग्राम' : 'grams'}</span>
               </p>
               <span className="text-[9px] text-slate-500 block">{language === 'hi' ? 'सोल्डर मिश्र धातु रिकवरी' : language === 'mr' ? 'सोल्डर मिश्र धातू रिकव्हरी' : 'Solder Alloy Recovery'}</span>
             </div>
 
-            <div className="p-3.5 bg-slate-900 rounded-2xl border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-400 block font-bold">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">
                 🔋 {language === 'hi' ? 'कोबाल्ट व लिथियम (Co/Li)' : language === 'mr' ? 'कोबाल्ट व लिथियम (Co/Li)' : 'Cobalt & Lithium (Co/Li)'}
               </span>
-              <p className="text-xl font-black text-teal-300">
-                {yieldData.cobaltLithiumKg} <span className="text-xs text-slate-400">{language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}</span>
+              <p className="text-xl font-black text-teal-700 dark:text-teal-300">
+                {yieldData.cobaltLithiumKg} <span className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' ? 'किग्रा' : language === 'mr' ? 'किग्रॅ' : 'kg'}</span>
               </p>
               <span className="text-[9px] text-slate-500 block">{language === 'hi' ? 'बैटरी कैथोड धातु' : language === 'mr' ? 'बॅटरी कॅथोड धातू' : 'Battery Cathode Metal'}</span>
             </div>
           </div>
 
-          <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <span className="text-slate-300 flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-emerald-400" />
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Flame className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>
                 {language === 'hi' 
                   ? <>कार्बन व भारी धातु सुरक्षा: <b>{yieldData.co2DivertedKg} kg CO₂e</b> बचाव | <b>{yieldData.leadPreventedKg} kg सीसा (Lead)</b> बचाव</>
@@ -380,7 +380,7 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
                   : <>Carbon & Heavy Metal Protection: <b>{yieldData.co2DivertedKg} kg CO₂e</b> diverted | <b>{yieldData.leadPreventedKg} kg Lead</b> prevented</>}
               </span>
             </span>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-1 rounded border border-emerald-800 font-bold">
+            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950 px-2 py-1 rounded border dark:border-emerald-800 font-bold">
               {language === 'hi' ? 'USGS धातु विज्ञान मानक' : language === 'mr' ? 'USGS धातूशास्त्र मानके' : 'USGS metallurgical standards'}
             </span>
           </div>
@@ -390,16 +390,16 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
       {/* Tab 2: CPCB Rule 19 Digital Provenance Pass */}
       {activeTab === 'PROVENANCE' && (
         <div className="space-y-3 animate-fadeIn text-xs">
-          <div className="p-4 bg-slate-900 rounded-2xl border border-slate-800 space-y-3 font-mono">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <span className="text-emerald-400 font-bold">Rule 19 Certificate Token</span>
-              <span className="text-white font-black">{yieldData.traceabilityHash}</span>
+          <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 font-mono">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+              <span className="text-emerald-700 dark:text-emerald-400 font-bold">Rule 19 Certificate Token</span>
+              <span className="text-slate-900 dark:text-white font-black">{yieldData.traceabilityHash}</span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div><span className="text-slate-500">First-Mile Collector:</span> <span className="text-white block font-bold">{collectorName}</span></div>
-              <div><span className="text-slate-500">Authorized Recycler:</span> <span className="text-white block font-bold">{recyclerName}</span></div>
-              <div><span className="text-slate-500">Mass Balance Verified:</span> <span className="text-emerald-400 block font-bold">{lotWeightKg} kg {lotCategory}</span></div>
-              <div><span className="text-slate-500">CPCB Framework Status:</span> <span className="text-amber-300 block font-bold">PROPOSED PROTOTYPE DEMO</span></div>
+              <div><span className="text-slate-500">First-Mile Collector:</span> <span className="text-slate-900 dark:text-white block font-bold">{collectorName}</span></div>
+              <div><span className="text-slate-500">Authorized Recycler:</span> <span className="text-slate-900 dark:text-white block font-bold">{recyclerName}</span></div>
+              <div><span className="text-slate-500">Mass Balance Verified:</span> <span className="text-emerald-700 dark:text-emerald-400 block font-bold">{lotWeightKg} kg {lotCategory}</span></div>
+              <div><span className="text-slate-500">CPCB Framework Status:</span> <span className="text-amber-700 dark:text-amber-300 block font-bold">PROPOSED PROTOTYPE DEMO</span></div>
             </div>
           </div>
         </div>
@@ -408,9 +408,9 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
       {/* Tab 3: Simulated Corporate B2B Buyer Hub */}
       {activeTab === 'B2B_DEMO' && (
         <div className="space-y-3 animate-fadeIn text-xs">
-          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between">
+          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300 flex items-center justify-between">
             <span>Corporate B2B Simulated Marketplace (Demo for SIH Judges)</span>
-            <span className="text-amber-300 font-bold">Proposed Framework</span>
+            <span className="text-amber-700 dark:text-amber-300 font-bold">Proposed Framework</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -419,24 +419,24 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
                 key={oem.id}
                 className={`p-3.5 rounded-2xl border transition-all space-y-2.5 ${
                   purchasedOemId === oem.id
-                    ? 'bg-emerald-950/80 border-emerald-500 ring-2 ring-emerald-500/40'
-                    : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-500 ring-2 ring-emerald-500/40'
+                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-2xl">{oem.logo}</span>
                   <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
                     purchasedOemId === oem.id
-                      ? 'bg-emerald-500 text-slate-950 font-black'
-                      : 'bg-slate-800 text-slate-300'
+                      ? 'bg-emerald-600 text-white font-black'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                   }`}>
                     {purchasedOemId === oem.id ? 'CREDIT MATCHED ✓' : `Rate: ₹${oem.pricePerCredit}`}
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-white text-xs">{oem.name}</h4>
-                  <span className="text-[10px] text-slate-400 font-mono">EPR Target: {oem.creditsRequested} Tonnes</span>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-xs">{oem.name}</h4>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">EPR Target: {oem.creditsRequested} Tonnes</span>
                 </div>
 
                 <button
@@ -444,8 +444,8 @@ export const EprTraceabilityMarketplace: React.FC<EprTraceabilityMarketplaceProp
                   onClick={() => handleSimulateOemPurchase(oem.id, oem.name, oem.pricePerCredit)}
                   className={`w-full py-2 rounded-xl font-black text-[11px] flex items-center justify-center gap-1 transition-all active:scale-95 ${
                     purchasedOemId === oem.id
-                      ? 'bg-emerald-500 text-slate-950'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
                   }`}
                 >
                   <Coins className="w-3.5 h-3.5" />

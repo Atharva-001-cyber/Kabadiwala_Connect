@@ -249,16 +249,16 @@ export const PriceBoardPage: React.FC = () => {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
       {/* Top Header & District Switcher */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Coins className="w-7 h-7 text-amber-400" />
-              <h1 className="text-xl sm:text-2xl font-black text-white">
+              <Coins className="w-7 h-7 text-amber-500 dark:text-amber-400" />
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                 {t.priceBoardTitle}
               </h1>
             </div>
-            <p className="text-xs text-slate-300 font-medium mt-1">
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">
               {language === 'hi'
                 ? 'EPR नियम 2022 के तहत अधिकृत रीसाइक्लर्स और प्लेटफ़ॉर्म खरीद दरों पर आधारित पारदर्शी बेंचमार्क भाव'
                 : language === 'mr'
@@ -271,18 +271,18 @@ export const PriceBoardPage: React.FC = () => {
             {/* Online / Offline Sync Badge */}
             <span className={`px-3 py-1.5 rounded-xl text-[11px] font-black border flex items-center gap-1.5 ${
               isOnline 
-                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800' 
-                : 'bg-amber-950/80 text-amber-300 border-amber-800'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800' 
+                : 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-800'
             }`}>
-              {isOnline ? <Wifi className="w-3.5 h-3.5 text-emerald-400" /> : <WifiOff className="w-3.5 h-3.5 text-amber-400" />}
+              {isOnline ? <Wifi className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <WifiOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
               <span>{isOnline ? (language === 'hi' ? '🟢 ऑनलाइन कनेक्टेड' : language === 'mr' ? '🟢 ऑनलाइन कनेक्टेड' : '🟢 Online Connected') : (language === 'hi' ? '🟡 ऑफलाइन कैश्ड' : language === 'mr' ? '🟡 ऑफलाइन कॅश' : '🟡 Offline Cached')}</span>
             </span>
 
             <button
               onClick={() => setShowAddPriceModal(true)}
-              className="min-h-[44px] px-3.5 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-2xl text-xs font-bold flex items-center gap-1.5 border border-slate-700 shadow"
+              className="min-h-[44px] px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 rounded-2xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
-              <PlusCircle className="w-4 h-4 text-emerald-400" />
+              <PlusCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{language === 'hi' ? 'नया भाव दर्ज करें' : language === 'mr' ? 'नवीन दर नोंदवा' : 'Record Rate'}</span>
             </button>
 
@@ -295,10 +295,10 @@ export const PriceBoardPage: React.FC = () => {
                   speakAllPrices();
                 }
               }}
-              className={`min-h-[44px] px-4 py-2 active:scale-95 rounded-2xl text-xs font-black flex items-center gap-2 shadow-lg transition-all ${
+              className={`min-h-[44px] px-4 py-2 active:scale-95 rounded-2xl text-xs font-black flex items-center gap-2 shadow-sm transition-all ${
                 isSpeaking
-                  ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-amber-950'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950'
+                  ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-300'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
               }`}
             >
               {isSpeaking ? (
@@ -317,10 +317,10 @@ export const PriceBoardPage: React.FC = () => {
         </div>
 
         {/* District Selector & GPS Button */}
-        <div className="space-y-2 pt-1 border-t border-slate-800/80">
+        <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-            <span className="text-slate-400 font-bold flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-              <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               {language === 'hi' ? 'जिला / मंडी चुनें:' : language === 'mr' ? 'जिल्हा / बाजार निवडा:' : 'Select District / Mandi:'}
             </span>
 
@@ -328,11 +328,11 @@ export const PriceBoardPage: React.FC = () => {
               onClick={handleUseGps}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all ${
                 gpsActive 
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700 shadow-md shadow-emerald-950' 
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700 shadow-sm' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-emerald-400" />
+              <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>{gpsActive ? `🛰️ GPS (${gpsCoords?.lat.toFixed(2)}, ${gpsCoords?.lng.toFixed(2)})` : (t.useGpsDistrict || '🛰️ Use GPS')}</span>
             </button>
           </div>
@@ -348,7 +348,7 @@ export const PriceBoardPage: React.FC = () => {
                 className={`min-h-[38px] px-4 py-1.5 rounded-xl font-bold transition-all shrink-0 active:scale-95 ${
                   selectedDistrict === loc.district
                     ? 'bg-emerald-600 text-white shadow-md'
-                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
                 }`}
               >
                 {formatLocationString(loc.district, loc.state, language)}

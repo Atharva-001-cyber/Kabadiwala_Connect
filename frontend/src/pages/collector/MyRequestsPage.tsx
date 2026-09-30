@@ -49,26 +49,28 @@ export const MyRequestsPage: React.FC = () => {
         if (!collectorId && u) collectorId = JSON.parse(u)?.id;
       } catch {}
 
-      const isRealCollector = collectorId && collectorId !== 'col_1';
-      let res = await api.getLots(collectorId ? { collectorId } : {});
-      if (!isRealCollector && res.success && res.lots.length === 0) {
-        res = await api.getLots({});
-      }
+      // Parallelize fetching lots and active offers to eliminate waterfall delay
+      const [res, offersRes] = await Promise.all([
+        api.getLots(collectorId ? { collectorId } : {}),
+        api.getOffersForLots()
+      ]);
 
       if (res.success) {
-        setLots(res.lots);
-        const lotIds = res.lots.map(l => l.id);
-        if (lotIds.length > 0 && (api as any).getOffersForLots) {
-          const offersRes = await (api as any).getOffersForLots(lotIds);
-          const offersAcc: Record<string, Offer[]> = {};
-          (offersRes.offers || []).forEach((o: Offer) => {
-            if (!offersAcc[o.lotId]) offersAcc[o.lotId] = [];
-            offersAcc[o.lotId].push(o);
+        const lotIdsSet = new Set(res.lots.map(l => l.id));
+        let offersAcc: Record<string, Offer[]> = {};
+
+        if (offersRes.success && offersRes.offers) {
+          offersRes.offers.forEach((o: Offer) => {
+            if (lotIdsSet.has(o.lotId)) {
+              if (!offersAcc[o.lotId]) offersAcc[o.lotId] = [];
+              offersAcc[o.lotId].push(o);
+            }
           });
-          setOffersMap(offersAcc);
-        } else {
-          setOffersMap({});
         }
+
+        // Atomic batch state update for instant render
+        setLots(res.lots);
+        setOffersMap(offersAcc);
       }
     } catch (err) {
       console.warn('Failed to load requests:', err);

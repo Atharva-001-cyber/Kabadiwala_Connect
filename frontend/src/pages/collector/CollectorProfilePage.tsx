@@ -103,27 +103,46 @@ export const CollectorProfilePage: React.FC = () => {
           api.getCollectorLedger(colId).catch(() => ({ success: false, summary: null }))
         ]);
 
-        let calculatedWeight = isDemoProfile ? 180 : 0;
-        let calculatedEarnings = isDemoProfile ? 12500 : 0;
-        let calculatedLots = isDemoProfile ? 14 : 0;
+        let totalWeightFromLots = 0;
+        let totalEarningsFromLots = 0;
+        let totalLotCount = 0;
 
         if (lotsRes.success && Array.isArray(lotsRes.lots)) {
-          if (lotsRes.lots.length > 0) {
-            calculatedLots = lotsRes.lots.length;
-            calculatedWeight = lotsRes.lots.reduce((acc: number, item: any) => acc + Number(item.actualWeight || item.approxWeight || 0), 0);
-          } else if (!isDemoProfile) {
-            calculatedLots = 0;
-            calculatedWeight = 0;
-          }
-        } else if (collectorProfile?.totalWeightCollected != null) {
-          calculatedWeight = Number(collectorProfile.totalWeightCollected);
+          totalLotCount = lotsRes.lots.length;
+          totalWeightFromLots = lotsRes.lots.reduce((acc: number, item: any) => {
+            return acc + Number(item.actualWeight || item.approxWeight || 0);
+          }, 0);
+
+          totalEarningsFromLots = lotsRes.lots.reduce((acc: number, item: any) => {
+            if (['RECYCLED', 'ACCEPTED', 'PICKUP_SCHEDULED', 'PICKED_UP', 'RECEIVED', 'PROCESSING', 'SORTED', 'RECOVERED'].includes(item.status)) {
+              const val = Number(item.finalPaymentAmount || item.quotedPrice || item.estimatedValueAvg || (Number(item.actualWeight || item.approxWeight || 0) * 110));
+              return acc + val;
+            }
+            return acc;
+          }, 0);
         }
 
-        if (ledgerRes.success && ledgerRes.summary) {
-          calculatedEarnings = Number(ledgerRes.summary.totalEarnings != null ? ledgerRes.summary.totalEarnings : (isDemoProfile ? 12500 : 0));
-        } else if (collectorProfile?.totalEarnings != null) {
-          calculatedEarnings = Number(collectorProfile.totalEarnings);
-        }
+        let calculatedWeight = Math.max(
+          totalWeightFromLots,
+          Number(ledgerRes?.summary?.totalWeightCollectedKg || 0),
+          Number(collectorProfile?.totalWeightCollected || 0)
+        );
+
+        let calculatedEarnings = Math.max(
+          totalEarningsFromLots,
+          Number(ledgerRes?.summary?.totalEarnings || 0),
+          Number(collectorProfile?.totalEarnings || 0)
+        );
+
+        let calculatedLots = Math.max(
+          totalLotCount,
+          Number(ledgerRes?.summary?.transactionCount || 0)
+        );
+
+        // Fallback defaults for demo profile if database returned zero
+        if (calculatedWeight === 0 && isDemoProfile) calculatedWeight = 1009;
+        if (calculatedEarnings === 0 && isDemoProfile) calculatedEarnings = 120890;
+        if (calculatedLots === 0 && isDemoProfile) calculatedLots = 1;
 
         // Environmental impact algorithms based on CPCB benchmark factors
         // 1.44 kg CO2e diverted per kg of e-waste recycled vs open burned
