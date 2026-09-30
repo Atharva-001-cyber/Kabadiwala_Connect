@@ -827,14 +827,11 @@ class SpeechService {
 
     this.stopListening();
 
-    // Pre-activate hardware microphone stream to ensure Chrome hardware audio capture is active
-    if (typeof window !== 'undefined' && navigator?.mediaDevices?.getUserMedia) {
+    // Check microphone permissions safely without prematurely terminating hardware audio channels on mobile OS
+    if (typeof window !== 'undefined' && navigator?.permissions?.query) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-      } catch (err: any) {
-        console.warn('⚠️ [VOICE DEBUG] getUserMedia hardware mic check:', err);
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        const perm = await navigator.permissions.query({ name: 'microphone' as any });
+        if (perm && perm.state === 'denied') {
           const msg = options.lang === 'hi'
             ? 'माइक्रोफ़ोन अनुमति बंद है — कृपया ब्राउज़र सेटिंग्स में माइक्रोफ़ोन चालू करें।'
             : options.lang === 'mr'
@@ -843,6 +840,8 @@ class SpeechService {
           if (options.onError) options.onError(msg);
           return false;
         }
+      } catch (err: any) {
+        console.warn('⚠️ [VOICE DEBUG] Microphone permission query notice:', err);
       }
     }
 

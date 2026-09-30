@@ -1540,10 +1540,15 @@ export const AddLotPage: React.FC = () => {
                     {language === 'hi' ? 'पहचान सुझाव:' : language === 'mr' ? 'ओळख सूचना:' : 'Vision Suggestion:'}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full bg-amber-950 border border-amber-600 text-amber-300 text-xs font-black">
-                    {photos[activePhotoIndex]?.visionResult?.confidence && photos[activePhotoIndex]!.visionResult!.confidence > 0
+                    {photos[activePhotoIndex]?.visionResult?.status === 'ERROR'
+                      ? (language === 'hi' ? 'AI चलाने में समस्या' : language === 'mr' ? 'AI चालवण्यात समस्या' : 'AI Runtime Error — Not a Classification')
+                      : photos[activePhotoIndex]?.visionResult?.confidence && photos[activePhotoIndex]!.visionResult!.confidence > 0
                       ? (language === 'hi' ? 'कम विश्वसनीयता — पुष्टि आवश्यक' : language === 'mr' ? 'कमी विश्वासार्हता — पुष्टी आवश्यक' : 'Low Confidence — Confirmation Required')
                       : (language === 'hi' ? 'सामग्री की स्पष्ट पहचान नहीं हो सकी' : language === 'mr' ? 'साहित्य निश्चित ओळखता आले नाही' : 'Material Not Confidently Detected')}
                   </span>
+                  {photos[activePhotoIndex]?.visionResult?.candidateCategory && <span className="text-xs text-amber-200">
+                    {language === 'hi' ? 'संभावित, पुष्टि नहीं हुई:' : language === 'mr' ? 'संभाव्य, पुष्टी नाही:' : 'Possible, not confirmed:'} {categoryLabels[photos[activePhotoIndex].visionResult!.candidateCategory!]?.[language]}
+                  </span>}
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-mono border border-slate-700 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />

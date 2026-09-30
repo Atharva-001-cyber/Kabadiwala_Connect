@@ -22,6 +22,7 @@ export interface DetectedObjectBox {
 }
 
 export interface VisionAnalysisResult {
+  candidateCategory?: MaterialCategory;
   aiEngine?: 'GEMINI_CLOUD' | 'YOLO_EDGE' | 'MOBILENET_YOLO_DUAL';
   isNonEWaste: boolean;
   nonEWasteType?: NonEWasteType;
@@ -111,6 +112,7 @@ export function toVisionAnalysis(result: YoloInferenceResult): VisionAnalysisRes
     isNonEWaste: false, // Absence of a detection does not prove non-electronic waste.
     isAmbiguous: !accepted,
     category: accepted ? result.primaryCategory : null,
+    candidateCategory: accepted ? undefined : result.candidateCategory,
     confidence: result.confidence,
     subCategory: accepted ? result.primarySubCategory : undefined,
     cpcbCode: accepted ? YOLO_CLASSES.find(c => c.category === result.primaryCategory)?.cpcbCode : undefined,

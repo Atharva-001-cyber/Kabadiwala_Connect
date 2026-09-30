@@ -5,7 +5,9 @@
  * 100% On-Device & Offline via onnxruntime-web (WASM)
  */
 
-import * as ort from 'onnxruntime-web';
+import * as ort from 'onnxruntime-web/wasm';
+import wasmUrl from 'onnxruntime-web/ort-wasm-simd-threaded.wasm?url';
+import wasmModuleUrl from 'onnxruntime-web/ort-wasm-simd-threaded.mjs?url';
 import { MaterialCategory } from '../../types';
 
 export type YoloModelStatus =
@@ -30,6 +32,7 @@ export interface YoloDetection {
 }
 
 export interface YoloInferenceResult {
+  candidateCategory?: MaterialCategory;
   status: YoloModelStatus;
   primaryCategory: MaterialCategory | null;
   primarySubCategory?: string;
@@ -180,7 +183,9 @@ let lastModelStatus: YoloModelStatus = 'MODEL_LOADING';
 function configureOrtEnvironment(): void {
   try {
     if (typeof window !== 'undefined') {
-      ort.env.wasm.wasmPaths = '/';
+      // Bundle the matching JS loader AND binary from the installed runtime version.
+      // A root prefix used to request a missing .mjs file and prevent every inference.
+      ort.env.wasm.wasmPaths = { wasm: wasmUrl, mjs: wasmModuleUrl };
       ort.env.wasm.numThreads = 1;
     }
   } catch (err) {
@@ -216,25 +221,11 @@ export async function getYoloSession(): Promise<ort.InferenceSession> {
       isInitializing = false;
       return session;
     } catch (error) {
-      // Fallback try with CDN wasm paths if local wasm paths encountered resolution issue
-      try {
-        if (typeof window !== 'undefined') {
-          ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ort.env.versions.web}/dist/`;
-        }
-        const session = await ort.InferenceSession.create(MODEL_PATH, {
-          executionProviders: ['wasm']
-        });
-        activeSession = session;
-        lastModelStatus = 'MODEL_READY';
-        isInitializing = false;
-        return session;
-      } catch (fallbackErr) {
-        isInitializing = false;
-        sessionPromise = null;
-        lastModelStatus = 'ERROR';
-        console.warn('[YOLOv8-Nano] Failed to load ONNX model:', error, fallbackErr);
-        throw error;
-      }
+      isInitializing = false;
+      sessionPromise = null;
+      lastModelStatus = 'ERROR';
+      console.warn('[YOLOv8-Nano] Local runtime/model could not load:', error);
+      throw error;
     }
   })();
 
@@ -380,6 +371,7 @@ function runNMS(
 
     for (let j = i + 1; j < candidates.length; j++) {
       if (suppressed[j]) continue;
+      if (current.classId !== candidates[j].classId) continue;
 
       const iou = computeIoU(current.boxXYXY, candidates[j].boxXYXY);
       if (iou >= iouThreshold) {
@@ -515,7 +507,9 @@ export async function runEwasteYoloInference(
     // 2. Run ONNX session
     const inputName = session.inputNames[0] || 'images';
     const feeds: Record<string, ort.Tensor> = { [inputName]: tensor };
-    const outputs = await session.run(feeds);
+    let outputs: ort.InferenceSession.ReturnType;
+    try { outputs = await session.run(feeds); }
+    finally { tensor.dispose(); }
 
     const outputName = session.outputNames[0] || 'output0';
     const outputTensor = outputs[outputName];
@@ -525,7 +519,9 @@ export async function runEwasteYoloInference(
     }
 
     // 3. Decode output tensor and apply NMS
-    const detections = decodeYoloOutput(outputTensor, origWidth, origHeight, scale, padX, padY);
+    let detections: YoloDetection[];
+    try { detections = decodeYoloOutput(outputTensor, origWidth, origHeight, scale, padX, padY); }
+    finally { Object.values(outputs).forEach(output => output.dispose()); }
     const inferenceTimeMs = Math.round(performance.now() - startTime);
 
     // 4. Apply Conservative Confidence Policy
@@ -547,6 +543,28 @@ export async function runEwasteYoloInference(
     }
 
     const topDetection = detections[0];
+    const confidentCategories = new Set(detections.filter(d => d.confidence >= CONFIDENCE_THRESHOLDS.ACCEPTABLE).map(d => d.category));
+    if (confidentCategories.size > 1) return {
+      status: 'LOW_CONFIDENCE', primaryCategory: null, confidence: topDetection.confidence,
+      isAmbiguous: true, model: 'YOLOv8-Nano', detections: [], inferenceTimeMs,
+      message: {
+        en: 'Multiple material categories detected. Photograph one item at a time or confirm the lot category manually.',
+        hi: 'एक से अधिक सामग्री दिख रही है। एक वस्तु की फोटो लें या लॉट की श्रेणी खुद पुष्टि करें।',
+        mr: 'एकापेक्षा जास्त साहित्य दिसते. एका वस्तूचा फोटो घ्या किंवा श्रेणी स्वतः तपासा.'
+      }
+    };
+
+    // Training class 7 is Mixed_EWaste, not specifically the UI's plastic-body class.
+    // Do not silently turn mixed electronics into a confident plastic valuation.
+    if (topDetection.classId === 7) return {
+      status: 'LOW_CONFIDENCE', primaryCategory: null, confidence: topDetection.confidence,
+      isAmbiguous: true, model: 'YOLOv8-Nano', detections: [], inferenceTimeMs,
+      message: {
+        en: 'Possible mixed electronic waste. This model cannot confirm plastic casing; separate the items or choose the material manually.',
+        hi: 'मिश्रित ई-कचरे का संकेत है। मॉडल प्लास्टिक बॉडी की पुष्टि नहीं कर सकता; सामान अलग करें या श्रेणी चुनें।',
+        mr: 'मिश्रित ई-कचऱ्याचा संकेत आहे. प्लास्टिक बॉडीची पुष्टी होत नाही; वस्तू वेगळ्या करा किंवा श्रेणी निवडा.'
+      }
+    };
 
     // High or Medium confidence (>= 0.50): Accept detection
     if (topDetection.confidence >= CONFIDENCE_THRESHOLDS.ACCEPTABLE) {
@@ -571,6 +589,7 @@ export async function runEwasteYoloInference(
     // Low confidence (< 0.50): Do NOT automatically assign lot category
     return {
       status: 'LOW_CONFIDENCE',
+      candidateCategory: topDetection.category,
       primaryCategory: null,
       confidence: topDetection.confidence,
       isAmbiguous: true,

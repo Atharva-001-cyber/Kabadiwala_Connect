@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { useSpeech } from '../../hooks/useSpeech';
+import { speechService } from '../../services/speechService';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -414,7 +415,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
       const outputLang = response.detectedLanguage || language;
       speak(response.spokenText || response.text, outputLang);
 
-      // Auto-navigate for explicit route/camera commands (Keep assistant modal open)
+      // Auto-navigate for explicit route/camera commands (Hide assistant modal so camera/page is visible)
       if (
         response.action?.type === 'OPEN_CAMERA' &&
         response.action.route
@@ -423,6 +424,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
           if (typeof window !== 'undefined') {
             (window as any).__isVoiceNavigating = true;
           }
+          setIsOpen(false);
           navigate(response.action!.route!, { state: { autoOpenCamera: response.action?.type === 'OPEN_CAMERA' } });
         }, 1100);
       }
@@ -499,6 +501,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
           if (typeof window !== 'undefined') {
             (window as any).__isVoiceNavigating = true;
           }
+          setIsOpen(false);
           navigate(response.action!.route!, { state: { autoOpenCamera: response.action?.type === 'OPEN_CAMERA' } });
         }, 1100);
       }
@@ -566,11 +569,14 @@ export const KabaadSaathiAssistant: React.FC = () => {
       // Wait 50ms for audio output buffer to clear completely before opening mic stream
       await new Promise(r => setTimeout(r, 50));
 
-      // Start MediaRecorder audio capture in parallel with live Web Audio API volume visualizer
-      try {
-        await audioRecorderService.startRecording((vol) => setMicVolume(vol));
-      } catch (e) {
-        console.warn('[KabaadSaathi] MediaRecorder recording failed:', e);
+      // Only start fallback MediaRecorder if WebSpeech API is not supported on this browser/device (prevents mobile mic lock conflict)
+      const hasSpeechRec = speechService.isRecognitionSupported();
+      if (!hasSpeechRec) {
+        try {
+          await audioRecorderService.startRecording((vol) => setMicVolume(vol));
+        } catch (e) {
+          console.warn('[KabaadSaathi] MediaRecorder recording failed:', e);
+        }
       }
 
       startListening({
@@ -1201,6 +1207,9 @@ export const KabaadSaathiAssistant: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
+                          stop();
+                          stopListening();
+                          setIsOpen(false);
                           navigate(m.actionRoute!);
                         }}
                         className="w-full py-1.5 px-2.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-600 text-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1.5 active:scale-95 transition-all"
