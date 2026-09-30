@@ -23,6 +23,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import { supabase } from '../../services/supabase';
+import { readAllPages } from '../../services/readAllPages';
+import { auditDataset, redactDatasetRow, safeCsvCell } from '../../utils/datasetQuality';
 
 interface DatasetMeta {
   id: string;
@@ -54,6 +56,7 @@ export const DatasetManagerPage: React.FC = () => {
   const [previewDataset, setPreviewDataset] = useState<DatasetMeta | null>(null);
   const [previewRows, setPreviewRows] = useState<any[]>([]);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [qualityReport, setQualityReport] = useState<ReturnType<typeof auditDataset> | null>(null);
   const [previewMode, setPreviewMode] = useState<'TABLE' | 'JSON'>('TABLE');
 
   // Export state
@@ -215,6 +218,7 @@ export const DatasetManagerPage: React.FC = () => {
       }
     } catch (err) {
       console.warn('Could not fetch dynamic dataset counts from Supabase:', err);
+      showToast('Dataset counts could not be refreshed. Previously displayed counts may be stale.', 'warning');
     } finally {
       setLoadingCounts(false);
     }
@@ -257,10 +261,12 @@ export const DatasetManagerPage: React.FC = () => {
     setPreviewDataset(ds);
     setPreviewLoading(true);
     setPreviewRows([]);
+    setQualityReport(null);
     try {
-      const { data, error } = await supabase.from(ds.table).select('*').limit(5);
+      const { data, error } = await supabase.from(ds.table).select('*').order('id').limit(5).abortSignal(AbortSignal.timeout(15000));
       if (error) throw error;
-      setPreviewRows(data || []);
+      setPreviewRows((data || []).map(redactDatasetRow));
+      setQualityReport(auditDataset(data || [], ds.table));
     } catch (err: any) {
       showToast(`Preview failed: ${err.message}`, 'error');
     } finally {
@@ -272,8 +278,10 @@ export const DatasetManagerPage: React.FC = () => {
   const handleDownload = async (ds: DatasetMeta, format: 'json' | 'csv') => {
     setExportingId(`${ds.id}_${format}`);
     try {
-      const { data, error } = await supabase.from(ds.table).select('*').limit(10000);
-      if (error) throw error;
+      const raw = await readAllPages<any>(async (from, to) => await supabase.from(ds.table).select('*').order('id').range(from, to).abortSignal(AbortSignal.timeout(15000)));
+      const report = auditDataset(raw, ds.table);
+      setQualityReport(report);
+      const data = raw.map(redactDatasetRow);
 
       let blobContent = '';
       let mimeType = 'application/json';
@@ -281,7 +289,7 @@ export const DatasetManagerPage: React.FC = () => {
       if (format === 'csv') {
         mimeType = 'text/csv;charset=utf-8;';
         if (data && data.length > 0) {
-          const headers = Object.keys(data[0]);
+          const headers = [...new Set(data.flatMap(row => Object.keys(row)))];
           const escapeCsvCell = (val: any) => {
             if (val === null || val === undefined) return '""';
             let str = typeof val === 'object' ? JSON.stringify(val) : String(val);
@@ -289,8 +297,8 @@ export const DatasetManagerPage: React.FC = () => {
             return `"${str}"`;
           };
 
-          const rows = data.map((row) => headers.map((h) => escapeCsvCell(row[h])).join(','));
-          blobContent = [headers.join(','), ...rows].join('\n');
+          const rows = data.map((row) => headers.map((h) => safeCsvCell(row[h])).join(','));
+          blobContent = [headers.map(safeCsvCell).join(','), ...rows].join('\n');
         } else {
           blobContent = 'No data available';
         }
@@ -326,6 +334,11 @@ export const DatasetManagerPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-16">
+      <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+        <p>Dataset quality: preview checks 5 rows; export checks all fetched rows. Source labels are not verification. Contact details, OTPs and precise coordinates are redacted; IDs/images can still identify records.</p>
+        <p>Training datasets require documented source/licence, label quality, size, limitations and held-out evaluation. No new accuracy claim or model training is performed here.</p>
+        {qualityReport && <details open className="mt-2"><summary>Latest quality report — {qualityReport.table} ({qualityReport.inspectedRows} rows)</summary><pre className="overflow-auto text-xs mt-2">{JSON.stringify(qualityReport, null, 2)}</pre></details>}
+      </section>
       {/* Executive Header */}
       <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-emerald-500/10 via-cyan-500/5 to-transparent pointer-events-none" />
@@ -849,4 +862,3 @@ export const DatasetManagerPage: React.FC = () => {
     </div>
   );
 };
-

@@ -1,10 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from './AuthContext';
+import { activeCollectorId } from '../services/offlineLotQueue';
 import { offlineDb } from '../services/db';
 import { api } from '../services/api';
 
 interface SyncContextType {
   isOnline: boolean;
   pendingCount: number;
+  failedCount: number;
+  legacyCount: number;
   isSyncing: boolean;
   lastSyncTime: Date | null;
   syncNow: () => Promise<number>;
@@ -13,6 +17,11 @@ interface SyncContextType {
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
 export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { collectorProfile, role } = useAuth();
+  const owner = role === 'COLLECTOR' ? collectorProfile?.id : undefined;
+  const busy = useRef(false);
+  const [failedCount, setFailedCount] = useState(0);
+  const [legacyCount, setLegacyCount] = useState(0);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -20,19 +29,25 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshPendingCount = useCallback(async () => {
     try {
-      const count = await offlineDb.offlineLots.where('syncStatus').equals('PENDING').count();
-      setPendingCount(count);
+      const rows = await offlineDb.offlineLots.toArray();
+      if (activeCollectorId() !== owner) return;
+      const own = rows.filter(r => !!owner && r.collectorId === owner && r.syncStatus !== 'SYNCED');
+      setPendingCount(own.length);
+      setFailedCount(own.filter(r => r.syncStatus === 'FAILED').length);
+      setLegacyCount(owner ? rows.filter(r => !r.collectorId && r.syncStatus !== 'SYNCED').length : 0);
     } catch (e) {
       console.warn('Failed to count pending offline lots:', e);
     }
-  }, []);
+  }, [owner]);
 
-  const syncNow = useCallback(async (): Promise<number> => {
-    if (!navigator.onLine || isSyncing) return 0;
+  const syncNow = useCallback(async (manual = true): Promise<number> => {
+    if (!owner || activeCollectorId() !== owner || !navigator.onLine || busy.current) return 0;
+    busy.current = true;
 
     try {
       setIsSyncing(true);
-      const pendingLots = await offlineDb.offlineLots.where('syncStatus').equals('PENDING').toArray();
+      const rows = await offlineDb.offlineLots.toArray();
+      const pendingLots = rows.filter(r => r.collectorId === owner && (r.syncStatus === 'PENDING' || (manual && r.syncStatus === 'FAILED')));
 
       if (pendingLots.length === 0) {
         setIsSyncing(false);
@@ -43,27 +58,26 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await api.syncOfflineBatch(pendingLots);
 
       if (response.success) {
-        // Mark as synced in Dexie
-        for (const lot of pendingLots) {
-          await offlineDb.offlineLots.update(lot.clientLotId, { syncStatus: 'SYNCED' });
-        }
+        // Only uploadLotDraft can mark an individually confirmed save SYNCED.
         await refreshPendingCount();
-        setLastSyncTime(new Date());
+        if (response.syncedCount > 0 && activeCollectorId() === owner) setLastSyncTime(new Date());
         console.log(`✅ Successfully synced ${response.syncedCount} lots.`);
         return response.syncedCount;
       }
     } catch (err) {
       console.warn('Sync failed:', err);
     } finally {
+      busy.current = false;
       setIsSyncing(false);
+      await refreshPendingCount();
     }
     return 0;
-  }, [isSyncing, refreshPendingCount]);
+  }, [owner, refreshPendingCount]);
 
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      syncNow();
+      syncNow(false);
     };
 
     const handleOffline = () => {
@@ -75,24 +89,28 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Initial check
     refreshPendingCount();
+    setLastSyncTime(null);
+    syncNow(false);
+    window.addEventListener('offline-lots-changed', refreshPendingCount);
 
     // Periodic check every 15s
     const interval = setInterval(() => {
       refreshPendingCount();
-      if (navigator.onLine && pendingCount > 0) {
-        syncNow();
+      if (navigator.onLine) {
+        syncNow(false);
       }
     }, 15000);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('offline-lots-changed', refreshPendingCount);
       clearInterval(interval);
     };
-  }, [pendingCount, refreshPendingCount, syncNow]);
+  }, [refreshPendingCount, syncNow]);
 
   return (
-    <SyncContext.Provider value={{ isOnline, pendingCount, isSyncing, lastSyncTime, syncNow }}>
+    <SyncContext.Provider value={{ isOnline, pendingCount, failedCount, legacyCount, isSyncing, lastSyncTime, syncNow }}>
       {children}
     </SyncContext.Provider>
   );

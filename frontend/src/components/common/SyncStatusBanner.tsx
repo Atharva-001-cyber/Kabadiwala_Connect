@@ -2,12 +2,13 @@ import React from 'react';
 import { Wifi, WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useSync } from '../../context/SyncContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { OfflineDraftList } from './OfflineDraftList';
 
 export const SyncStatusBanner: React.FC = () => {
-  const { isOnline, pendingCount, isSyncing, syncNow } = useSync();
+  const { isOnline, pendingCount, failedCount, legacyCount, isSyncing, syncNow } = useSync();
   const { t, language } = useLanguage();
 
-  if (isOnline && pendingCount === 0) {
+  if (isOnline && pendingCount === 0 && legacyCount === 0) {
     return null; // Clean UI when everything is synced
   }
 
@@ -21,7 +22,10 @@ export const SyncStatusBanner: React.FC = () => {
           : 'bg-emerald-900/90 text-emerald-100 border-b border-emerald-700'
       }`}
     >
-      <div className="flex items-center gap-2 max-w-xl truncate">
+      <div className="flex flex-wrap items-center gap-2 max-w-xl" role="status" aria-live="polite">
+        <OfflineDraftList />
+        {failedCount > 0 && <span>{failedCount} {language === 'hi' ? 'अपलोड असफल — ड्राफ्ट सुरक्षित है। दोबारा कोशिश करें।' : language === 'mr' ? 'अपलोड अयशस्वी — मसुदे सुरक्षित आहेत.' : 'uploads need attention. Drafts retained; retry or contact support.'}</span>}
+        {legacyCount > 0 && <span>{legacyCount} {language === 'hi' ? 'पुराने ड्राफ्ट का खाता अज्ञात है; सहायता से रिकवर करें।' : language === 'mr' ? 'जुन्या मसुद्यांचे खाते अज्ञात आहे; मदत घ्या.' : 'legacy drafts have no owner; contact support for recovery. Not deleted.'}</span>}
         {!isOnline ? (
           <>
             <WifiOff className="w-4 h-4 text-red-400 shrink-0 animate-pulse" />
@@ -30,7 +34,7 @@ export const SyncStatusBanner: React.FC = () => {
         ) : pendingCount > 0 ? (
           <>
             <RefreshCw className={`w-4 h-4 text-amber-400 shrink-0 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{pendingCount} {language === 'hi' ? 'लॉट फ़ोन में सेव हैं — सर्वर पर सिंक हो रहे हैं' : language === 'mr' ? 'लॉट फोनमध्ये सेव्ह आहेत — सर्व्हरवर सिंक होत आहेत' : 'lots stored on device — syncing to server'}</span>
+            <span>{pendingCount} {isSyncing ? (language === 'hi' ? 'लॉट सिंक हो रहे हैं' : language === 'mr' ? 'लॉट सिंक होत आहेत' : 'lots syncing') : (language === 'hi' ? 'लॉट फोन पर सुरक्षित — अपलोड बाकी' : language === 'mr' ? 'लॉट फोनवर सुरक्षित — अपलोड बाकी' : 'lots saved on device — upload pending')}</span>
           </>
         ) : (
           <>

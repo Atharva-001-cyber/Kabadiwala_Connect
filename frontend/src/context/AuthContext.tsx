@@ -84,6 +84,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const refreshUser = useCallback(async () => {
+    // Offline lot capture uses the already signed-in, cached session.
+    // Do not erase its collector profile just because Supabase is unreachable.
+    if (!navigator.onLine) {
+      setIsLoading(false);
+      return;
+    }
     const token = getAuthToken();
     if (!token) {
       setIsLoading(false);

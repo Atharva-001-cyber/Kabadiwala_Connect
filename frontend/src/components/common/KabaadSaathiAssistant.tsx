@@ -416,7 +416,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
       // Auto-navigate for explicit route/camera commands (Keep assistant modal open)
       if (
-        (response.action?.type === 'NAVIGATE' || response.action?.type === 'OPEN_CAMERA') &&
+        response.action?.type === 'OPEN_CAMERA' &&
         response.action.route
       ) {
         setTimeout(() => {
@@ -492,7 +492,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
       speak(response.spokenText || response.text, outputLang);
 
       if (
-        (response.action?.type === 'NAVIGATE' || response.action?.type === 'OPEN_CAMERA') &&
+        response.action?.type === 'OPEN_CAMERA' &&
         response.action.route
       ) {
         setTimeout(() => {
@@ -596,7 +596,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                 audioRecorderService.stopRecordingSilent();
                 processQuery(txt);
               }
-            }, 600);
+            }, 1600);
           }
         },
         onEnd: async () => {
@@ -624,6 +624,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         onError: (err) => {
           clearSilenceTimer();
           console.warn('[Speech] Microphone error:', err);
+          setMicErrorMsg(err);
           if (err === 'not-allowed' || err === 'permission-denied') {
             setMicErrorMsg(
               language === 'hi'

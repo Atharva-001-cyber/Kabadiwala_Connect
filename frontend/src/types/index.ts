@@ -220,6 +220,9 @@ export interface Lot {
 }
 
 export interface OfflineLotItem {
+  collectorId?: string;
+  payload?: Record<string, any>;
+  lastError?: string;
   id?: number;
   clientLotId: string;
   materialCategory: MaterialCategory;

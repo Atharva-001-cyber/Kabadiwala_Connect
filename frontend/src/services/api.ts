@@ -1,4 +1,6 @@
 import { offlineDb } from './db';
+import { readAllPages } from './readAllPages';
+import { activeCollectorId, saveLotDraft, uploadLotDraft } from './offlineLotQueue';
 import { supabase } from './supabase';
 import {
   Lot,
@@ -1306,16 +1308,15 @@ export const api = {
       // Optimized listing columns: omits redundant large 'image_urls' array which duplicates base64 data
       const listCols = 'id,collector_id,collector_name,collector_phone,material_category,sub_category,description,image_url,approx_weight,actual_weight,condition,source_type,location_district,location_state,estimated_value_min,estimated_value_max,estimated_value_avg,quoted_price,final_sale_value,selected_recycler_id,selected_offer_id,handover_otp,status,data_source,created_at,updated_at';
 
-      let query = supabase.from('lots').select(listCols).order('created_at', { ascending: false });
+      const data = await readAllPages<any>(async (from, to) => {
+      let query = supabase.from('lots').select(listCols).order('created_at', { ascending: false }).order('id');
 
       if (params.collectorId) query = query.eq('collector_id', params.collectorId);
       if (params.status) query = query.eq('status', params.status);
       if (params.materialCategory) query = query.eq('material_category', params.materialCategory);
       // Fetch up to 150 items to fulfill all dashboard, inventory, and ledger views from single cached dataset
-      query = query.limit(150);
-
-      const { data, error } = await query;
-      if (error) throw new Error(error.message);
+      return await query.range(from, to).abortSignal(AbortSignal.timeout(15000));
+      });
 
       const lots = (data || []).map(mapDbLotToLot);
       return { success: true, count: lots.length, lots };
@@ -1333,19 +1334,19 @@ export const api = {
   },
 
   getOffersForLots: async (lotIds?: string[]) => {
-    // Shared global active offers pool cached with SWR for zero-latency retrieval
-    return withSwrCache('offers_active_pool', async () => {
-      const { data, error } = await supabase.from('offers').select('*').order('created_at', { ascending: false }).limit(200);
-      if (error) throw error;
-      return { success: true, allOffers: (data || []).map(mapDbOfferToOffer) };
-    }, { ttlMs: 60_000, staleMs: 20_000 }).then(res => {
-      if (!lotIds || lotIds.length === 0) {
-        return { success: true, offers: res.allOffers || [] };
-      }
-      const lotIdSet = new Set(lotIds);
-      const filtered = (res.allOffers || []).filter((o: Offer) => lotIdSet.has(o.lotId));
-      return { success: true, offers: filtered };
-    });
+    if (lotIds && lotIds.length === 0) return { success: true, offers: [] };
+    const ids = lotIds ? [...new Set(lotIds)].sort() : undefined;
+    const groups = ids ? Array.from({ length: Math.ceil(ids.length / 50) }, (_, i) => ids.slice(i * 50, i * 50 + 50)) : [undefined];
+    const offers: Offer[] = [];
+    for (const group of groups) {
+      const rows = await readAllPages<any>(async (from, to) => {
+        let query = supabase.from('offers').select('*').order('created_at', { ascending: false }).order('id');
+        if (group) query = query.in('lot_id', group);
+        return await query.range(from, to).abortSignal(AbortSignal.timeout(15000));
+      });
+      offers.push(...rows.map(mapDbOfferToOffer));
+    }
+    return { success: true, offers };
   },
 
   getLotById: async (id: string) => {
@@ -1379,8 +1380,14 @@ export const api = {
     });
   },
 
-  createLot: async (lotData: any): Promise<{ success: boolean; lot: Lot; message: string; valuation: any }> => {
+  createLot: async (lotData: any) => {
+    const draft = await saveLotDraft(lotData);
+    return uploadLotDraft(draft, api.persistQueuedLot);
+  },
+
+  persistQueuedLot: async (lotData: any): Promise<{ success: boolean; lot: Lot; message: string; valuation: any }> => {
     try {
+      if (activeCollectorId() !== lotData.collectorId) throw new Error('Collector session changed.');
       const getDistrictPrefix = (dStr?: string): string => {
         const d = (dStr || '').trim().toLowerCase();
         if (d.includes('lucknow')) return 'LKO';
@@ -1455,16 +1462,30 @@ export const api = {
         handover_otp: otp,
         status: 'CREATED',
         data_source: 'LIVE',
-        created_at: new Date().toISOString(),
+        created_at: lotData.createdAt || new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      const { data: insertedLot, error: lotErr } = await supabase.from('lots').insert(newRow).select().single();
-      if (lotErr) throw lotErr;
+      // Stable primary key makes retries safe even if the first response was lost.
+      const existing = await supabase.from('lots').select('*').eq('id', lotId).abortSignal(AbortSignal.timeout(15000)).maybeSingle();
+      if (existing.error) throw existing.error;
+      let insertedLot = existing.data;
+      if (!insertedLot) {
+        const inserted = await supabase.from('lots').insert(newRow).select().abortSignal(AbortSignal.timeout(15000)).single();
+        if (inserted.error?.code === '23505') {
+          const retry = await supabase.from('lots').select('*').eq('id', lotId).abortSignal(AbortSignal.timeout(15000)).single();
+          if (retry.error) throw retry.error;
+          insertedLot = retry.data;
+        } else {
+          if (inserted.error) throw inserted.error;
+          insertedLot = inserted.data;
+        }
+      }
+      if (!insertedLot || insertedLot.collector_id !== colId) throw new Error('Lot ownership could not be confirmed.');
 
       // Create Genesis Merkle Traceability Event
       const genesisLog = {
-        id: `tl_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        id: `tl_collected_${lotId}`,
         lot_id: lotId,
         stage: 'COLLECTED',
         title: 'Lot Registered by Collector',
@@ -1472,7 +1493,7 @@ export const api = {
         facility_location: `${lotData.locationDistrict || 'Lucknow'}, ${lotData.locationState || 'Uttar Pradesh'}`,
         actor_role: 'COLLECTOR',
         actor_name: colName || 'Authorized Collector',
-        timestamp: new Date().toISOString(),
+        timestamp: insertedLot.created_at,
         data_source: 'LIVE'
       };
 
@@ -1486,12 +1507,13 @@ export const api = {
         title: genesisLog.title
       }, '0'.repeat(64));
 
-      await supabase.from('traceability_logs').insert({
+      const { error: traceError } = await supabase.from('traceability_logs').upsert({
         ...genesisLog,
         previous_event_hash: genesisHashes.previousEventHash,
         payload_hash: genesisHashes.payloadHash,
         event_hash: genesisHashes.eventHash
-      });
+      }, { onConflict: 'id', ignoreDuplicates: true }).abortSignal(AbortSignal.timeout(15000));
+      if (traceError) throw traceError;
 
       const lot = mapDbLotToLot(insertedLot);
       invalidateCache('lots');
@@ -1502,93 +1524,18 @@ export const api = {
         valuation: { min: minVal, max: maxVal, avg: avgVal }
       };
     } catch (err) {
-      // Offline fallback: save to Dexie offline queue
-      console.warn('Network unavailable, saving lot to offline IndexedDB queue...', err);
-      const clientLotId = lotData.clientLotId || `offline_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      const photoUrls: string[] = Array.isArray(lotData.imageUrls) && lotData.imageUrls.length > 0
-        ? lotData.imageUrls.filter((u: any) => typeof u === 'string' && u.length > 0)
-        : (lotData.imageUrl ? [lotData.imageUrl] : []);
-      const primaryImageUrl = photoUrls[0] || lotData.imageUrl || '';
-
-      const offlineItem: OfflineLotItem = {
-        clientLotId,
-        materialCategory: lotData.materialCategory,
-        subCategory: lotData.subCategory || `${lotData.materialCategory} Item`,
-        description: lotData.description || '',
-        imageUrl: primaryImageUrl,
-        imageUrls: photoUrls,
-        approxWeight: parseFloat(lotData.approxWeight || '0'),
-        condition: lotData.condition || 'INTACT',
-        sourceType: lotData.sourceType || 'HOUSEHOLD',
-        locationDistrict: lotData.locationDistrict || 'Lucknow',
-        locationState: lotData.locationState || 'Uttar Pradesh',
-        estimatedValueMin: 500,
-        estimatedValueMax: 750,
-        estimatedValueAvg: 625,
-        createdAt: new Date().toISOString(),
-        syncStatus: 'PENDING'
-      };
-
-      await offlineDb.offlineLots.put(offlineItem);
-
-      const mockOfflineLot: Lot = {
-        id: clientLotId,
-        clientLotId,
-        collectorId: 'local_collector',
-        collectorName: 'Authorized Collector',
-        collectorPhone: '',
-        materialCategory: lotData.materialCategory,
-        subCategory: offlineItem.subCategory || '',
-        description: offlineItem.description || '',
-        imageUrl: primaryImageUrl,
-        imageUrls: photoUrls,
-        approxWeight: offlineItem.approxWeight,
-        condition: offlineItem.condition,
-        sourceType: offlineItem.sourceType,
-        locationDistrict: offlineItem.locationDistrict || 'Lucknow',
-        locationState: offlineItem.locationState || 'Uttar Pradesh',
-        estimatedValueMin: 500,
-        estimatedValueMax: 750,
-        estimatedValueAvg: 625,
-        status: 'CREATED',
-        dataSource: 'LIVE',
-        createdAt: offlineItem.createdAt,
-        updatedAt: offlineItem.createdAt
-      };
-
-      return {
-        success: true,
-        message: 'Saved locally on phone. Will sync automatically when online.',
-        lot: mockOfflineLot,
-        valuation: { min: 500, max: 750, avg: 625 }
-      };
+      throw err;
     }
   },
 
   syncOfflineBatch: async (lots: OfflineLotItem[]) => {
     const syncedLots: Lot[] = [];
+    const owner = activeCollectorId();
     for (const item of lots) {
-      try {
-        const res = await api.createLot({
-          clientLotId: item.clientLotId,
-          materialCategory: item.materialCategory,
-          subCategory: item.subCategory,
-          description: item.description,
-          imageUrl: item.imageUrl,
-          imageUrls: item.imageUrls,
-          approxWeight: item.approxWeight,
-          condition: item.condition,
-          sourceType: item.sourceType,
-          locationDistrict: item.locationDistrict,
-          locationState: item.locationState
-        });
-        if (res.lot) {
-          syncedLots.push(res.lot);
-          await offlineDb.offlineLots.update(item.clientLotId, { syncStatus: 'SYNCED' }).catch(() => {});
-        }
-      } catch (err) {
-        console.error('Failed to sync item:', item.clientLotId, err);
-      }
+      if (!owner || activeCollectorId() !== owner) break;
+      if (item.collectorId !== owner || !item.payload) continue;
+      const result = await uploadLotDraft(item, api.persistQueuedLot);
+      if (result.persisted) syncedLots.push(result.lot);
     }
     return { success: true, syncedCount: syncedLots.length, lots: syncedLots };
   },
@@ -1601,8 +1548,7 @@ export const api = {
 
     return withSwrCache(cacheKey, async () => {
       try {
-        const { data, error } = await supabase.from('prices').select('*').order('material_category');
-        if (error) throw error;
+        const data = await readAllPages<any>(async (from, to) => await supabase.from('prices').select('*').ilike('district', district).order('material_category').order('id').range(from, to).abortSignal(AbortSignal.timeout(15000)));
 
         let prices = (data || []).map(mapDbPriceToPrice);
         const districtPrices = prices.filter(p => p.district.toLowerCase() === district.toLowerCase());
@@ -1614,75 +1560,33 @@ export const api = {
         if (resolvedPrices.length > 0) {
           await offlineDb.cachedPrices.bulkPut(resolvedPrices).catch(() => {});
         }
-        return { success: true, district, prices: resolvedPrices };
+        return { success: true, district, prices: resolvedPrices, provenance: districtPrices.length > 0 ? 'RECORDED' : 'APP_BENCHMARK' };
       } catch (err) {
         const cached = await offlineDb.cachedPrices.toArray();
         const matchedCached = cached.filter(p => p.district.toLowerCase() === district.toLowerCase());
-        if (matchedCached.length > 0) return { success: true, district, prices: matchedCached };
+        if (matchedCached.length > 0) return { success: true, district, prices: matchedCached, provenance: 'CACHED_UNVERIFIED' };
         const fallback = getRegionalMandiPrices(district);
-        return { success: true, district, prices: fallback };
+        return { success: true, district, prices: fallback, provenance: 'APP_BENCHMARK' };
       }
     });
   },
 
   getPriceHistory: async (category: MaterialCategory, days: number = 30, district: string = 'Lucknow') => {
-    const normKey = (district || '').trim().toLowerCase();
-    const cacheKey = `price_history_${category}_${days}_${normKey}`;
-
-    return withSwrCache(cacheKey, async () => {
-      const matchedKey = Object.keys(CITY_MANDI_PRICE_MATRIX).find(k => normKey.includes(k) || k.includes(normKey)) || 'lucknow';
-      const cityMatrix = CITY_MANDI_PRICE_MATRIX[matchedKey];
-      const catRateInfo = cityMatrix.rates[category] || { prevailing: 100, change7Days: 2.5, trend: 'UP' };
-      const basePrice = catRateInfo.prevailing;
-      const trendPercent = catRateInfo.change7Days;
-      const observedTrend = catRateInfo.trend;
-
-      const { data: hist } = await supabase.from('price_history_log')
-        .select('*')
-        .eq('material_category', category)
-        .order('date', { ascending: false })
-        .limit(days);
-
-      const history = (hist && hist.length > 0 && matchedKey === 'lucknow')
-        ? hist.map((h: any) => {
-            const val = Number(h.rate || h.price || basePrice);
-            return {
-              date: h.date,
-              price: val,
-              rate: val,
-              source: h.source || `${district} Mandi Spot Observation`
-            };
-          })
-        : Array.from({ length: Math.min(days, 15) }, (_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (15 - i));
-            // Calculate realistic trend progression ending at basePrice today
-            const dayFraction = (i - 14) / 14;
-            const totalDrift = (trendPercent / 100) * basePrice;
-            const wobble = ((i % 3) - 1) * (basePrice * 0.005);
-            const val = Math.round((basePrice + (dayFraction * totalDrift) + wobble) * 10) / 10;
-            return {
-              date: d.toISOString().split('T')[0],
-              price: val,
-              rate: val,
-              source: cityMatrix.source
-            };
-          });
-
-      return {
-        success: true,
-        category,
-        district,
-        basePrice,
-        isSynthetic: false,
-        dataSource: 'LIVE',
-        observedTrend,
-        trendPercent,
-        hasSufficientData: true,
-        dataPoints: history.length,
-        history
-      };
-    }, { ttlMs: 180_000, staleMs: 60_000 });
+    const count = Math.max(1, Math.min(365, Math.floor(days) || 30));
+    return withSwrCache(`price_history_${category}_${count}_${district.toLowerCase()}`, async () => {
+      const { data, error } = await supabase.from('price_history_log').select('*')
+        .eq('material_category', category).ilike('district', district)
+        .order('date', { ascending: false }).order('id').limit(count).abortSignal(AbortSignal.timeout(15000));
+      if (error) throw new Error(error.message);
+      const history = (data || []).filter((row: any) => Number.isFinite(Number(row.rate ?? row.price)) && Number(row.rate ?? row.price) > 0 && Number.isFinite(Date.parse(row.date)))
+        .map((row: any) => ({date: row.date, price: Number(row.rate ?? row.price), rate: Number(row.rate ?? row.price), source: row.source || 'Source not documented'}));
+      const latest = history[0]?.price || 0;
+      const oldest = history[history.length - 1]?.price || 0;
+      const trendPercent = oldest > 0 ? (latest - oldest) / oldest * 100 : 0;
+      return {success: true, category, district, basePrice: latest, isSynthetic: false,
+        dataSource: 'RECORDED', observedTrend: trendPercent > 0 ? 'UP' : trendPercent < 0 ? 'DOWN' : 'STABLE',
+        trendPercent, hasSufficientData: history.length >= 2, dataPoints: history.length, history};
+    }, {ttlMs:180000, staleMs:60000});
   },
 
   estimateLotValue: async (data: { materialCategory: MaterialCategory; weight: number; condition?: string; district?: string }) => {
@@ -3661,12 +3565,9 @@ export const api = {
 
       const results = await Promise.all(
         tables.map(async ({ id, table }) => {
-          try {
-            const res = await supabase.from(table).select('*', { count: 'exact', head: true });
-            return [id, res.count || 0];
-          } catch {
-            return [id, 0];
-          }
+          const res = await supabase.from(table).select('*', { count: 'exact', head: true }).abortSignal(AbortSignal.timeout(15000));
+          if (res.error || res.count === null) throw new Error(res.error?.message || `Count unavailable: ${table}`);
+          return [id, res.count];
         })
       );
 

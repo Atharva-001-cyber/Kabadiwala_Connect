@@ -33,6 +33,7 @@ export const PriceBoardPage: React.FC = () => {
 
   const [selectedDistrict, setSelectedDistrict] = useState<string>('Lucknow');
   const [prices, setPrices] = useState<PriceRecord[]>([]);
+  const [priceProvenance, setPriceProvenance] = useState('Loading');
   const [recyclers, setRecyclers] = useState<RecyclerProfile[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<MaterialCategory>('PCB');
   const [historyData, setHistoryData] = useState<any>(null);
@@ -80,12 +81,14 @@ export const PriceBoardPage: React.FC = () => {
 
       if (priceRes.success) {
         setPrices(priceRes.prices);
+        setPriceProvenance(priceRes.provenance);
       }
       if (recyclerRes.success) {
         setRecyclers(recyclerRes.recyclers || []);
       }
     } catch (e) {
       console.warn('Failed to load prices/recyclers:', e);
+      showToast('Could not refresh price/recycler data. Previously displayed values may be stale.', 'warning');
     } finally {
       setLoading(false);
     }
@@ -248,6 +251,9 @@ export const PriceBoardPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
+      <p role="status" className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-950">
+        {language === 'hi' ? 'दर का स्रोत' : language === 'mr' ? 'दराचा स्रोत' : 'Rate source'}: {priceProvenance}. {language === 'hi' ? 'रिकॉर्ड या बेंचमार्क असली खरीदार का पक्का ऑफर नहीं है। स्रोत और तारीख जाँचें।' : language === 'mr' ? 'नोंद किंवा बेंचमार्क हा पक्का ऑफर नाही. स्रोत व तारीख तपासा.' : 'Recorded/cached values and app benchmarks are not guaranteed buyer offers. Check source and date.'}
+      </p>
       {/* Top Header & District Switcher */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -787,7 +793,7 @@ export const PriceBoardPage: React.FC = () => {
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                   : 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
               }`}>
-                {historyData?.hasSufficientData ? (language === 'hi' ? '🟢 100% वास्तविक मंडी लॉग' : language === 'mr' ? '🟢 १००% प्रत्यक्ष बाजार नोंदी' : '🟢 100% Mandi Logs') : (language === 'hi' ? 'डेटा प्रतीक्षारत' : language === 'mr' ? 'डेटा प्रतीक्षेत' : 'Pending Data')}
+                {historyData?.hasSufficientData ? (language === 'hi' ? 'दर्ज मूल्य इतिहास — स्रोत जाँचें' : language === 'mr' ? 'नोंदवलेले दर — स्रोत तपासा' : 'Recorded prices — check sources') : (language === 'hi' ? 'पर्याप्त डेटा नहीं' : language === 'mr' ? 'पुरेसा डेटा नाही' : 'Insufficient recorded data')}
               </span>
             </div>
             <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">

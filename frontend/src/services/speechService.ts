@@ -821,6 +821,7 @@ class SpeechService {
         ? 'या डिव्हाइसवर व्हॉइस रेकग्निशन उपलब्ध नाही.'
         : 'Voice recognition is not supported on this device/browser.';
       if (options.onError) options.onError(msg);
+      if (options.onEnd) options.onEnd();
       return false;
     }
 

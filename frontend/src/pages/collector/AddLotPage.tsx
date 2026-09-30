@@ -213,6 +213,8 @@ export const AddLotPage: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const draftId = useRef(`EW-${crypto.randomUUID()}`);
+  const submitLock = useRef(false);
   const [createdSuccessLotId, setCreatedSuccessLotId] = useState<string | null>(null);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
   const location = useLocation();
@@ -532,6 +534,7 @@ export const AddLotPage: React.FC = () => {
 
   const handleCreateLot = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (submitLock.current) return;
     if (!categoryConfirmed || isClassifying) {
       goToStep(3);
       return;
@@ -573,10 +576,12 @@ export const AddLotPage: React.FC = () => {
       return;
     }
 
+    submitLock.current = true;
     setIsSubmitting(true);
     try {
       const photoUrls = photos.map(p => p.dataUrl);
       const lotData = {
+        clientLotId: draftId.current,
         materialCategory: selectedCategory,
         subCategory: categoryLabels[selectedCategory]?.[language] || selectedCategory,
         description: description || `E-waste scrap lot containing ${approxWeight} kg of ${selectedCategory}`,
@@ -594,7 +599,13 @@ export const AddLotPage: React.FC = () => {
 
       const res = await api.createLot(lotData);
       if (res.success) {
+        if (!res.persisted) {
+          showToast(language === 'hi' ? 'लॉट फोन पर सुरक्षित है। सर्वर पर अपलोड बाकी है; इंटरनेट आने पर सिंक होगा।' : language === 'mr' ? 'लॉट फोनवर सुरक्षित आहे. इंटरनेट आल्यावर सिंक होईल.' : 'Lot saved on this device. Server upload pending; reconnect to sync.', 'warning');
+          navigate('/collector');
+          return;
+        }
         setCreatedSuccessLotId(res.lot.id);
+        draftId.current = `EW-${crypto.randomUUID()}`;
 
         // Kabaad Saathi Soundbox: Melodic Audio Chime (Web Audio API)
         try {
@@ -651,6 +662,7 @@ export const AddLotPage: React.FC = () => {
     } catch (err: any) {
       showToast(err.message || (language === 'hi' ? 'लॉट दर्ज करना विफल रहा' : language === 'mr' ? 'लॉट नोंदणी अयशस्वी' : 'Failed to create lot'), 'error');
     } finally {
+      submitLock.current = false;
       setIsSubmitting(false);
     }
   };
