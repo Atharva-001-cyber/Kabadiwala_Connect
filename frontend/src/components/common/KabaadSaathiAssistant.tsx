@@ -569,14 +569,11 @@ export const KabaadSaathiAssistant: React.FC = () => {
       // Wait 50ms for audio output buffer to clear completely before opening mic stream
       await new Promise(r => setTimeout(r, 50));
 
-      // Only start fallback MediaRecorder if WebSpeech API is not supported on this browser/device (prevents mobile mic lock conflict)
-      const hasSpeechRec = speechService.isRecognitionSupported();
-      if (!hasSpeechRec) {
-        try {
-          await audioRecorderService.startRecording((vol) => setMicVolume(vol));
-        } catch (e) {
-          console.warn('[KabaadSaathi] MediaRecorder recording failed:', e);
-        }
+      // Dual audio recording backup for seamless Normal Chrome & Incognito compatibility
+      try {
+        await audioRecorderService.startRecording((vol) => setMicVolume(vol));
+      } catch (e) {
+        console.warn('[KabaadSaathi] MediaRecorder dual-recording notice:', e);
       }
 
       startListening({
@@ -586,14 +583,8 @@ export const KabaadSaathiAssistant: React.FC = () => {
           latestRecognizedTextRef.current = text;
           clearSilenceTimer();
 
-          if (isFinal && text.trim() && !processingRef.current) {
-            const txt = text.trim();
-            latestRecognizedTextRef.current = '';
-            stopListening();
-            audioRecorderService.stopRecordingSilent();
-            processQuery(txt);
-          } else if (text.trim() && !processingRef.current) {
-            // Auto-submit ultra-fast after 600ms of user silence
+          if (text.trim() && !processingRef.current) {
+            // Generous 2.5-second silence buffer so mobile user can comfortably complete full sentences
             silenceTimerRef.current = setTimeout(async () => {
               if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
                 const txt = latestRecognizedTextRef.current.trim();
@@ -602,7 +593,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                 audioRecorderService.stopRecordingSilent();
                 processQuery(txt);
               }
-            }, 1600);
+            }, 2500);
           }
         },
         onEnd: async () => {
@@ -629,8 +620,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         },
         onError: (err) => {
           clearSilenceTimer();
-          console.warn('[Speech] Microphone error:', err);
-          setMicErrorMsg(err);
+          console.warn('[Speech] Microphone event/notice:', err);
           if (err === 'not-allowed' || err === 'permission-denied') {
             setMicErrorMsg(
               language === 'hi'

@@ -869,18 +869,33 @@ class SpeechService {
       };
 
       recognition.onresult = (event: any) => {
-        let currentTranscript = '';
         let isFinal = false;
+        const segments: string[] = [];
 
         for (let i = 0; i < event.results.length; ++i) {
           const res = event.results[i];
           if (res && res[0] && res[0].transcript) {
-            currentTranscript += res[0].transcript + ' ';
+            const rawText = res[0].transcript.trim();
+            if (rawText) {
+              const lastSeg = segments[segments.length - 1];
+              if (!lastSeg) {
+                segments.push(rawText);
+              } else if (lastSeg.toLowerCase() === rawText.toLowerCase()) {
+                // Skip exact duplicate segment
+              } else if (rawText.toLowerCase().startsWith(lastSeg.toLowerCase())) {
+                // Expansion of previous interim segment
+                segments[segments.length - 1] = rawText;
+              } else if (lastSeg.toLowerCase().endsWith(rawText.toLowerCase())) {
+                // Already contained in previous segment
+              } else {
+                segments.push(rawText);
+              }
+            }
             if (res.isFinal) isFinal = true;
           }
         }
 
-        const cleanText = currentTranscript.trim();
+        const cleanText = segments.join(' ').trim();
         console.log(`[VOICE DEBUG] Speech stream -> text: "${cleanText}", isFinal: ${isFinal}`);
         if (options.onResult && cleanText) {
           options.onResult(cleanText, isFinal);
@@ -888,10 +903,12 @@ class SpeechService {
       };
 
       recognition.onerror = (event: any) => {
+        console.warn(`[VOICE DEBUG] recognition error: ${event.error}`);
+
         if (event.error === 'no-speech' || event.error === 'aborted') {
+          if (options.onError) options.onError(event.error);
           return;
         }
-        console.warn(`[VOICE DEBUG]\nrecognition error: ${event.error}`);
 
         this.notifyListening(false);
         let errorMsg = 'Voice recognition error';
