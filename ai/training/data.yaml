@@ -4,7 +4,7 @@
 # ==============================================================================
 
 # Dataset root directory (absolute path or relative to training script execution)
-path: ../dataset_ewaste_v1
+path: ../../dataset_ewaste_v1
 
 # Partition subdirectories (relative to path)
 train: train/images

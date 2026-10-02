@@ -1564,6 +1564,13 @@ export const AddLotPage: React.FC = () => {
                 {photos[activePhotoIndex]?.visionResult?.message && (
                   <span className="block mt-2">{photos[activePhotoIndex].visionResult?.message?.[language]}</span>
                 )}
+                <span className="block mt-2">
+                  {language === 'hi'
+                    ? 'पूरा फोन, लैपटॉप या कीबोर्ड इस घटक-आधारित मॉडल में अलग श्रेणी नहीं हैं। उन्हें केवल दिखावट के आधार पर PCB या प्लास्टिक न चुनें। पूरा सामान और कम प्रतिबिंब वाली फोटो लें।'
+                    : language === 'mr'
+                    ? 'पूर्ण फोन, लॅपटॉप किंवा कीबोर्ड या मॉडेलमध्ये स्वतंत्र श्रेणी नाहीत. फक्त दिसण्यावरून PCB किंवा प्लास्टिक निवडू नका. पूर्ण वस्तूचा कमी प्रतिबिंब असलेला फोटो घ्या.'
+                    : 'Whole phones, laptops and keyboards are not separate classes in this component model. Do not classify them as PCB or plastic by appearance alone. Show the whole item and reduce reflections.'}
+                </span>
               </p>
               <div className="pt-2 flex items-center justify-between flex-wrap gap-2 border-t border-slate-800">
                 <button

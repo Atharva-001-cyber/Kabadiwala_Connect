@@ -543,6 +543,17 @@ export async function runEwasteYoloInference(
     }
 
     const topDetection = detections[0];
+    // Current weights include invalid CRT imports and whole-HDD-to-magnet labels.
+    // Keep these categories manual until replacement weights pass a semantic audit.
+    if (topDetection.classId === 2 || topDetection.classId === 6) return {
+      status: 'LOW_CONFIDENCE', primaryCategory: null, confidence: topDetection.confidence,
+      isAmbiguous: true, model: 'YOLOv8-Nano', detections: [], inferenceTimeMs,
+      message: {
+        en: 'This model category is under label-quality review. Please confirm the material manually; a high model score is not proof.',
+        hi: 'इस श्रेणी के ट्रेनिंग लेबल की जाँच जारी है। कृपया सामग्री खुद पुष्टि करें; बड़ा AI स्कोर सही पहचान का प्रमाण नहीं है।',
+        mr: 'या श्रेणीच्या प्रशिक्षण लेबलची तपासणी सुरू आहे. साहित्य स्वतः निश्चित करा; मोठा AI स्कोर म्हणजे योग्य ओळख नाही.'
+      }
+    };
     const confidentCategories = new Set(detections.filter(d => d.confidence >= CONFIDENCE_THRESHOLDS.ACCEPTABLE).map(d => d.category));
     if (confidentCategories.size > 1) return {
       status: 'LOW_CONFIDENCE', primaryCategory: null, confidence: topDetection.confidence,

@@ -6,7 +6,7 @@ export const getEprMarketplaceFeatureState = (): boolean => {
   if (stored !== null) {
     return stored === 'true';
   }
-  return true; // Enabled by default for SIH demonstration
+  return false; // Disabled by default for streamlined informal trade & zero friction
 };
 
 export const setEprMarketplaceFeatureState = (enabled: boolean): void => {

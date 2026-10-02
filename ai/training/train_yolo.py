@@ -15,7 +15,9 @@ import os
 import sys
 import argparse
 import datetime
+import tempfile
 from pathlib import Path
+from semantic_preflight import audit as semantic_audit
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Kabadiwala Connect E-Waste YOLO Training")
@@ -58,6 +60,27 @@ def main():
         print(f"[ERROR] Dataset manifest file not found: {manifest_path}")
         print("Please ensure data.yaml is correctly configured before initiating training.")
         sys.exit(1)
+
+    # Resolve dataset relative to its manifest, not the caller's working directory.
+    try:
+        import yaml
+        config = yaml.safe_load(manifest_path.read_text(encoding='utf-8'))
+        dataset_root = (manifest_path.parent / config.get('path', '.')).resolve()
+        semantic = semantic_audit(dataset_root)
+        if semantic['blocked_count']:
+            print(f"[BLOCKED] {semantic['blocked_count']} images from quarantined semantic imports. Review/rebuild the dataset before training; originals were not changed.")
+            for item in semantic['blocked'][:3]:
+                print(item['image'], item['reason'])
+            sys.exit(2)
+        from dataset_check import audit_dataset
+        structurally_valid, _ = audit_dataset(str(dataset_root))
+        if not structurally_valid:
+            print('[BLOCKED] Dataset integrity audit failed.')
+            sys.exit(2)
+        config['path'] = str(dataset_root)
+    except (ImportError, ValueError, OSError) as error:
+        print(f'[BLOCKED] Dataset preflight unavailable: {error}')
+        sys.exit(2)
 
     # Autogenerate run name if not provided
     run_name = args.name
@@ -152,7 +175,13 @@ def main():
 
     print("[INFO] Initiating training run with frozen 8-class configuration...")
     try:
-        results = model.train(**train_hyperparameters)
+        # The runtime manifest has an absolute root so Ultralytics cannot resolve
+        # a relative path against its global datasets directory by mistake.
+        with tempfile.TemporaryDirectory(prefix='ewaste-training-') as temp_dir:
+            runtime_manifest = Path(temp_dir) / 'data.yaml'
+            runtime_manifest.write_text(yaml.safe_dump(config), encoding='utf-8')
+            train_hyperparameters['data'] = str(runtime_manifest)
+            results = model.train(**train_hyperparameters)
         print("\n" + "=" * 70)
         print("TRAINING RUN COMPLETE")
         print("=" * 70)

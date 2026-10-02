@@ -98,10 +98,14 @@ export const App: React.FC = () => {
   const { role, isAuthenticated } = useAuth();
   const [showSplash, setShowSplash] = React.useState<boolean>(true);
 
+  const handleSplashComplete = React.useCallback(() => {
+    setShowSplash(false);
+  }, []);
+
   return (
     <BrowserRouter>
       <GlobalVoiceRouteCleaner />
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       <Routes>
         {/* Root redirect based on auth & role */}
         <Route

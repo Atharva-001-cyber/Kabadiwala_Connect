@@ -12,13 +12,18 @@ export class AudioRecorderService {
   private mediaStream: MediaStream | null = null;
   private volumeCallback: ((volume: number) => void) | null = null;
   private animationFrameId: number | null = null;
+  private generation = 0;
 
   public async startRecording(onVolumeChange?: (volume: number) => void): Promise<boolean> {
     this.stopRecordingSilent();
+    const generation = this.generation;
     this.audioChunks = [];
     this.volumeCallback = onVolumeChange || null;
 
     try {
+      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+        throw new Error('Recording requires HTTPS and a browser with microphone recording support.');
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -26,6 +31,10 @@ export class AudioRecorderService {
           autoGainControl: true
         }
       });
+      if (generation !== this.generation) {
+        stream.getTracks().forEach(track => track.stop());
+        return false;
+      }
       this.mediaStream = stream;
 
       // Setup Web Audio API volume visualizer
@@ -35,7 +44,7 @@ export class AudioRecorderService {
           const ctx = new AudioCtx();
           this.audioContext = ctx;
           if (ctx.state === 'suspended') {
-            await ctx.resume().catch(() => {});
+            void ctx.resume().catch(() => {});
           }
           const source = ctx.createMediaStreamSource(stream);
           const analyser = ctx.createAnalyser();
@@ -90,7 +99,7 @@ export class AudioRecorderService {
       return true;
     } catch (err) {
       console.error('[AudioRecorder] Failed to start microphone recording:', err);
-      this.stopRecordingSilent();
+      if (generation === this.generation) this.stopRecordingSilent();
       throw err;
     }
   }
@@ -104,15 +113,31 @@ export class AudioRecorderService {
 
       const recorder = this.mediaRecorder;
       const mimeType = recorder.mimeType || 'audio/webm';
+      const generation = this.generation;
+      const cleanup = () => {
+        if (generation === this.generation) this.stopRecordingSilent();
+      };
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('Recording finalization timed out'));
+      }, 5000);
+      recorder.onerror = () => {
+        clearTimeout(timeout);
+        cleanup();
+        reject(new Error('Microphone recording failed'));
+      };
 
       recorder.onstop = async () => {
         try {
+          if (generation !== this.generation) throw new Error('Recording cancelled');
           const audioBlob = new Blob(this.audioChunks, { type: mimeType });
           const base64Audio = await this.blobToBase64(audioBlob);
-          this.stopRecordingSilent();
+          clearTimeout(timeout);
+          cleanup();
           resolve({ blob: audioBlob, base64Audio, mimeType });
         } catch (err) {
-          this.stopRecordingSilent();
+          clearTimeout(timeout);
+          cleanup();
           reject(err);
         }
       };
@@ -120,7 +145,8 @@ export class AudioRecorderService {
       try {
         recorder.stop();
       } catch (e) {
-        this.stopRecordingSilent();
+        clearTimeout(timeout);
+        cleanup();
         reject(e);
       }
     });
@@ -140,6 +166,7 @@ export class AudioRecorderService {
   }
 
   public stopRecordingSilent(): void {
+    this.generation += 1;
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;

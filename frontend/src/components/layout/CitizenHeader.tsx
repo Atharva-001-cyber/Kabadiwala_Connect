@@ -50,7 +50,7 @@ export const CitizenHeader: React.FC = () => {
                 <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
                   {t.appTitle}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                   SIH #229
                 </span>
               </div>

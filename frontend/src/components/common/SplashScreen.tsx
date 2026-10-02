@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw, X, ShieldCheck, Sparkles, Cpu, Laptop, Smartphone, Monitor, Keyboard, Battery } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -86,6 +86,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
   const [scene, setScene] = useState<number>(1);
   const [isVisible, setIsVisible] = useState<boolean>(true);
 
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
   useEffect(() => {
     if (!autoStart) return;
 
@@ -98,7 +103,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
     const t8 = setTimeout(() => setScene(8), 5600);  // Scene 8: Bubble Pop Dissolve
     const tEnd = setTimeout(() => {
       setIsVisible(false);
-      if (onComplete) onComplete();
+      if (onCompleteRef.current) onCompleteRef.current();
     }, 6000);
 
     return () => {
@@ -111,11 +116,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, autoStar
       clearTimeout(t8);
       clearTimeout(tEnd);
     };
-  }, [autoStart, onComplete]);
+  }, [autoStart]);
 
   const handleSkip = () => {
     setIsVisible(false);
-    if (onComplete) onComplete();
+    if (onCompleteRef.current) onCompleteRef.current();
   };
 
   if (!isVisible) return null;

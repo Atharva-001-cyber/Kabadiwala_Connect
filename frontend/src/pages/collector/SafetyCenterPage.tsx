@@ -150,19 +150,19 @@ export const SafetyCenterPage: React.FC = () => {
         </div>
 
         {/* 4 Emergency Dialing Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
           <a
             href="tel:112"
-            className="p-3 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
+            className="p-2.5 sm:p-3 bg-red-50 hover:bg-red-100 dark:bg-red-950/60 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-700/70 rounded-2xl flex items-center gap-2 sm:gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
-            <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-sm shrink-0">
+            <div className="px-2 py-1 min-w-[38px] h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
               112
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-red-600 dark:text-red-300 font-bold uppercase block truncate">
+              <span className="text-[10px] text-red-600 dark:text-red-300 font-bold uppercase block leading-tight">
                 {language === 'hi' ? 'राष्ट्रीय हेल्पलाइन' : language === 'mr' ? 'राष्ट्रीय हेल्पलाईन' : 'National Helpline'}
               </span>
-              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-200">
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-200 leading-tight block">
                 {language === 'hi' ? 'पुलिस / चिकित्सा' : language === 'mr' ? 'पोलिस / वैद्यकीय' : 'Police / Medical'}
               </span>
             </div>
@@ -170,31 +170,31 @@ export const SafetyCenterPage: React.FC = () => {
 
           <a
             href="tel:1800116117"
-            className="p-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
+            className="p-2.5 sm:p-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-700/70 rounded-2xl flex items-center gap-2 sm:gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
-            <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-xs shrink-0">
+            <div className="px-2 py-1 min-w-[42px] h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-[10px] tracking-wider shrink-0 shadow-xs">
               AIIMS
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase block truncate">
-                {language === 'hi' ? 'विष सूचना केंद्र' : language === 'mr' ? 'विष माहिती केंद्र' : 'Poison Information'}
+              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase block leading-tight">
+                {language === 'hi' ? 'विष सूचना केंद्र' : language === 'mr' ? 'विष माहिती केंद्र' : 'Poison Info Center'}
               </span>
-              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-200">1800-116-117</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-200 leading-tight block">1800-116-117</span>
             </div>
           </a>
 
           <a
             href="tel:101"
-            className="p-3 bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/60 dark:hover:bg-orange-900/60 border border-orange-200 dark:border-orange-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
+            className="p-2.5 sm:p-3 bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/60 dark:hover:bg-orange-900/60 border border-orange-200 dark:border-orange-700/70 rounded-2xl flex items-center gap-2 sm:gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
-            <div className="w-8 h-8 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black text-sm shrink-0">
+            <div className="px-2 py-1 min-w-[38px] h-8 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
               101
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-orange-700 dark:text-orange-300 font-bold uppercase block truncate">
+              <span className="text-[10px] text-orange-700 dark:text-orange-300 font-bold uppercase block leading-tight">
                 {language === 'hi' ? 'अग्नि आपात्काल' : language === 'mr' ? 'आग आपत्काळ' : 'Fire Emergency'}
               </span>
-              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-orange-700 dark:group-hover:text-orange-200">
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-orange-700 dark:group-hover:text-orange-200 leading-tight block">
                 {language === 'hi' ? 'बैटरी आग नियंत्रण' : language === 'mr' ? 'बॅटरी आग नियंत्रण' : 'Battery Fires'}
               </span>
             </div>
@@ -202,16 +202,16 @@ export const SafetyCenterPage: React.FC = () => {
 
           <a
             href="tel:18001801717"
-            className="p-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700/70 rounded-2xl flex items-center gap-2.5 transition-all group active:scale-95 shadow-2xs"
+            className="p-2.5 sm:p-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700/70 rounded-2xl flex items-center gap-2 sm:gap-2.5 transition-all group active:scale-95 shadow-2xs"
           >
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-xs shrink-0">
+            <div className="px-2 py-1 min-w-[42px] h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-[10px] tracking-wider shrink-0 shadow-xs">
               CPCB
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase block truncate">
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase block leading-tight">
                 {language === 'hi' ? 'खतरा नियंत्रण' : language === 'mr' ? 'धोका नियंत्रण' : 'Hazard Control'}
               </span>
-              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-200">1800-180-1717</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-200 leading-tight block">1800-180-1717</span>
             </div>
           </a>
         </div>

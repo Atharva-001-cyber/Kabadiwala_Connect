@@ -502,28 +502,28 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-black transition-colors duration-200">
       {/* Top Government-Grade Unauthenticated Header */}
-      <header className="h-16 px-4 sm:px-8 border-b border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between z-20">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-950">
-            <Recycle className="w-6 h-6 animate-spin-slow" />
+      <header className="h-16 px-3 sm:px-8 border-b border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between z-20 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-950 shrink-0">
+            <Recycle className="w-5 h-5 sm:w-6 sm:h-6 animate-spin-slow" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-extrabold text-sm sm:text-lg tracking-tight text-slate-900 dark:text-white truncate">
                 {t.appTitle}
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+              <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shrink-0">
                 SIH #229
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block truncate">
               {t.appSubtitle}
             </p>
           </div>
         </div>
 
         {/* Right Header Controls: Audio Assistance, 1-Click Theme Switcher & Single Language Switcher */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -533,7 +533,7 @@ export const LoginPage: React.FC = () => {
                 speakWelcome();
               }
             }}
-            className={`p-2 rounded-xl border transition-all ${isSpeaking
+            className={`p-1.5 sm:p-2 rounded-xl border transition-all shrink-0 ${isSpeaking
                 ? 'bg-amber-500 text-slate-950 border-amber-400 ring-2 ring-amber-300'
                 : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-300 border-slate-300 dark:border-slate-700'
               }`}
@@ -551,7 +551,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={toggleTheme}
-            className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all shadow-sm active:scale-95 shrink-0"
+            className="p-1.5 sm:p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all shadow-sm active:scale-95 shrink-0"
             title={theme === 'light' ? 'Switch to Enterprise Dark Mode' : 'Switch to National DPI Light Mode'}
             aria-label="Toggle visual theme"
           >
@@ -563,12 +563,12 @@ export const LoginPage: React.FC = () => {
           </button>
 
           {/* SINGLE Language Selector on Login Page */}
-          <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-2.5 py-1.5 border border-slate-300 dark:border-slate-700">
-            <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mr-1.5 shrink-0" />
+          <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 border border-slate-300 dark:border-slate-700 shrink-0">
+            <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 mr-1 sm:mr-1.5 shrink-0" />
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-transparent text-xs font-black text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+              className="bg-transparent text-[11px] sm:text-xs font-black text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
               aria-label="Language Selector"
             >
               <option value="hi" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">हिंदी (HI)</option>

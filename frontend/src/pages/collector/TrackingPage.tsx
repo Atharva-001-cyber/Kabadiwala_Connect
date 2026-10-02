@@ -527,10 +527,10 @@ export const TrackingPage: React.FC = () => {
           </div>
 
           {/* Chronological Audit Timeline */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm dark:shadow-xl space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm dark:shadow-xl space-y-4 overflow-hidden">
             <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>{language === 'hi' ? 'सत्यापित समयरेखा (ऑडिट लॉग)' : language === 'mr' ? 'प्रमाणित वेळेची नोंद' : 'Immutable Chain of Custody Logs'}</span>
+              <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="truncate">{language === 'hi' ? 'सत्यापित समयरेखा (ऑडिट लॉग)' : language === 'mr' ? 'प्रमाणित वेळेची नोंद' : 'Immutable Chain of Custody Logs'}</span>
             </h3>
 
             <div className="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
@@ -541,42 +541,42 @@ export const TrackingPage: React.FC = () => {
                   : item.actorName;
 
                 return (
-                  <div key={item.id || idx} className="relative flex items-start gap-4 pl-1">
+                  <div key={item.id || idx} className="relative flex items-start gap-2.5 sm:gap-4 pl-0.5 min-w-0">
                     <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow shrink-0 z-10 ring-4 ring-white dark:ring-slate-900">
                       ✓
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex-1 space-y-2.5 shadow-sm">
-                      <div className="flex items-center justify-between flex-wrap gap-1">
-                        <h4 className="font-black text-sm text-slate-900 dark:text-white">{item.title}</h4>
-                        <span className="text-[11px] font-mono text-emerald-800 dark:text-emerald-400 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
+                    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3 sm:p-4 rounded-2xl flex-1 min-w-0 space-y-2.5 shadow-sm overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 min-w-0">
+                        <h4 className="font-black text-sm text-slate-900 dark:text-white break-words">{item.title}</h4>
+                        <span className="text-[10px] sm:text-[11px] font-mono text-emerald-800 dark:text-emerald-400 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800 self-start sm:self-auto shrink-0">
                           {formatAuditDate(item.timestamp)}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{item.description}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed break-words">{item.description}</p>
                       
                       {/* Cryptographic SHA-256 Hashes Display */}
                       {item.eventHash && (
-                        <div className="bg-slate-100 dark:bg-slate-900/90 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 font-mono text-[10px] text-slate-500 dark:text-slate-400 space-y-1">
-                          <div className="flex items-center gap-1.5 truncate">
+                        <div className="bg-slate-100 dark:bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 font-mono text-[10px] text-slate-500 dark:text-slate-400 space-y-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center gap-1.5 min-w-0">
                             <Key className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                            <span className="text-slate-500 font-bold">Hash:</span>
-                            <span className="text-emerald-700 dark:text-emerald-400 truncate font-mono">{item.eventHash}</span>
+                            <span className="text-slate-500 font-bold shrink-0">Hash:</span>
+                            <span className="text-emerald-700 dark:text-emerald-400 font-mono truncate min-w-0">{item.eventHash}</span>
                           </div>
                           {item.previousEventHash && (
-                            <div className="flex items-center gap-1.5 truncate pl-5">
-                              <span className="text-slate-500 font-bold">Prev:</span>
-                              <span className="text-slate-400 truncate font-mono">{item.previousEventHash.slice(0, 32)}...</span>
+                            <div className="flex items-center gap-1.5 min-w-0 pl-3 sm:pl-5">
+                              <span className="text-slate-500 font-bold shrink-0">Prev:</span>
+                              <span className="text-slate-400 font-mono truncate min-w-0">{item.previousEventHash.slice(0, 24)}...</span>
                             </div>
                           )}
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-900 text-[11px] text-slate-500 dark:text-slate-400 flex-wrap gap-2">
-                        <span className="flex items-center gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-900 text-[11px] text-slate-500 dark:text-slate-400 gap-1.5 min-w-0">
+                        <span className="flex items-center gap-1 min-w-0">
                           <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <span>{item.facilityLocation}</span>
+                          <span className="truncate">{item.facilityLocation}</span>
                         </span>
-                        <span className="font-bold text-slate-700 dark:text-slate-200">
+                        <span className="font-bold text-slate-700 dark:text-slate-200 break-words">
                           {language === 'hi' ? 'द्वारा:' : language === 'mr' ? 'द्वारे:' : 'By:'} {formatUserDisplayName(resolvedActor, item.actorRole as any, language)} ({item.actorRole === 'COLLECTOR' ? (t.roleCollector || 'Collector') : item.actorRole === 'RECYCLER' ? (t.roleRecycler || 'Recycler') : item.actorRole === 'ADMIN' ? (t.roleAdmin || 'Admin') : item.actorRole})
                         </span>
                       </div>

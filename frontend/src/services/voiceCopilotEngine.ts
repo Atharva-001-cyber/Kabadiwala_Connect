@@ -629,10 +629,10 @@ export class VoiceCopilotEngine {
 
     // Polite fallback if audio speech recognition failed
     const promptText = context.language === 'hi'
-      ? 'आपकी आवाज़ साफ़ नहीं सुनाई दी। कृपया दोबारा बोलें या नीचे दिए गए बटन पर टैप करें।'
+      ? 'ऑडियो से जवाब नहीं बन सका। इंटरनेट, AI key और सेवा की उपलब्धता जाँचें; फिर कोशिश करें या टाइप करें।'
       : context.language === 'mr'
-      ? 'तुमचा आवाज स्पष्ट ऐकू आला नाही. कृपया पुन्हा बोला किंवा खालील बटणावर टॅप करा.'
-      : 'Could not hear clearly. Please speak again or tap one of the voice prompts below.';
+      ? 'ऑडिओवरून उत्तर मिळाले नाही. इंटरनेट, AI key व सेवा तपासा; पुन्हा प्रयत्न करा किंवा टाइप करा.'
+      : 'Could not process audio. Check internet, AI key and service availability; retry or type your question.';
 
     return {
       userText: context.language === 'hi' ? '🎙️ (वॉयस इनपुट)' : '🎙️ (Voice Input)',
@@ -682,7 +682,7 @@ RETURN JSON ONLY matching this EXACT schema:
   "calculationTotal": number | null
 }`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     const res = await fetch(endpoint, {
       method: 'POST',
       signal: AbortSignal.timeout(12000),
@@ -776,7 +776,7 @@ RETURN JSON ONLY matching this EXACT schema:
   "calculationTotal": number | null
 }`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
     const res = await fetch(endpoint, {
       method: 'POST',
       signal: AbortSignal.timeout(12000),

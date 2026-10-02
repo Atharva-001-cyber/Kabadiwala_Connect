@@ -47,6 +47,17 @@ export const CollectorProfilePage: React.FC = () => {
   const [editAddress, setEditAddress] = useState('');
   const [editUpiId, setEditUpiId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const editFormRef = useRef<HTMLDivElement | null>(null);
+
+  const handleToggleEdit = () => {
+    const nextState = !isEditing;
+    setIsEditing(nextState);
+    if (nextState) {
+      setTimeout(() => {
+        editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  };
 
   // Digital ID Card Modal
   const [showIdCardModal, setShowIdCardModal] = useState(false);
@@ -437,11 +448,22 @@ export const CollectorProfilePage: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setIsEditing(!isEditing)}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition-colors"
+              onClick={handleToggleEdit}
+              className={`p-2 rounded-xl border transition-all flex items-center gap-1.5 active:scale-95 ${
+                isEditing
+                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 border-emerald-400 dark:border-emerald-600 ring-2 ring-emerald-400/50 font-bold text-xs px-3'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+              }`}
               title={isEditing ? 'Cancel Edit' : 'Edit Profile'}
             >
-              {isEditing ? <X className="w-4 h-4 text-red-500" /> : <Edit3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+              {isEditing ? (
+                <>
+                  <X className="w-4 h-4 text-red-500" />
+                  <span className="text-[11px] font-bold text-slate-900 dark:text-white">{language === 'hi' ? 'संपादन रद्द करें' : 'Cancel Edit'}</span>
+                </>
+              ) : (
+                <Edit3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              )}
             </button>
           </div>
         </div>
@@ -553,9 +575,10 @@ export const CollectorProfilePage: React.FC = () => {
         />
 
         {/* Edit Form or Information Details */}
-        {isEditing ? (
-          <form onSubmit={handleSaveProfile} className="space-y-4 bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 animate-fadeIn">
-            <h3 className="text-xs font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
+        <div ref={editFormRef} className="scroll-mt-20">
+          {isEditing ? (
+            <form onSubmit={handleSaveProfile} className="space-y-4 bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border-2 border-emerald-400 dark:border-emerald-600 animate-fadeIn shadow-lg">
+              <h3 className="text-xs font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider flex items-center gap-1.5">
               <Edit3 className="w-3.5 h-3.5" />
               <span>{language === 'hi' ? 'प्रोफ़ाइल एवं भुगतान विवरण संपादित करें' : 'Edit Profile & Payout Details'}</span>
             </h3>
@@ -697,6 +720,7 @@ export const CollectorProfilePage: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
 
         {/* Action Buttons: e-KYC Verification Modal trigger and Logout */}
         <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-3">

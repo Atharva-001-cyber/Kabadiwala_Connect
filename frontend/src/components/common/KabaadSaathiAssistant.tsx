@@ -64,7 +64,12 @@ export const KabaadSaathiAssistant: React.FC = () => {
   const { collectorProfile, recyclerProfile, user, role } = useAuth();
   const { setTheme } = useTheme();
   const navigate = useNavigate();
-  const { isListening, isSpeaking, startListening, stopListening, speak, stop } = useSpeech();
+  const { isListening: nativeListening, isSpeaking, startListening, stopListening, speak, stop } = useSpeech();
+  const [recordingActive, setRecordingActive] = useState(false);
+  const isListening = nativeListening || recordingActive;
+  const recorderFallbackRef = useRef(false);
+  const micSessionRef = useRef(0);
+  const recordingLimitRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isOpen, setIsOpen] = useState<boolean>(() => {
     try {
@@ -506,7 +511,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         }, 1100);
       }
     } catch (err) {
-      console.error('[KabaadSaathi] Audio processing error:', err);
+      setMicErrorMsg(language === 'hi' ? 'आवाज़ समझ नहीं आई। दोबारा कोशिश करें या टाइप करें।' : language === 'mr' ? 'आवाज समजला नाही. पुन्हा प्रयत्न करा किंवा टाइप करा.' : 'Audio could not be processed. Please retry or type your question.');
     } finally {
       processingRef.current = false;
       setIsProcessing(false);
@@ -523,15 +528,21 @@ export const KabaadSaathiAssistant: React.FC = () => {
     }
   }, []);
 
-  // Cleanup silence timer on unmount
+  // Cancel pending permission requests and sessions when hidden or language changes.
   useEffect(() => {
+    setRecordingActive(false);
     return () => {
+      micSessionRef.current += 1;
+      latestRecognizedTextRef.current = '';
       clearSilenceTimer();
+      if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
+      speechService.stopListening();
       audioRecorderService.stopRecordingSilent();
     };
-  }, [clearSilenceTimer]);
+  }, [clearSilenceTimer, isOpen, language]);
 
   const handleToggleListening = async () => {
+    if (processingRef.current) return;
     stop();
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -541,9 +552,14 @@ export const KabaadSaathiAssistant: React.FC = () => {
     clearSilenceTimer();
 
     if (isListening || audioRecorderService.isRecording()) {
+      const session = ++micSessionRef.current;
+      setRecordingActive(false);
+      if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
       stopListening();
       try {
+        if (!audioRecorderService.isRecording()) audioRecorderService.stopRecordingSilent();
         const audioRes = await audioRecorderService.stopRecording();
+        if (session !== micSessionRef.current) return;
         if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
           const txt = latestRecognizedTextRef.current.trim();
           latestRecognizedTextRef.current = '';
@@ -552,6 +568,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
           processAudioBlob(audioRes.base64Audio, audioRes.mimeType);
         }
       } catch (e) {
+        if (session !== micSessionRef.current) return;
         if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
           const txt = latestRecognizedTextRef.current.trim();
           latestRecognizedTextRef.current = '';
@@ -559,6 +576,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         }
       }
     } else {
+      micSessionRef.current += 1;
       stop();
       if (typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
@@ -566,14 +584,33 @@ export const KabaadSaathiAssistant: React.FC = () => {
       latestRecognizedTextRef.current = '';
       setInputText('');
 
-      // Wait 50ms for audio output buffer to clear completely before opening mic stream
-      await new Promise(r => setTimeout(r, 50));
-
-      // Dual audio recording backup for seamless Normal Chrome & Incognito compatibility
-      try {
-        await audioRecorderService.startRecording((vol) => setMicVolume(vol));
-      } catch (e) {
-        console.warn('[KabaadSaathi] MediaRecorder dual-recording notice:', e);
+      // Use only one microphone consumer. A fresh tap opts into cloud audio fallback.
+      if (recorderFallbackRef.current || !speechService.isRecognitionSupported()) {
+        if (!getGeminiApiKey() || !navigator.onLine) {
+          recorderFallbackRef.current = false;
+          setMicErrorMsg(language === 'hi' ? 'वैकल्पिक वॉयस के लिए इंटरनेट और AI key चाहिए। सामान्य Chrome में माइक अनुमति देकर दोबारा कोशिश करें या टाइप करें।' : language === 'mr' ? 'पर्यायी व्हॉइससाठी इंटरनेट आणि AI key आवश्यक. सामान्य Chrome मध्ये परवानगी द्या किंवा टाइप करा.' : 'Audio fallback needs internet and an AI key. Retry with mic permission in normal Chrome, or type your question.');
+          return;
+        }
+        const session = ++micSessionRef.current;
+        setRecordingActive(true);
+        try {
+          const started = await audioRecorderService.startRecording(setMicVolume);
+          if (!started || session !== micSessionRef.current) return;
+          setMicErrorMsg(language === 'hi' ? 'रिकॉर्डिंग चालू है। बोलकर माइक फिर दबाएँ। ऑडियो AI सेवा को भेजा जाएगा (अधिकतम 30 सेकंड)।' : language === 'mr' ? 'रेकॉर्डिंग सुरू. बोलून पुन्हा माइक दाबा. ऑडिओ AI सेवेला पाठवला जाईल (कमाल 30 सेकंद).' : 'Recording: speak, then tap mic to send audio to the AI service (maximum 30 seconds).');
+          recordingLimitRef.current = setTimeout(async () => {
+            if (session !== micSessionRef.current) return;
+            setRecordingActive(false);
+            try {
+              const audio = await audioRecorderService.stopRecording();
+              if (session === micSessionRef.current) void processAudioBlob(audio.base64Audio, audio.mimeType);
+            } catch { setMicErrorMsg('Recording failed. Please retry or type your question.'); }
+          }, 30000);
+        } catch {
+          if (session !== micSessionRef.current) return;
+          setRecordingActive(false);
+          setMicErrorMsg(language === 'hi' ? 'माइक नहीं खुला। HTTPS, Chrome साइट अनुमति और फोन की माइक अनुमति जाँचें।' : language === 'mr' ? 'माइक सुरू झाला नाही. HTTPS व Chrome आणि फोनची माइक परवानगी तपासा.' : 'Microphone unavailable. Check HTTPS, Chrome site permission and phone microphone permission.');
+        }
+        return;
       }
 
       startListening({
@@ -620,6 +657,9 @@ export const KabaadSaathiAssistant: React.FC = () => {
         },
         onError: (err) => {
           clearSilenceTimer();
+          latestRecognizedTextRef.current = '';
+          recorderFallbackRef.current = true;
+          setMicErrorMsg(err + (language === 'hi' ? ' विकल्प: AI key और इंटरनेट हो तो माइक फिर दबाकर ऑडियो रिकॉर्ड करके भेजें, या टाइप करें।' : language === 'mr' ? ' पर्याय: AI key आणि इंटरनेट असल्यास पुन्हा माइक दाबून ऑडिओ पाठवा, किंवा टाइप करा.' : ' Alternative: with an AI key and internet, tap mic again to record and send audio, or type.'));
           console.warn('[Speech] Microphone event/notice:', err);
           if (err === 'not-allowed' || err === 'permission-denied') {
             setMicErrorMsg(
@@ -638,10 +678,22 @@ export const KabaadSaathiAssistant: React.FC = () => {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
+    micSessionRef.current += 1;
+    stopListening();
+    clearSilenceTimer();
+    if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
+    audioRecorderService.stopRecordingSilent();
+    setRecordingActive(false);
+    latestRecognizedTextRef.current = '';
     processQuery(inputText);
   };
 
   const handleClearChat = () => {
+    micSessionRef.current += 1;
+    stopListening();
+    setRecordingActive(false);
+    clearSilenceTimer();
+    if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
     stop();
     audioRecorderService.stopRecordingSilent();
     setMessages([]);
@@ -810,7 +862,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                       ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
                       : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'
                   }`}
-                  title="Configure Gemini 2.0 API Key"
+                  title="Configure Gemini API Key"
                 >
                   <Key className="w-4 h-4" />
                 </button>
@@ -831,6 +883,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                     audioRecorderService.stopRecordingSilent();
                     setIsOpen(false);
                   }}
+                  aria-label="Close voice assistant"
                   className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
                 >
                   <X className="w-4 h-4" />
@@ -844,7 +897,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                 <div className="flex items-center justify-between text-xs font-bold text-emerald-400">
                   <span className="flex items-center gap-1.5">
                     <Key className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Gemini 2.0 Cloud Multimodal Voice AI Key</span>
+                    <span>Gemini Cloud Multimodal Voice AI Key</span>
                   </span>
                   {keySavedSuccess && (
                     <span className="text-[10px] text-emerald-300 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-700 flex items-center gap-1">

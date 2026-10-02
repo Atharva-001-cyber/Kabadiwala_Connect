@@ -809,11 +809,12 @@ class SpeechService {
   }
 
   public startListening(options: SpeechRecognitionOptions): boolean {
-    void this.startListeningAsync(options);
-    return true;
-  }
-
-  public async startListeningAsync(options: SpeechRecognitionOptions): Promise<boolean> {
+    this.stopListening();
+    if (window.isSecureContext === false) {
+      options.onError?.(options.lang === 'hi' ? 'माइक के लिए HTTPS चाहिए। फोन पर HTTP वाले LAN पते से माइक नहीं चलेगा।' : options.lang === 'mr' ? 'मायक्रोफोनसाठी HTTPS आवश्यक आहे. फोनवर HTTP LAN पत्ता वापरू नका.' : 'Microphone requires HTTPS. An HTTP LAN address on your phone is not a secure localhost connection.');
+      options.onEnd?.();
+      return false;
+    }
     if (!this.isRecognitionSupported()) {
       const msg = options.lang === 'hi'
         ? 'इस डिवाइस/ब्राउज़र पर वॉयस रिकग्निशन समर्थित नहीं है।'
@@ -825,34 +826,22 @@ class SpeechService {
       return false;
     }
 
-    this.stopListening();
-
-    // Check microphone permissions safely without prematurely terminating hardware audio channels on mobile OS
-    if (typeof window !== 'undefined' && navigator?.permissions?.query) {
-      try {
-        const perm = await navigator.permissions.query({ name: 'microphone' as any });
-        if (perm && perm.state === 'denied') {
-          const msg = options.lang === 'hi'
-            ? 'माइक्रोफ़ोन अनुमति बंद है — कृपया ब्राउज़र सेटिंग्स में माइक्रोफ़ोन चालू करें।'
-            : options.lang === 'mr'
-            ? 'मायक्रोफोन परवानगी नाकारली आहे. कृपया ब्राउझर सेटिंग्जमध्ये परवानगी द्या.'
-            : 'Microphone access denied. Please enable mic permissions in browser settings.';
-          if (options.onError) options.onError(msg);
-          return false;
-        }
-      } catch (err: any) {
-        console.warn('⚠️ [VOICE DEBUG] Microphone permission query notice:', err);
-      }
-    }
-
+    // Keep start() in the original tap; permission queries must not delay it.
     try {
       const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognitionClass();
       this.recognitionInstance = recognition;
+      const watchdog = setTimeout(() => {
+        if (this.recognitionInstance !== recognition) return;
+        options.onError?.(options.lang === 'hi' ? 'वॉयस का समय समाप्त। फिर कोशिश करें या टाइप करें।' : options.lang === 'mr' ? 'व्हॉइसची वेळ संपली. पुन्हा प्रयत्न करा किंवा टाइप करा.' : 'Voice capture timed out. Retry or type your question.');
+        recognition.onend();
+        try { recognition.abort(); } catch {}
+      }, 30000);
+      recognition.clearWatchdog = () => clearTimeout(watchdog);
 
       const recLocale = LOCALE_MAP[options.lang] || 'hi-IN';
       recognition.lang = recLocale;
-      recognition.continuous = true;
+      recognition.continuous = false;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
 
@@ -863,12 +852,14 @@ class SpeechService {
       );
 
       recognition.onstart = () => {
+        if (this.recognitionInstance !== recognition) return;
         console.log('[VOICE DEBUG]\nrecognition started: true');
         this.notifyListening(true);
         if (options.onStart) options.onStart();
       };
 
       recognition.onresult = (event: any) => {
+        if (this.recognitionInstance !== recognition) return;
         let isFinal = false;
         const segments: string[] = [];
 
@@ -903,10 +894,13 @@ class SpeechService {
       };
 
       recognition.onerror = (event: any) => {
+        if (this.recognitionInstance !== recognition) return;
         console.warn(`[VOICE DEBUG] recognition error: ${event.error}`);
 
         if (event.error === 'no-speech' || event.error === 'aborted') {
-          if (options.onError) options.onError(event.error);
+          options.onError?.(options.lang === 'hi' ? 'आवाज़ नहीं मिली। माइक दबाकर फिर बोलें या टाइप करें।' : options.lang === 'mr' ? 'आवाज ऐकू आला नाही. पुन्हा बोला किंवा टाइप करा.' : 'No speech captured. Tap the mic to retry or type your question.');
+          recognition.onend();
+          try { recognition.abort(); } catch {}
           return;
         }
 
@@ -944,9 +938,13 @@ class SpeechService {
             : 'Speech service not allowed. Please check browser settings.';
         }
         if (options.onError) options.onError(errorMsg);
+        recognition.onend();
+        try { recognition.abort(); } catch {}
       };
 
       recognition.onend = () => {
+        if (this.recognitionInstance !== recognition) return;
+        recognition.clearWatchdog();
         console.log('[VOICE DEBUG]\nrecognition ended: true');
         this.notifyListening(false);
         this.recognitionInstance = null;
@@ -954,14 +952,22 @@ class SpeechService {
       };
 
       this.isListeningActive = true;
+      this.notifyListening(true);
       recognition.start();
       return true;
     } catch (e: any) {
+      this.recognitionInstance?.clearWatchdog?.();
+      this.recognitionInstance = null;
       this.notifyListening(false);
       console.warn('Failed to start speech recognition:', e);
       if (options.onError) options.onError(e.message || 'Failed to start microphone');
+      options.onEnd?.();
       return false;
     }
+  }
+
+  public async startListeningAsync(options: SpeechRecognitionOptions): Promise<boolean> {
+    return this.startListening(options);
   }
 
   public getRecognitionLanguage(lang: Language): string {
@@ -975,11 +981,14 @@ class SpeechService {
   public stopListening(): void {
     this.isListeningActive = false;
     if (this.recognitionInstance) {
+      const recognition = this.recognitionInstance;
+      recognition.clearWatchdog?.();
+      this.recognitionInstance = null;
       try {
-        this.recognitionInstance.stop();
+        recognition.abort();
       } catch (e) {
         try {
-          this.recognitionInstance.abort();
+          recognition.stop();
         } catch {}
       }
       this.recognitionInstance = null;

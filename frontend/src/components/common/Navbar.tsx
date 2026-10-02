@@ -40,7 +40,7 @@ export const Navbar: React.FC = () => {
                 <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent">
                   {t.appTitle}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-950 text-emerald-300 border border-emerald-800">
+                <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-950 text-emerald-300 border border-emerald-800">
                   SIH #229
                 </span>
               </div>
