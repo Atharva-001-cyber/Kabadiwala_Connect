@@ -40,6 +40,7 @@
 | **GIS & Maps** | [Leaflet](https://leafletjs.com/) + [React-Leaflet](https://react-leaflet.js.org/) | `^1.9.4` / `^4.2.1` | Interactive scrap cluster maps, recycler routing, and geofence verification |
 | **Voice & Speech** | Native Web Speech API | Native | Bilingual SpeechSynthesis (TTS) and SpeechRecognition (STT) |
 | **Media & Canvas** | HTML5 Canvas 2D API | Native | Client-side image luminance/blur quality validation and JPEG compression |
+| **Computer Vision AI** | [ONNX Runtime Web](https://onnxruntime.ai/) (WASM) | `^1.30.0` | On-device 100% offline YOLOv8-Nano inference engine (`best.onnx`) for e-waste category & metal yield detection |
 | **Cryptography** | Web Crypto API (`SubtleCrypto`) | Native | SHA-256 cryptographic Merkle Chain linking for EPR compliance logs |
 | **Micro-Interactions** | [canvas-confetti](https://www.npmjs.com/package/canvas-confetti) | `^1.9.4` | Milestone celebration feedback upon completed digital transactions |
 
@@ -416,8 +417,9 @@ graph TD
 * **Client-Side Edge Compression (`imageCompressor.ts`)**:
   * Downscales raw 12MP-48MP smartphone photos on an in-memory canvas to maximum dimensions of 1280px.
   * Produces high-quality JPEG output under 500 KB, saving data costs on rural 2G/3G networks.
-* **Heuristic Classifier (`api.classifyMaterial`)**:
-  * Fast rule-based heuristic inference on filename, metadata, and form factors to auto-suggest categories (e.g., PCB, Lithium-ion Battery, Copper Cable).
+* **Heuristic & ML Classifier (`services/vision/ewasteOnnx.ts`)**:
+  * **On-Device YOLOv8-Nano ONNX Engine**: Executes `onnxruntime-web` directly in the browser via WebAssembly (WASM).
+  * **Model Checkpoint (`public/models/best.onnx`)**: 11.58 MB FP32 ONNX model (Opset 12) detecting e-waste categories (PCBs, Batteries, Cables, Display panels) and predicting precious metal recovery yields in under 180ms with zero cloud API latency or cost.
 
 ---
 
