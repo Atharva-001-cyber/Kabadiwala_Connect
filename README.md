@@ -60,79 +60,79 @@ flowchart TD
     classDef storage fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#fff;
 
     %% ACTORS
-    Collector["👤 Informal Collector (Kabadiwala)"]:::actor
-    Recycler["🏭 Authorized Recycler"]:::actor
-    Admin["🛡️ CPCB Admin / Regulator"]:::actor
+    Collector["👤 Informal Collector<br/>(Kabadiwala)"]:::actor
+    Recycler["🏭 Authorized<br/>Recycler"]:::actor
+    Admin["🛡️ CPCB Admin<br/>/ Regulator"]:::actor
 
     %% PHASE 1: LOGIN & LANGUAGE
-    Collector --> AuthStep["1. Mobile OTP Authentication"]:::action
-    AuthStep --> LangSelect["2. Select Language (Hindi / Marathi / English) + Voice Assistance"]:::action
+    Collector --> AuthStep["1. Mobile OTP<br/>Authentication"]:::action
+    AuthStep --> LangSelect["2. Select Language<br/>(Hindi / Marathi / English)"]:::action
 
     %% PHASE 2: LOT CREATION & QUALITY VALIDATION
-    LangSelect --> AddLot["3. Create New E-Waste Lot"]:::action
-    AddLot --> PhotoCapture["4. Capture Scrap Photo via Device Camera"]:::action
-    PhotoCapture --> CanvasVal{"5. Canvas Image Quality Check<br/>(Luminance & Blur Edge Variance)"}:::decision
-    CanvasVal -- "Photo Too Dark / Blurred" --> RetakePhoto["Voice Guidance: Prompt to Retake Photo"]:::action
+    LangSelect --> AddLot["3. Create New<br/>E-Waste Lot"]:::action
+    AddLot --> PhotoCapture["4. Capture Scrap Photo<br/>via Device Camera"]:::action
+    PhotoCapture --> CanvasVal{"5. Canvas Image<br/>Quality Check"}:::decision
+    CanvasVal -- "Photo Dark / Blur" --> RetakePhoto["Voice Guidance:<br/>Prompt Retake Photo"]:::action
     RetakePhoto --> PhotoCapture
-    CanvasVal -- "Photo Clear & Sharp" --> ImgCompress["6. In-Browser JPEG Compression (&lt; 500KB)"]:::action
+    CanvasVal -- "Photo Clear" --> ImgCompress["6. In-Browser JPEG<br/>Compression (< 500KB)"]:::action
 
     %% PHASE 3: ML HEURISTIC & OFFLINE CHECK
-    ImgCompress --> MLHeuristic["7. Client-Side Edge Classification (PCB, Battery, Cable, etc.)"]:::action
-    MLHeuristic --> WeightInput["8. Enter Estimated Weight (kg)"]:::action
-    WeightInput --> NetCheck{"9. Internet Connection Available?"}:::decision
+    ImgCompress --> MLHeuristic["7. Client Edge ML<br/>Classification"]:::action
+    MLHeuristic --> WeightInput["8. Enter Estimated<br/>Weight (kg)"]:::action
+    WeightInput --> NetCheck{"9. Internet Connection<br/>Available?"}:::decision
 
-    NetCheck -- "OFFLINE" --> DexieSave["Save to IndexedDB (Dexie) with Status 'PENDING'"]:::storage
-    DexieSave --> BackgroundWorker["15s Background Sync Worker (Flushes to Cloud when Online)"]:::action
+    NetCheck -- "OFFLINE" --> DexieSave["Save to IndexedDB<br/>(Status PENDING)"]:::storage
+    DexieSave --> BackgroundWorker["15s Sync Worker<br/>(Flush when Online)"]:::action
     BackgroundWorker --> CloudLot
 
-    NetCheck -- "ONLINE" --> CloudLot["10. Register Lot in Supabase Cloud PostgreSQL"]:::storage
+    NetCheck -- "ONLINE" --> CloudLot["10. Register Lot<br/>in Supabase"]:::storage
 
     %% CRYPTO GENESIS
-    CloudLot --> GenesisMerkle["11. SHA-256 Merkle Chain: Genesis Event Hash Logged"]:::crypto
+    CloudLot --> GenesisMerkle["11. SHA-256 Merkle:<br/>Genesis Event"]:::crypto
 
     %% PHASE 4: PRICE DISCOVERY & RECYCLER MATCHING
-    CloudLot --> MandiBoard["12. View Live Mandi Benchmark Rates (Daily Spot Prices)"]:::action
-    CloudLot --> MatchEngine["13. Explainable Multi-Criteria Recycler Matching<br/>(Distance + Rate + CPCB Auth + Doorstep Pickup)"]:::action
+    CloudLot --> MandiBoard["12. Live Mandi<br/>Benchmark Rates"]:::action
+    CloudLot --> MatchEngine["13. Recycler Matching<br/>(Rate + Distance)"]:::action
     
     %% PHASE 5: RECYCLER OFFERS
-    MatchEngine --> NotifyRecycler["14. Realtime Notification to Nearby Recyclers"]:::action
+    MatchEngine --> NotifyRecycler["14. Realtime Alert<br/>to Recyclers"]:::action
     NotifyRecycler --> Recycler
-    Recycler --> ReviewLot["15. Recycler Inspects Lot & Photo Evidence"]:::action
-    ReviewLot --> SubmitBid["16. Submit Dynamic Quote (Rate ₹/kg + Pickup Slot)"]:::action
-    SubmitBid --> CompareOffers["17. Collector Compares Competing Offers"]:::action
-    CompareOffers --> AcceptOffer["18. Collector Accepts Best Quote"]:::action
+    Recycler --> ReviewLot["15. Recycler Inspects<br/>Lot & Photo"]:::action
+    ReviewLot --> SubmitBid["16. Submit Quote<br/>(Rate + Slot)"]:::action
+    SubmitBid --> CompareOffers["17. Collector Compares<br/>Offers"]:::action
+    CompareOffers --> AcceptOffer["18. Collector Accepts<br/>Best Quote"]:::action
 
-    AcceptOffer --> CryptoEvent2["19. Merkle Event: 'OFFER_ACCEPTED' Hash Chained"]:::crypto
+    AcceptOffer --> CryptoEvent2["19. Merkle Event:<br/>OFFER_ACCEPTED"]:::crypto
 
     %% PHASE 6: PICKUP & DISPATCH
-    AcceptOffer --> SchedulePickup["20. Doorstep Pickup Scheduled (Vehicle & Driver Assigned)"]:::action
-    SchedulePickup --> OTPGen["21. 4-Digit Handover OTP Generated on Collector's Device"]:::action
-    SchedulePickup --> DriverArrive["22. Logistics Driver Arrives at Collector's Location"]:::action
+    AcceptOffer --> SchedulePickup["20. Doorstep Pickup<br/>Scheduled"]:::action
+    SchedulePickup --> OTPGen["21. 4-Digit OTP<br/>Generated"]:::action
+    SchedulePickup --> DriverArrive["22. Logistics Driver<br/>Arrives"]:::action
 
     %% PHASE 7: WEIGHING & HANDOVER
-    DriverArrive --> CalibratedScale["23. Calibrated Electronic Scale Weighing (Actual Weight kg)"]:::action
-    CalibratedScale --> WeightComp{"24. Scale Weight Discrepancy Check<br/>(Variance &gt; 15%?)"}:::decision
+    DriverArrive --> CalibratedScale["23. Calibrated Scale<br/>Weighing (kg)"]:::action
+    CalibratedScale --> WeightComp{"24. Scale Variance<br/>Check (> 15%)"}:::decision
 
-    WeightComp -- "Variance &gt; 15%" --> AnomalyFlag["⚠️ Auto-Flag Weight Anomaly -&gt; Admin Alert"]:::action
-    WeightComp -- "Normal Variance (&lt;=15%)" --> VerifyOTP["25. Driver Inputs Collector's 4-Digit OTP"]:::action
+    WeightComp -- "Variance > 15%" --> AnomalyFlag["⚠️ Auto-Flag Anomaly<br/>Admin Alert"]:::action
+    WeightComp -- "Variance <= 15%" --> VerifyOTP["25. Driver Inputs<br/>4-Digit OTP"]:::action
 
     AnomalyFlag --> VerifyOTP
-    VerifyOTP --> CaptureEvidence["26. Capture Scale Reading Photo + Browser GPS Tagging"]:::action
-    CaptureEvidence --> Settlement["27. Instant Digital Settlement Voucher (Cash / UPI Passbook)"]:::action
+    VerifyOTP --> CaptureEvidence["26. Scale Photo +<br/>GPS Tagging"]:::action
+    CaptureEvidence --> Settlement["27. Instant Settlement<br/>Digital Voucher"]:::action
 
-    Settlement --> CryptoEvent3["28. Merkle Event: 'RECYCLER_RECEIVED' Hash Chained"]:::crypto
-    Settlement --> LedgerCredited["29. Payout Recorded in Collector's Earnings Ledger"]:::action
+    Settlement --> CryptoEvent3["28. Merkle Event:<br/>RECYCLER_RECEIVED"]:::crypto
+    Settlement --> LedgerCredited["29. Payout Recorded<br/>in Ledger"]:::action
 
     %% PHASE 8: PROCESSING & EPR
-    Recycler --> SafeDismantling["30. Scientific Segregation, Dismantling & Material Recovery"]:::action
-    SafeDismantling --> EPRCertificate["31. Generate CPCB Green EPR Credit Certificate"]:::action
-    EPRCertificate --> FinalMerkle["32. Merkle Event: 'RECYCLED' Milestone Closed"]:::crypto
+    Recycler --> SafeDismantling["30. Scientific Dismantling<br/>& Material Recovery"]:::action
+    SafeDismantling --> EPRCertificate["31. Generate CPCB<br/>EPR Certificate"]:::action
+    EPRCertificate --> FinalMerkle["32. Merkle Event:<br/>RECYCLED Closed"]:::crypto
 
     %% PHASE 9: ADMIN & AUDIT
-    Admin --> CPCBCheck["33. Verify Recycler Against Official CPCB Master Registry"]:::action
-    Admin --> GeoMap["34. Monitor Live E-Waste Flow GIS Clusters & Heatmap"]:::action
-    Admin --> ResolveDisputes["35. Arbitrate Anomalies & Price/Weight Disputes"]:::action
-    Admin --> ExportML["36. Export Anonymized ML Training Datasets"]:::action
+    Admin --> CPCBCheck["33. Verify Recycler<br/>Against CPCB Master"]:::action
+    Admin --> GeoMap["34. Live E-Waste<br/>GIS Heatmap"]:::action
+    Admin --> ResolveDisputes["35. Arbitrate Anomalies<br/>& Disputes"]:::action
+    Admin --> ExportML["36. Export ML<br/>Training Datasets"]:::action
 ```
 
 ---
@@ -143,78 +143,78 @@ This diagram illustrates how client hardware APIs, React state providers, local 
 ```mermaid
 graph TB
     %% SUBGRAPHS
-    subgraph ClientHardware ["📱 Client Hardware & Native Browser APIs"]
-        Cam["📷 HTML5 MediaDevices Camera API"]
-        CanvasEngine["🎨 HTML5 Canvas 2D API<br/>(Luminance & Contrast Variance)"]
-        SpeechEngine["🗣️ Web Speech API<br/>(SpeechSynthesis & SpeechRecognition)"]
-        CryptoSubtle["🔐 Web Crypto API<br/>(window.crypto.subtle.digest 'SHA-256')"]
-        GeoAPI["📍 Geolocation API<br/>(navigator.geolocation High Accuracy)"]
-        StorageLocal["💾 LocalStorage<br/>(JWT Tokens & Auth Session Cache)"]
+    subgraph ClientHardware ["📱 Client Hardware & Native APIs"]
+        Cam["📷 HTML5 MediaDevices<br/>Camera API"]
+        CanvasEngine["🎨 HTML5 Canvas 2D API<br/>(Luminance/Blur Check)"]
+        SpeechEngine["🗣️ Web Speech API<br/>(SpeechSynthesis & STT)"]
+        CryptoSubtle["🔐 Web Crypto API<br/>(SHA-256 Merkle Digest)"]
+        GeoAPI["📍 Geolocation API<br/>(High Accuracy GPS)"]
+        StorageLocal["💾 LocalStorage<br/>(Auth Session Cache)"]
     end
 
-    subgraph ReactFrontend ["💻 React 18 Application Core (TypeScript + Vite)"]
+    subgraph ReactFrontend ["💻 React 18 Core (TypeScript + Vite)"]
         direction TB
         UIViews["🖥️ UI Views & Modals<br/>(Collector, Recycler, Admin)"]
-        StyleTailwind["🎨 Tailwind CSS 3.4.3<br/>(Dark-First Accessible Design)"]
-        IconSystem["✨ Lucide React Icons<br/>(Low-Literacy Universal Symbols)"]
-        MapSystem["🗺️ Leaflet 1.9.4 & React-Leaflet 4.2.1<br/>(Interactive GIS Maps)"]
+        StyleTailwind["🎨 Tailwind CSS 3.4.3<br/>(Accessible Dark Theme)"]
+        IconSystem["✨ Lucide React Icons<br/>(Vernacular Symbols)"]
+        MapSystem["🗺️ Leaflet 1.9.4<br/>(Interactive GIS Maps)"]
         
-        subgraph StateLayer ["🧠 React Context State Providers"]
-            AuthCtx["AuthContext<br/>(Session & Role Protection)"]
-            LangCtx["LanguageContext<br/>(hi / mr / en + 111KB Dictionary)"]
-            SyncCtx["SyncContext<br/>(Online/Offline Reconciliation)"]
-            ToastCtx["ToastContext<br/>(Micro-Feedback Engine)"]
+        subgraph StateLayer ["🧠 React State Providers"]
+            AuthCtx["AuthContext<br/>(Session & Role)"]
+            LangCtx["LanguageContext<br/>(hi / mr / en)"]
+            SyncCtx["SyncContext<br/>(Offline Reconciliation)"]
+            ToastCtx["ToastContext<br/>(Feedback Engine)"]
         end
 
         subgraph ServiceLayer ["⚙️ Core Service Layer"]
-            APIService["services/api.ts<br/>(Central Business Logic & PostgREST Client)"]
-            SpeechService["services/speechService.ts<br/>(Audio Queue & Hindi/Marathi Fallback)"]
-            ImageValidator["utils/imageValidator.ts<br/>(Deterministic Canvas Quality Rules)"]
-            GeoService["utils/geolocation.ts<br/>(GPS Coordinates + District Centroids)"]
+            APIService["services/api.ts<br/>(Business Logic & PostgREST)"]
+            SpeechService["services/speechService.ts<br/>(Vernacular Voice Queue)"]
+            ImageValidator["utils/imageValidator.ts<br/>(Canvas Quality Rules)"]
+            GeoService["utils/geolocation.ts<br/>(GPS Coordinates)"]
         end
     end
 
-    subgraph OfflineResilience ["💾 Offline Client Persistence (Dexie.js)"]
-        DexieDB["IndexedDB Engine<br/>(KabadiwalaConnectOfflineDB)"]
-        TblOfflineLots["offlineLots Store<br/>(clientLotId, approxWeight, syncStatus)"]
+    subgraph OfflineResilience ["💾 Offline Client Persistence"]
+        DexieDB["IndexedDB Engine<br/>(KabadiwalaOfflineDB)"]
+        TblOfflineLots["offlineLots Store<br/>(Pending Lot Queue)"]
         TblCachedPrices["cachedPrices Store<br/>(Mandi Benchmark Rates)"]
-        TblCachedRecyclers["cachedRecyclers Store<br/>(Authorized Facility Directory)"]
+        TblCachedRecyclers["cachedRecyclers Store<br/>(Recycler Directory)"]
     end
 
-    subgraph TransportGateway ["🌐 Network Transport & Gateway Layer"]
-        PostgRESTHTTP["📡 HTTPS / PostgREST RESTful API<br/>(Queries, Mutations, Aggregations)"]
-        RealtimeWSS["⚡ WSS WebSocket Realtime Channel<br/>(Supabase CDC Event Streams)"]
-        AudioCDN["🔊 Audio CDN / Streaming Endpoint<br/>(High-Definition Indic Audio Streams)"]
+    subgraph TransportGateway ["🌐 Network Transport & Gateway"]
+        PostgRESTHTTP["📡 HTTPS / PostgREST API<br/>(Queries & Mutations)"]
+        RealtimeWSS["⚡ WSS WebSocket Channel<br/>(Realtime Event Stream)"]
+        AudioCDN["🔊 Audio CDN / Streaming<br/>(Indic Audio Files)"]
     end
 
-    subgraph SupabaseCloud ["☁️ Cloud Backend Infrastructure (Supabase PostgreSQL 15)"]
+    subgraph SupabaseCloud ["☁️ Cloud Backend Infrastructure"]
         direction TB
-        SupaAuth["Supabase Auth Engine<br/>(JWT Claims & Session Engine)"]
-        SupaRealtimeEngine["Realtime Replication Engine<br/>(PostgreSQL WAL to WebSocket)"]
+        SupaAuth["Supabase Auth Engine<br/>(JWT Claims & Session)"]
+        SupaRealtimeEngine["Realtime Engine<br/>(WAL to WebSocket)"]
         
         subgraph PostgresTables ["🗄️ Relational PostgreSQL Schemas"]
-            U_Table["users, collectors, recyclers"]
-            L_Table["lots (E-Waste scrap listings)"]
-            O_Table["offers (Recycler dynamic quotes)"]
-            P_Table["pickups & handovers (Scale verification)"]
-            T_Table["traceability_logs (Merkle Audit Chain)"]
-            M_Table["prices & price_history_log (Mandi rates)"]
-            A_Table["anomalies & disputes (Fraud monitor)"]
-            C_Table["cpcb_master_registry (Gazette compliance)"]
+            U_Table["public.users,<br/>collectors, recyclers"]
+            L_Table["public.lots<br/>(Scrap listings)"]
+            O_Table["public.offers<br/>(Dynamic quotes)"]
+            P_Table["public.pickups,<br/>handovers (Scales)"]
+            T_Table["traceability_logs<br/>(Merkle Chain)"]
+            M_Table["prices,<br/>price_history_log"]
+            A_Table["anomalies,<br/>disputes (Fraud)"]
+            C_Table["cpcb_master_registry<br/>(Compliance)"]
         end
     end
 
     %% HARDWARE INTERACTIONS
     Cam -->|"Raw Video Stream"| CanvasEngine
     CanvasEngine -->|"Pixel Data Metrics"| ImageValidator
-    ImageValidator -->|"Validated & Compressed Image"| UIViews
+    ImageValidator -->|"Validated Image"| UIViews
     
-    SpeechEngine <-->|"Vernacular Voice I/O"| SpeechService
-    SpeechService -->|"Audio Stream Fallback"| AudioCDN
-    SpeechService <-->|"Speech Events & Controls"| UIViews
+    SpeechEngine <-->|"Vernacular Voice"| SpeechService
+    SpeechService -->|"Audio Streaming"| AudioCDN
+    SpeechService <-->|"Speech Events"| UIViews
 
     CryptoSubtle -->|"Digest Computation"| APIService
-    GeoAPI -->|"GPS Coordinates (Lat/Lng)"| GeoService
+    GeoAPI -->|"GPS Lat/Lng"| GeoService
     GeoService -->|"Validated Location"| APIService
 
     %% UI & CONTEXT
@@ -225,17 +225,17 @@ graph TB
     UIViews --- MapSystem
 
     %% OFFLINE PERSISTENCE FLOW
-    ServiceLayer <-->|"Read/Write Local State"| DexieDB
+    ServiceLayer <-->|"Read/Write"| DexieDB
     DexieDB --- TblOfflineLots
     DexieDB --- TblCachedPrices
     DexieDB --- TblCachedRecyclers
 
-    SyncCtx -->|"Network State Monitor"| APIService
-    APIService -->|"Batch Flush Pending Lots"| PostgRESTHTTP
+    SyncCtx -->|"Network Monitor"| APIService
+    APIService -->|"Batch Flush"| PostgRESTHTTP
 
     %% CLOUD INTERACTIONS
-    APIService <-->|"HTTPS PostgREST Calls"| PostgRESTHTTP
-    APIService <-->|"Realtime Event Subscriptions"| RealtimeWSS
+    APIService <-->|"HTTPS Calls"| PostgRESTHTTP
+    APIService <-->|"WebSocket Subscriptions"| RealtimeWSS
     StorageLocal <-->|"Token Verification"| SupaAuth
 
     PostgRESTHTTP <--> PostgresTables
@@ -257,59 +257,59 @@ graph TD
     classDef backendTier fill:#14532d,stroke:#4ade80,stroke-width:2px,color:#fff;
     classDef complianceTier fill:#7c2d12,stroke:#fb923c,stroke-width:2px,color:#fff;
 
-    subgraph Tier1 ["TIER 1: PRESENTATION & CLIENT APPLICATION TIER"]
+    subgraph Tier1 ["TIER 1: PRESENTATION & CLIENT TIER"]
         direction TB
-        Devices["📱 End-User Devices: Low-end Android Smartphones, Tablets, Desktop Web Browsers"]:::clientTier
+        Devices["📱 End-User Devices:<br/>Android Smartphones, Tablets, Desktop Web Browsers"]:::clientTier
         
-        subgraph Portals ["Role-Guarded Dashboards & Responsive Shells"]
-            CollectorPortal["👤 Collector Portal<br/>• Voice & Visual Scrap Listing<br/>• Live Mandi Benchmark Board<br/>• Explainable Recycler Comparison<br/>• Earnings Passbook Ledger<br/>• Occupational Safety Center"]:::clientTier
-            RecyclerPortal["🏭 Recycler Portal<br/>• Incoming Lots Feed<br/>• Dynamic Quote Submission<br/>• Logistics & Driver Dispatch<br/>• Digital Scale & OTP Handover<br/>• Inventory Processing & Yield"]:::clientTier
-            AdminPortal["🛡️ Admin & Regulatory Portal<br/>• CPCB Recycler Verification<br/>• GIS Scrap Heatmaps & Clusters<br/>• Weight & Price Anomaly Monitor<br/>• Dispute Arbitration<br/>• ML Dataset Exporter"]:::clientTier
+        subgraph Portals ["Role-Guarded Dashboards & Shells"]
+            CollectorPortal["👤 Collector Portal<br/>• Voice & Visual Scrap Listing<br/>• Live Mandi Rate Board<br/>• Recycler Comparison<br/>• Earnings Passbook Ledger"]:::clientTier
+            RecyclerPortal["🏭 Recycler Portal<br/>• Incoming Lots Feed<br/>• Dynamic Quote Submission<br/>• Logistics Driver Dispatch<br/>• Digital Scale & OTP Handover"]:::clientTier
+            AdminPortal["🛡️ Admin & Regulatory Portal<br/>• CPCB Recycler Verification<br/>• GIS Scrap Heatmaps<br/>• Anomaly & Dispute Monitor<br/>• ML Dataset Exporter"]:::clientTier
         end
     end
 
-    subgraph Tier2 ["TIER 2: CLIENT LOGIC, MULTIMODAL & UTILITIES ENGINE"]
+    subgraph Tier2 ["TIER 2: CLIENT LOGIC & UTILITIES TIER"]
         direction TB
-        StateEngine["🧠 State Orchestration: AuthContext, LanguageContext, SyncContext, ToastContext"]:::logicTier
-        SpeechSubsystem["🎙️ Multimodal Voice Engine: SpeechService (Hindi/Marathi TTS, STT, Devanagari Normalizer)"]:::logicTier
-        VisionSubsystem["📷 Vision & Compression Engine: ImageValidator (Luminance & Edge Variance) + ImageCompressor (&lt;500KB)"]:::logicTier
-        GeoSubsystem["📍 Geolocation Engine: Geolocation Provider (GPS Accuracy + Regional Centroids)"]:::logicTier
-        CryptoSubsystem["🔐 Cryptographic Engine: SHA-256 Web Crypto Merkle Chain Generator"]:::logicTier
+        StateEngine["🧠 State Orchestration:<br/>AuthContext, LanguageContext, SyncContext"]:::logicTier
+        SpeechSubsystem["🎙️ Multimodal Voice Engine:<br/>SpeechService (Hindi/Marathi TTS & STT)"]:::logicTier
+        VisionSubsystem["📷 Vision & Compression Engine:<br/>ImageValidator & ImageCompressor (< 500KB)"]:::logicTier
+        GeoSubsystem["📍 Geolocation Engine:<br/>GPS Accuracy + Regional Centroids"]:::logicTier
+        CryptoSubsystem["🔐 Cryptographic Engine:<br/>SHA-256 Merkle Chain Generator"]:::logicTier
     end
 
-    subgraph Tier3 ["TIER 3: EDGE RESILIENCE & OFFLINE PERSISTENCE TIER"]
+    subgraph Tier3 ["TIER 3: EDGE RESILIENCE & OFFLINE TIER"]
         direction TB
         DexieEngine["💾 Dexie.js (IndexedDB Native Wrapper)"]:::storageTier
-        OfflineQueue["📤 Offline Sync Queue with ClientLotID Idempotency Keys"]:::storageTier
-        LocalCache["📦 Edge Cache: Mandi Benchmark Rates, Verified Recyclers Directory, User Profile"]:::storageTier
+        OfflineQueue["📤 Offline Sync Queue with Idempotency Keys"]:::storageTier
+        LocalCache["📦 Edge Cache: Mandi Rates & Recycler Directory"]:::storageTier
     end
 
     subgraph Tier4 ["TIER 4: SECURE GATEWAY & TRANSPORT TIER"]
         direction TB
-        SupabaseClient["⚡ @supabase/supabase-js Client Gateway"]:::apiTier
-        RESTChannel["📡 HTTP/2 HTTPS RESTful API (PostgREST Automated Endpoints)"]:::apiTier
-        RealtimeChannel["⚡ WSS WebSocket Pub/Sub (PostgreSQL CDC / Realtime WAL Replication)"]:::apiTier
+        SupabaseClient["⚡ @supabase/supabase-js Gateway"]:::apiTier
+        RESTChannel["📡 HTTP RESTful API (PostgREST Endpoints)"]:::apiTier
+        RealtimeChannel["⚡ WSS WebSocket Pub/Sub (Realtime Stream)"]:::apiTier
     end
 
-    subgraph Tier5 ["TIER 5: CLOUD DATABASE & APPLICATION BACKEND TIER"]
+    subgraph Tier5 ["TIER 5: CLOUD DATABASE & BACKEND TIER"]
         direction TB
-        subgraph PostgresDB ["🐘 Supabase Cloud PostgreSQL 15 Engine"]
-            TablesCore["📋 Identity & Profiles:<br/>• public.users<br/>• public.collectors<br/>• public.recyclers"]:::backendTier
-            TablesLots["📦 Transaction Core:<br/>• public.lots<br/>• public.offers<br/>• public.pickups<br/>• public.handovers"]:::backendTier
-            TablesAudit["⛓️ Audit & Financial Ledger:<br/>• public.traceability_logs (Merkle Chain)<br/>• public.payments (Instant Settlement Ledger)"]:::backendTier
-            TablesIntel["📊 Market Intelligence:<br/>• public.prices<br/>• public.price_history_log"]:::backendTier
-            TablesFraud["🚨 Anti-Fraud & Compliance:<br/>• public.anomalies<br/>• public.disputes<br/>• public.ml_training_samples"]:::backendTier
+        subgraph PostgresDB ["🐘 Supabase PostgreSQL 15 Engine"]
+            TablesCore["📋 Identity & Profiles:<br/>users, collectors, recyclers"]:::backendTier
+            TablesLots["📦 Transaction Core:<br/>lots, offers, pickups, handovers"]:::backendTier
+            TablesAudit["⛓️ Audit & Financial Ledger:<br/>traceability_logs, payments"]:::backendTier
+            TablesIntel["📊 Market Intelligence:<br/>prices, price_history_log"]:::backendTier
+            TablesFraud["🚨 Anti-Fraud & Compliance:<br/>anomalies, disputes, ml_samples"]:::backendTier
         end
-        RealtimePub["📢 Realtime Publication (supabase_realtime enabled on 8 critical tables)"]:::backendTier
-        DBIndexes["⚡ B-Tree Indexes (lot_id, collector_id, district, status, created_at)"]:::backendTier
+        RealtimePub["📢 Realtime Publication (WAL Stream Enabled)"]:::backendTier
+        DBIndexes["⚡ B-Tree Indexes (lot_id, collector_id, district, status)"]:::backendTier
     end
 
-    subgraph Tier6 ["TIER 6: REGULATORY & EXTERNAL ECOSYSTEM INTEGRATION"]
+    subgraph Tier6 ["TIER 6: REGULATORY & EXTERNAL ECOSYSTEM"]
         direction TB
-        CPCBRegistry["🏛️ CPCB Master Registry (Official Gazette Compliance Verification)"]:::complianceTier
-        EPRSystem["📜 EPR Green Credit & Certificate Engine (Extended Producer Responsibility)"]:::complianceTier
-        MandiBenchmark["📈 Mandi Spot Market Benchmark Feed (Fair Scrap Pricing)"]:::complianceTier
-        GISMappingServer["🗺️ OpenStreetMap (OSM) Tile CDN & Routing Engine"]:::complianceTier
+        CPCBRegistry["🏛️ CPCB Master Registry (Official Compliance)"]:::complianceTier
+        EPRSystem["📜 EPR Green Credit & Certificate Engine"]:::complianceTier
+        MandiBenchmark["📈 Mandi Spot Market Benchmark Feed"]:::complianceTier
+        GISMappingServer["🗺️ OpenStreetMap (OSM) Tile CDN"]:::complianceTier
     end
 
     %% TIER CONNECTIONS
