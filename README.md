@@ -259,57 +259,59 @@ graph TD
 
     subgraph Tier1 ["TIER 1: PRESENTATION & CLIENT TIER"]
         direction TB
-        Devices["📱 End-User Devices:<br/>Android Smartphones, Tablets, Desktop Web Browsers"]:::clientTier
+        Devices["📱 End-User Devices<br/>(Android, Web Browsers)"]:::clientTier
         
-        subgraph Portals ["Role-Guarded Dashboards & Shells"]
-            CollectorPortal["👤 Collector Portal<br/>• Voice & Visual Scrap Listing<br/>• Live Mandi Rate Board<br/>• Recycler Comparison<br/>• Earnings Passbook Ledger"]:::clientTier
-            RecyclerPortal["🏭 Recycler Portal<br/>• Incoming Lots Feed<br/>• Dynamic Quote Submission<br/>• Logistics Driver Dispatch<br/>• Digital Scale & OTP Handover"]:::clientTier
-            AdminPortal["🛡️ Admin & Regulatory Portal<br/>• CPCB Recycler Verification<br/>• GIS Scrap Heatmaps<br/>• Anomaly & Dispute Monitor<br/>• ML Dataset Exporter"]:::clientTier
+        subgraph Portals ["Role-Guarded Dashboards"]
+            direction TB
+            CollectorPortal["👤 Collector Portal<br/>• Voice/Visual Listing<br/>• Mandi Spot Rates<br/>• Recycler Comparison<br/>• Earnings Ledger"]:::clientTier
+            RecyclerPortal["🏭 Recycler Portal<br/>• Incoming Lots Feed<br/>• Dynamic Bidding<br/>• Driver Dispatch<br/>• Scale & OTP Handover"]:::clientTier
+            AdminPortal["🛡️ Admin Portal<br/>• CPCB Master Check<br/>• GIS Scrap Heatmaps<br/>• Dispute Monitor<br/>• ML Dataset Exporter"]:::clientTier
         end
     end
 
     subgraph Tier2 ["TIER 2: CLIENT LOGIC & UTILITIES TIER"]
         direction TB
-        StateEngine["🧠 State Orchestration:<br/>AuthContext, LanguageContext, SyncContext"]:::logicTier
-        SpeechSubsystem["🎙️ Multimodal Voice Engine:<br/>SpeechService (Hindi/Marathi TTS & STT)"]:::logicTier
-        VisionSubsystem["📷 Vision & Compression Engine:<br/>ImageValidator & ImageCompressor (< 500KB)"]:::logicTier
-        GeoSubsystem["📍 Geolocation Engine:<br/>GPS Accuracy + Regional Centroids"]:::logicTier
-        CryptoSubsystem["🔐 Cryptographic Engine:<br/>SHA-256 Merkle Chain Generator"]:::logicTier
+        StateEngine["🧠 State Layer<br/>• AuthContext<br/>• LanguageContext<br/>• SyncContext"]:::logicTier
+        SpeechSubsystem["🎙️ Voice Engine<br/>• SpeechService<br/>• Hindi/Marathi TTS/STT"]:::logicTier
+        VisionSubsystem["📷 Vision Engine<br/>• ImageValidator<br/>• ImageCompressor"]:::logicTier
+        GeoSubsystem["📍 Geolocation<br/>• High-Accuracy GPS<br/>• Regional Centroids"]:::logicTier
+        CryptoSubsystem["🔐 Crypto Engine<br/>• SHA-256 Merkle<br/>• Audit Ledger"]:::logicTier
     end
 
     subgraph Tier3 ["TIER 3: EDGE RESILIENCE & OFFLINE TIER"]
         direction TB
-        DexieEngine["💾 Dexie.js (IndexedDB Native Wrapper)"]:::storageTier
-        OfflineQueue["📤 Offline Sync Queue with Idempotency Keys"]:::storageTier
-        LocalCache["📦 Edge Cache: Mandi Rates & Recycler Directory"]:::storageTier
+        DexieEngine["💾 Dexie.js Engine<br/>(IndexedDB Native)"]:::storageTier
+        OfflineQueue["📤 Sync Queue<br/>(Client ID Keys)"]:::storageTier
+        LocalCache["📦 Edge Cache<br/>(Mandi Rates & Directory)"]:::storageTier
     end
 
     subgraph Tier4 ["TIER 4: SECURE GATEWAY & TRANSPORT TIER"]
         direction TB
-        SupabaseClient["⚡ @supabase/supabase-js Gateway"]:::apiTier
-        RESTChannel["📡 HTTP RESTful API (PostgREST Endpoints)"]:::apiTier
-        RealtimeChannel["⚡ WSS WebSocket Pub/Sub (Realtime Stream)"]:::apiTier
+        SupabaseClient["⚡ Supabase Client Gateway"]:::apiTier
+        RESTChannel["📡 HTTP REST API<br/>(PostgREST Endpoints)"]:::apiTier
+        RealtimeChannel["⚡ WSS WebSocket Pub/Sub<br/>(Realtime Stream)"]:::apiTier
     end
 
     subgraph Tier5 ["TIER 5: CLOUD DATABASE & BACKEND TIER"]
         direction TB
         subgraph PostgresDB ["🐘 Supabase PostgreSQL 15 Engine"]
-            TablesCore["📋 Identity & Profiles:<br/>users, collectors, recyclers"]:::backendTier
-            TablesLots["📦 Transaction Core:<br/>lots, offers, pickups, handovers"]:::backendTier
-            TablesAudit["⛓️ Audit & Financial Ledger:<br/>traceability_logs, payments"]:::backendTier
-            TablesIntel["📊 Market Intelligence:<br/>prices, price_history_log"]:::backendTier
-            TablesFraud["🚨 Anti-Fraud & Compliance:<br/>anomalies, disputes, ml_samples"]:::backendTier
+            direction TB
+            TablesCore["📋 Identity & Profiles<br/>(users, collectors, recyclers)"]:::backendTier
+            TablesLots["📦 Transaction Core<br/>(lots, offers, pickups, handovers)"]:::backendTier
+            TablesAudit["⛓️ Audit & Financial Ledger<br/>(traceability_logs, payments)"]:::backendTier
+            TablesIntel["📊 Market Intelligence<br/>(prices, price_history_log)"]:::backendTier
+            TablesFraud["🚨 Anti-Fraud & Compliance<br/>(anomalies, disputes, ml_samples)"]:::backendTier
         end
-        RealtimePub["📢 Realtime Publication (WAL Stream Enabled)"]:::backendTier
-        DBIndexes["⚡ B-Tree Indexes (lot_id, collector_id, district, status)"]:::backendTier
+        RealtimePub["📢 Realtime Publication<br/>(WAL Stream Enabled)"]:::backendTier
+        DBIndexes["⚡ B-Tree Indexes<br/>(lot_id, collector_id, district)"]:::backendTier
     end
 
     subgraph Tier6 ["TIER 6: REGULATORY & EXTERNAL ECOSYSTEM"]
         direction TB
-        CPCBRegistry["🏛️ CPCB Master Registry (Official Compliance)"]:::complianceTier
-        EPRSystem["📜 EPR Green Credit & Certificate Engine"]:::complianceTier
-        MandiBenchmark["📈 Mandi Spot Market Benchmark Feed"]:::complianceTier
-        GISMappingServer["🗺️ OpenStreetMap (OSM) Tile CDN"]:::complianceTier
+        CPCBRegistry["🏛️ CPCB Registry<br/>(Official Gazette Check)"]:::complianceTier
+        EPRSystem["📜 EPR Green Credit<br/>(Certificate Engine)"]:::complianceTier
+        MandiBenchmark["📈 Mandi Feed<br/>(Spot Market Benchmark)"]:::complianceTier
+        GISMappingServer["🗺️ OpenStreetMap CDN<br/>(Tile Routing Engine)"]:::complianceTier
     end
 
     %% TIER CONNECTIONS
@@ -317,7 +319,7 @@ graph TD
     Portals <--> Tier2
     Tier2 <--> Tier3
     Tier2 <--> Tier4
-    Tier3 <-->|"Auto Batch Sync on Reconnect"| Tier4
+    Tier3 <-->|"Auto Batch Sync"| Tier4
     Tier4 <--> Tier5
     Tier5 <--> Tier6
 ```
