@@ -28,6 +28,9 @@ PRIORITY = {'train': 0, 'valid': 1, 'test': 2}
 # Visually reviewed on 2026-09-30: broken CRT tube labelled Flat-Panel-TV.
 # Quarantine, rather than silently relabel an ambiguous damaged device.
 QUARANTINED_HASHES = {'00780ad4198c088e1cb8199b381df08c7ca8b39dd2a0d1213ee54e749cd7e3a7'}
+# User-confirmed tablet failure. Reserved for regression, NEVER training.
+# Because policy was tuned after seeing it, it is not an untouched benchmark.
+FIELD_REGRESSION_HASHES = {'d5bcfe4281886d20214efb331bce172ba4167233843a15b1f2b8b36151188907'}
 
 def parse_label(line, classes):
     values = [float(x) for x in line.split()]
@@ -118,6 +121,9 @@ def prepare(zip_path, output, legacy):
                 continue
             raw = archive.read(name)
             raw_hash = hashlib.sha256(raw).hexdigest()
+            if raw_hash in FIELD_REGRESSION_HASHES:
+                report['skipped']['reserved_field_regression'] += 1
+                continue
             if raw_hash in QUARANTINED_HASHES:
                 report['skipped']['visual_label_quarantine'] += 1
                 continue

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import CloudVisionAdvice from '../../components/CloudVisionAdvice';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Camera, 
@@ -28,6 +29,7 @@ import { UrbanMiningVisualizer } from '../../components/common/UrbanMiningVisual
 import { api } from '../../services/api';
 import { MaterialCategory, LotCondition, SourceType } from '../../types';
 import { categoryLabels } from '../../i18n/translations';
+import { deviceDisplayLabel, isPhoneOrTablet } from '../../services/vision/devicePolicy';
 import { compressImageForMobile } from '../../utils/imageCompressor';
 import { validateImageQuality, ImageQualityReport } from '../../utils/imageValidator';
 import { 
@@ -1312,6 +1314,27 @@ export const AddLotPage: React.FC = () => {
             </div>
           )}
 
+          {photos[activePhotoIndex]?.visionResult?.deviceSuggestion && (() => {
+            const suggestion = photos[activePhotoIndex].visionResult!.deviceSuggestion!;
+            return <section data-testid="device-suggestion" className="rounded-2xl border border-teal-200 bg-teal-50 p-4 text-slate-800 space-y-2" aria-live="polite">
+              <h3 className="font-bold text-sm">{language === 'hi' ? 'प्रायोगिक उपकरण पहचान • पुष्टि आवश्यक' : language === 'mr' ? 'प्रायोगिक उपकरण ओळख • पुष्टी आवश्यक' : 'Experimental device recognition • confirmation required'}</h3>
+              {suggestion.objects.length > 0 ? <ul className="space-y-1">
+                {suggestion.objects.slice(0,3).map((object,index) => <li key={`${object.name}-${index}`} className="text-sm">
+                  {language === 'hi' ? 'संभावित' : language === 'mr' ? 'संभाव्य' : 'Possible'} {deviceDisplayLabel(object.name,language)}
+                  {!isPhoneOrTablet(object.name) && <> — {Math.round(object.score*100)}% {language === 'hi' ? 'मॉडल स्कोर' : language === 'mr' ? 'मॉडेल स्कोर' : 'model score'}</>}
+                </li>)}
+              </ul> : <p className="text-sm">{suggestion.status === 'UNAVAILABLE'
+                ? (language === 'hi' ? 'उपकरण मॉडल उपलब्ध नहीं है। सामग्री खुद चुन सकते हैं।' : language === 'mr' ? 'उपकरण मॉडेल उपलब्ध नाही. साहित्य स्वतः निवडा.' : 'Device model unavailable. Manual material selection still works.')
+                : (language === 'hi' ? 'उपकरण की पहचान स्पष्ट नहीं है। पूरा सामान दिखाकर दोबारा फोटो लें।' : language === 'mr' ? 'उपकरण स्पष्ट ओळखले नाही. पूर्ण वस्तूचा फोटो घ्या.' : 'Device not clearly identified. Photograph the whole item from another angle.')}</p>}
+              <p className="text-xs">{language === 'hi' ? 'यह AI सुझाव है, सत्यापित पहचान नहीं। स्कोर accuracy नहीं है। कीमत के लिए सामग्री की अलग पुष्टि करें।' : language === 'mr' ? 'हा AI अंदाज आहे, पडताळलेली ओळख नाही. स्कोर म्हणजे अचूकता नाही. किमतीसाठी साहित्य वेगळे निश्चित करा.' : 'AI suggestion, not verified identity. Score is not accuracy. Confirm the material separately for pricing.'}</p>
+              {suggestion.clarification === 'PHONE_OR_TABLET' && <p data-testid="phone-tablet-clarification" className="text-xs font-semibold">
+                {language === 'hi' ? 'यह मॉडल फोन और टैबलेट में भरोसेमंद अंतर नहीं कर सकता। पीछे की तरफ और पूरे उपकरण की फोटो लें; पहचान खुद पुष्टि करें।' : language === 'mr' ? 'हे मॉडेल फोन आणि टॅबलेटमध्ये विश्वासार्ह फरक करू शकत नाही. मागील बाजूचा व पूर्ण उपकरणाचा फोटो घ्या; ओळख स्वतः निश्चित करा.' : 'This model cannot reliably distinguish phones from tablets. Photograph the back and the whole device; confirm its identity manually.'}
+              </p>}
+              {suggestion.status === 'UNCERTAIN' && <p className="text-xs font-semibold">{language === 'hi' ? 'अनिश्चित परिणाम — कृपया अनुमान को सही मानकर आगे न बढ़ें।' : language === 'mr' ? 'अनिश्चित निकाल — अंदाज योग्य आहे असे समजू नका.' : 'Uncertain result — do not treat this as a confirmed category.'}</p>}
+            </section>;
+          })()}
+
+          {photos[activePhotoIndex]?.dataUrl && <CloudVisionAdvice key={`${photos[activePhotoIndex].id}-${language}`} image={photos[activePhotoIndex].dataUrl} language={language} />}
           {/* Transparent Real YOLOv8-Nano Vision Suggestion Box (Restored Option 1 UI/UX) */}
           {(() => {
             const currentPhoto = photos[activePhotoIndex];

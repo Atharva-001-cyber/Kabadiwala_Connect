@@ -5,9 +5,18 @@ from pathlib import Path
 import zipfile
 from PIL import Image
 from prepare_device_dataset import parse_label, safe_members, prepare, SOURCE_CLASSES
-from train_device_model import label_digest
+from train_device_model import label_digest, training_profile
 
 class DevicePipelineTests(unittest.TestCase):
+    def test_training_profiles_preserve_baseline(self):
+        self.assertEqual(training_profile('baseline')['degrees'], 15)
+        self.assertEqual(training_profile('field-rotation')['degrees'], 90)
+        changed = training_profile('baseline')
+        changed['degrees'] = 0
+        self.assertEqual(training_profile('baseline')['degrees'], 15)
+        with self.assertRaises(ValueError):
+            training_profile('unknown')
+
     def test_label_hash_portable_but_detects_edits(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'label.txt'

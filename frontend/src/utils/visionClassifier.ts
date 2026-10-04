@@ -1,5 +1,6 @@
 /** Real local model predictions only. Model scores are not accuracy guarantees. */
 import { MaterialCategory } from '../types';
+import { DeviceSuggestion, needsMaterialConfirmation } from '../services/vision/devicePolicy';
 import { runEwasteYoloInference, getYoloSession, YOLO_CLASSES, YoloInferenceResult } from '../services/vision/ewasteOnnx';
 
 export type NonEWasteType = 
@@ -22,6 +23,7 @@ export interface DetectedObjectBox {
 }
 
 export interface VisionAnalysisResult {
+  deviceSuggestion?: DeviceSuggestion;
   candidateCategory?: MaterialCategory;
   aiEngine?: 'GEMINI_CLOUD' | 'YOLO_EDGE' | 'MOBILENET_YOLO_DUAL';
   isNonEWaste: boolean;
@@ -136,7 +138,30 @@ export async function analyzeScrapVision(source: File | Blob | string): Promise<
       img.onerror = () => { clearTimeout(timer); reject(new Error('Image could not be decoded')); };
       img.src = url;
     });
-    return toVisionAnalysis(await runEwasteYoloInference(img));
+    const result = toVisionAnalysis(await runEwasteYoloInference(img));
+    // Optional second detector: failure must not break legacy component capture.
+    try {
+      const { analyzeDevice } = await import('../services/vision/deviceOnnx');
+      const device = await analyzeDevice(img);
+      result.deviceSuggestion = device;
+      if (needsMaterialConfirmation(device, result.category)) {
+        result.category = null;
+        result.candidateCategory = undefined;
+        result.detectedObjects = [];
+        result.subCategory = undefined;
+        result.cpcbCode = undefined;
+        result.isAmbiguous = true;
+        result.status = 'LOW_CONFIDENCE';
+        result.message = {
+          en: 'Possible complete device or conflicting predictions. Device identity does not determine material or price; confirm the material manually.',
+          hi: 'पूरा उपकरण या अलग-अलग AI सुझाव मिले हैं। उपकरण का नाम सामग्री या कीमत तय नहीं करता; सामग्री खुद पुष्टि करें।',
+          mr: 'पूर्ण उपकरण किंवा वेगवेगळे AI अंदाज आहेत. उपकरणाचे नाव साहित्य किंवा किंमत ठरवत नाही; साहित्य स्वतः निश्चित करा.'
+        };
+      }
+    } catch {
+      result.deviceSuggestion = {status:'UNAVAILABLE',objects:[],requiresConfirmation:true};
+    }
+    return result;
   } catch {
     return toVisionAnalysis({
       status: 'ERROR', primaryCategory: null, confidence: 0, isAmbiguous: true,

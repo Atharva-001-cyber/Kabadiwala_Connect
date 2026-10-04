@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "training_approved": false,
+  "reviewer": "assistant visual review",
+  "notes": "Candidate correction only; second review and source/session audit required. Whole-motor box replaces housing-only box. Never apply to deployed weights.",
+  "corrections": [
+    {
+      "image": "train/images/motor_rf_train_001_6aced16e.jpg",
+      "sha256": "6aced16ed6a8141acb5502e8328eeaa9db75edbbfdfa1d7d5520e6b1c31a8a40",
+      "width": 640,
+      "height": 640,
+      "class_id": 5,
+      "box_xyxy": [34, 190, 548, 621],
+      "reason": "Original box covers left end cover only. Proposed box covers visible motor assembly; approximate manual boundary.",
+      "source": "https://universe.roboflow.com/project-3swgf/electric-motor-housing1/dataset/1",
+      "source_declared_license": "CC BY 4.0"
+    }
+  ],
+  "held_for_review": [
+    {
+      "image": "train/images/motor_rf_train_002_67bba2ec.jpg",
+      "reason": "Original box covers yellow end cover only. Multi-assembly scene; all motor-like assemblies need careful annotation before reuse. Do not label just foreground and silently treat the rest as background."
+    }
+  ]
+}

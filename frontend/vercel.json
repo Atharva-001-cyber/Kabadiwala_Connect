@@ -1,8 +1,10 @@
 {
   "rewrites": [
+    { "source": "/api/vision", "destination": "/api/vision" },
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": { "api/vision.mjs": { "maxDuration": 40 } }
 }
