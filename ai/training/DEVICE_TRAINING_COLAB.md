@@ -54,8 +54,29 @@ files.download('/content/device-candidate-v1-results.zip')
 ```
 
 Send the downloaded results ZIP's local path back. The runner stores dependency
-versions, best/last weights, per-class test metrics, a browser-shaped ONNX candidate
+versions, best/last weights, per-class evaluation metrics, a browser-shaped ONNX candidate
 and audit provenance. It does NOT copy any file into frontend/public/models.
+
+## Updated runner: next experiment
+
+The small `device-training-runner-update.zip` contains updated scripts only, not
+new images or trained weights. After extracting the existing full kit, replace
+its two Python scripts with these versions before starting a new run. The original
+full training ZIP has not been rebuilt; using it alone uses the old runner.
+
+Use a new output folder and add `--profile field-rotation --evaluation-split val`
+to the training command. Keep the baseline run for comparison. This profile uses
+stronger rotation and modest scale/lighting augmentation at the same browser-
+compatible 416 input size. It is an experiment, not a promised accuracy improvement.
+Compare class-level validation results, including regressions in other classes.
+The updated runner defaults to validation evaluation, not test. Only after model
+and settings are frozen should `--evaluation-split test` be used for final reporting.
+The existing test set was already evaluated for v1, so it is not a fresh field test.
+
+The nine supplied keyboard screenshots remain diagnostic-only while provenance
+and annotations are unresolved. This experiment can use the existing prepared
+dataset, but cannot fix the lack of diverse tablet/HDD examples by augmentation
+alone. Do not claim it trains on the new screenshots.
 
 ## Scope
 

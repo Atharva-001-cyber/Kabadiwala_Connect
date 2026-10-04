@@ -1,7 +1,7 @@
 """Train/evaluate a candidate device detector; NEVER deploy or overwrite app weights.
 
-GPU runner for Colab or a CUDA workstation. Full test split is evaluated once
-after validation-based checkpoint selection. It is never used for early stopping.
+GPU runner for Colab or a CUDA workstation. Experiments evaluate validation by
+default. Explicit test evaluation is reserved for the final frozen candidate.
 """
 import argparse
 import hashlib
@@ -13,6 +13,20 @@ import subprocess
 import sys
 
 from prepare_device_dataset import NAMES, parse_label
+
+def training_profile(name):
+    # Opt-in experiment, not an accuracy claim. Keep export/browser size unchanged.
+    profiles = {
+        'baseline': {'degrees':15, 'translate':0.1, 'scale':0.4, 'fliplr':0.5,
+                     'hsv_h':0.015, 'hsv_s':0.4, 'hsv_v':0.4,
+                     'mosaic':0.5, 'close_mosaic':10, 'mixup':0.0},
+        'field-rotation': {'degrees':90, 'translate':0.15, 'scale':0.5, 'fliplr':0.5,
+                           'hsv_h':0.015, 'hsv_s':0.4, 'hsv_v':0.5,
+                           'mosaic':0.5, 'close_mosaic':10, 'mixup':0.0},
+    }
+    if name not in profiles:
+        raise ValueError('Unknown training profile')
+    return dict(profiles[name])
 
 def label_digest(path):
     # The preparation manifest hashes canonical UTF-8/LF text. Windows writes
@@ -55,6 +69,9 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--epochs', type=int, default=80)
     parser.add_argument('--batch', type=int, default=16)
+    parser.add_argument('--profile', choices=['baseline','field-rotation'], default='baseline')
+    parser.add_argument('--evaluation-split', choices=['val','test'], default='val',
+                        help='Compare experiments on val; reserve test for a frozen final candidate')
     parser.add_argument('--allow-cpu', action='store_true', help='Explicit opt-in to slow CPU training')
     args = parser.parse_args()
     if args.output.exists():
@@ -86,13 +103,11 @@ def main():
                 seed=42, deterministic=True, optimizer='AdamW', lr0=0.001,
                 project=str(output), name='training', exist_ok=False,
                 cache=False, save=True, save_period=10, plots=True,
-                degrees=15, translate=0.1, scale=0.4, fliplr=0.5,
-                hsv_h=0.015, hsv_s=0.4, hsv_v=0.4,
-                mosaic=0.5, close_mosaic=10, mixup=0.0)
+                **training_profile(args.profile))
     best = Path(model.trainer.best)
     candidate = YOLO(str(best))
-    evaluation = candidate.val(data=str(config_path), split='test', imgsz=416,
-                               device=device, project=str(output), name='test', plots=True)
+    evaluation = candidate.val(data=str(config_path), split=args.evaluation_split, imgsz=416,
+                               device=device, project=str(output), name='evaluation', plots=True)
     per_class = []
     for index, class_id in enumerate(evaluation.box.ap_class_index):
         precision, recall, ap50, ap = evaluation.box.class_result(index)
@@ -109,6 +124,10 @@ def main():
     if input_shape != [1,3,416,416] or output_shape[1] != 4+len(NAMES):
         raise RuntimeError(f'Unexpected ONNX layout: {input_shape}, {output_shape}')
     report = {'model':'YOLOv8-Nano', 'classes':NAMES, 'imgsz':416,
+              'training_profile':args.profile, 'augmentation':training_profile(args.profile),
+              'evaluation_split':args.evaluation_split,
+              'uses_test_split':args.evaluation_split == 'test',
+              'manifest_sha256':hashlib.sha256((root/'manifest.json').read_bytes()).hexdigest(),
               'onnx_sha256':hashlib.sha256(onnx_path.read_bytes()).hexdigest(),
               'source_zip_sha256':audit['zip_sha256'],
               'metrics':{k:float(v) for k,v in evaluation.results_dict.items()},
