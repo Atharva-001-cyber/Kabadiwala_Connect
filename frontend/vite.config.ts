@@ -1,14 +1,25 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-// Server-only development module; never imported by browser code.
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { localVisionPlugin } from './server/localVision.mjs';
+
 
 export default defineConfig({
   plugins: [react(), localVisionPlugin(loadEnv('development', process.cwd(), 'LOCAL_VISION_')), {
     name: 'offline-shell-assets',
     generateBundle(_, bundle) {
+      const publicAssets = ['/models/best.onnx', '/models/device-candidate-v1.onnx', '/manifest.webmanifest', '/eco-recycle-logo.png'];
+      const assets = ['/', ...Object.keys(bundle).filter(name => /\.(js|mjs|css|wasm)$/.test(name)).map(name => '/' + name), ...publicAssets];
+      const hash = createHash('sha256');
+      for (const entry of Object.values(bundle)) hash.update(entry.type === 'chunk' ? entry.code : entry.source);
+      for (const path of publicAssets) hash.update(readFileSync(new URL('./public' + path, import.meta.url)));
+      hash.update(readFileSync(new URL('./index.html', import.meta.url)));
+      const template = readFileSync(new URL('./public/offline-sw.js', import.meta.url), 'utf8');
+      hash.update(template);
+      this.emitFile({ type: 'asset', fileName: 'offline-sw.js', source: template.replace('/* BUILD_CONFIG */', `const RELEASE = ${JSON.stringify(hash.digest('hex').slice(0, 20))}; const ASSETS = ${JSON.stringify(assets)};`) });
       this.emitFile({ type: 'asset', fileName: 'offline-assets.json', source: JSON.stringify(
-        ['/', ...Object.keys(bundle).filter(name => /\.(js|css)$/.test(name)).map(name => '/' + name)]
+        assets
       ) });
     }
   }],

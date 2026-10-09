@@ -591,7 +591,7 @@ export const CollectorDashboard: React.FC = () => {
             />
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-300">{latestActiveLot.id}</span>
+                <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-300">{latestActiveLot.referenceCode || latestActiveLot.id}</span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-900/80 dark:text-blue-200 dark:border-blue-600">
                   {getStatusLabel(latestActiveLot.status, language)}
                 </span>
@@ -940,7 +940,7 @@ export const CollectorDashboard: React.FC = () => {
                       />
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">{lot.id}</span>
+                          <span className="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">{lot.referenceCode || lot.id}</span>
                           <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${statusColors[lot.status] || statusColors.CREATED}`}>
                             {getStatusLabel(lot.status, language)}
                           </span>

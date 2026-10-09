@@ -53,7 +53,7 @@ export const DashboardLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
   }, [role]);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex font-sans overflow-x-hidden transition-colors duration-200">
+    <div data-page-scroll-root className="min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex font-sans overflow-x-hidden transition-colors duration-200">
       {/* Mobile Drawer Backdrop */}
       {isMobileOpen && (
         <div
@@ -77,7 +77,7 @@ export const DashboardLayout: React.FC<{ children?: React.ReactNode }> = ({ chil
       </div>
 
       {/* Main Content Column */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div data-page-scroll-root className="flex-1 flex flex-col min-w-0">
         <DashboardHeader onToggleMobile={() => setIsMobileOpen(!isMobileOpen)} />
         <SyncStatusBanner />
 

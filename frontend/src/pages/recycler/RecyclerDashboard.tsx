@@ -349,7 +349,7 @@ export const RecyclerDashboard: React.FC = () => {
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400">{lot.id}</span>
+                      <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400">{lot.referenceCode || lot.id}</span>
                       <StatusBadge status={lot.status} size="sm" />
                     </div>
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">{getCategoryLabel(lot.materialCategory, language)}</h4>

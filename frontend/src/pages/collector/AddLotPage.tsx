@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CloudVisionAdvice from '../../components/CloudVisionAdvice';
+import { createLotId, lotReference } from '../../utils/lotIdentity';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Camera, 
@@ -215,7 +217,7 @@ export const AddLotPage: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const draftId = useRef(`EW-${crypto.randomUUID()}`);
+  const draftId = useRef('');
   const submitLock = useRef(false);
   const [createdSuccessLotId, setCreatedSuccessLotId] = useState<string | null>(null);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState<boolean>(false);
@@ -582,6 +584,7 @@ export const AddLotPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       const photoUrls = photos.map(p => p.dataUrl);
+      if (!draftId.current) draftId.current = createLotId(collectorProfile?.district);
       const lotData = {
         clientLotId: draftId.current,
         materialCategory: selectedCategory,
@@ -592,7 +595,7 @@ export const AddLotPage: React.FC = () => {
         sourceType,
         imageUrl: photoUrls[0] || '',
         imageUrls: photoUrls,
-        locationDistrict: collectorProfile?.district || 'Lucknow',
+        locationDistrict: collectorProfile?.district || '',
         locationState: collectorProfile?.state || 'Uttar Pradesh',
         latitude: gpsLocation.latitude,
         longitude: gpsLocation.longitude,
@@ -607,7 +610,7 @@ export const AddLotPage: React.FC = () => {
           return;
         }
         setCreatedSuccessLotId(res.lot.id);
-        draftId.current = `EW-${crypto.randomUUID()}`;
+        draftId.current = '';
 
         // Kabaad Saathi Soundbox: Melodic Audio Chime (Web Audio API)
         try {
@@ -743,9 +746,9 @@ export const AddLotPage: React.FC = () => {
             {t.lotCreatedTitle}
           </span>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-2">{t.lotCreatedSuccess}</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.lotIdLabel}</p>
-          <div className="mt-2 p-3.5 bg-emerald-50 dark:bg-slate-950 rounded-2xl border border-emerald-200 dark:border-emerald-500/40 font-mono text-xl font-black text-emerald-700 dark:text-emerald-400 tracking-wider shadow-inner">
-            {createdSuccessLotId}
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{language === 'hi' ? 'प्लेटफ़ॉर्म लॉट संदर्भ' : language === 'mr' ? 'प्लॅटफॉर्म लॉट संदर्भ' : 'Platform Lot Reference'}</p>
+          <div className="mt-2 p-3.5 bg-emerald-50 dark:bg-slate-950 rounded-2xl border border-emerald-200 dark:border-emerald-500/40 font-mono text-xl font-black text-emerald-700 dark:text-emerald-400 tracking-wider shadow-inner break-all">
+            {lotReference(createdSuccessLotId)}
           </div>
         </div>
 
@@ -1335,6 +1338,7 @@ export const AddLotPage: React.FC = () => {
           })()}
 
           {photos[activePhotoIndex]?.dataUrl && <CloudVisionAdvice key={`${photos[activePhotoIndex].id}-${language}`} image={photos[activePhotoIndex].dataUrl} language={language} />}
+
           {/* Transparent Real YOLOv8-Nano Vision Suggestion Box (Restored Option 1 UI/UX) */}
           {(() => {
             const currentPhoto = photos[activePhotoIndex];

@@ -52,7 +52,7 @@ export const LotCard: React.FC<LotCardProps> = ({
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-mono text-xs font-black text-slate-800 dark:text-emerald-400 truncate bg-slate-100 dark:bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-800">
-              #{lot.id}
+              #{lot.referenceCode || lot.id}
             </span>
             {lot.dataSource === 'LIVE' && (
               <span className="text-[9px] font-mono text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shrink-0">

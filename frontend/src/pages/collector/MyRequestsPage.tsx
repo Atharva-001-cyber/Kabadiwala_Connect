@@ -238,7 +238,7 @@ export const MyRequestsPage: React.FC = () => {
                     />
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-black text-emerald-700 dark:text-emerald-400">{lot.id}</span>
+                        <span className="font-mono text-xs font-black text-emerald-700 dark:text-emerald-400">{lot.referenceCode || lot.id}</span>
                         <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${currentBadge.color}`}>
                           {currentBadge.label}
                         </span>

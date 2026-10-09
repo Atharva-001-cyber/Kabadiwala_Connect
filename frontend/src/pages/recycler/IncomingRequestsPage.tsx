@@ -280,7 +280,7 @@ export const IncomingRequestsPage: React.FC = () => {
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400">{lot.id}</span>
+                      <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400">{lot.referenceCode || lot.id}</span>
                       <StatusBadge status={lot.status} size="sm" />
                       <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
                         lot.dataSource === 'LIVE'
@@ -385,7 +385,7 @@ export const IncomingRequestsPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-black text-slate-900 dark:text-white">{t.makeOfferModalTitle}</h3>
-                <p className="text-xs text-blue-600 dark:text-blue-400 font-mono font-bold mt-0.5">{selectedLot.id} • {getCategoryLabel(selectedLot.materialCategory, language)}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-mono font-bold mt-0.5">{selectedLot.referenceCode || selectedLot.id} • {getCategoryLabel(selectedLot.materialCategory, language)}</p>
               </div>
               <button
                 onClick={() => setSelectedLot(null)}

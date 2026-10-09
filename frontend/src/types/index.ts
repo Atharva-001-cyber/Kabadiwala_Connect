@@ -186,6 +186,7 @@ export interface OfficialCpcbRecyclerRecord {
 }
 
 export interface Lot {
+  referenceCode?: string; // Display only; persisted identity is id/clientLotId.
   id: string; // e.g. EW-LKO-2026-000125
   clientLotId?: string; // For offline sync idempotency
   collectorId: string;

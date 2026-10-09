@@ -682,11 +682,11 @@ RETURN JSON ONLY matching this EXACT schema:
   "calculationTotal": number | null
 }`;
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+    const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     const res = await fetch(endpoint, {
       method: 'POST',
-      signal: AbortSignal.timeout(12000),
-      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(30000),
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify({
         contents: [
           {
@@ -715,8 +715,9 @@ RETURN JSON ONLY matching this EXACT schema:
 
     try {
       const parsed = JSON.parse(rawText);
-      const userText = parsed.transcription || 'Voice query';
-      const outputLang: Language = parsed.detectedLanguage || context.language;
+      const userText = typeof parsed.transcription === 'string' ? parsed.transcription.trim() : '';
+      if (!userText) return null;
+      const outputLang: Language = ['hi','mr','en'].includes(parsed.detectedLanguage) ? parsed.detectedLanguage : context.language;
 
       return {
         userText,

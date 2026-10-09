@@ -1,40 +1,41 @@
-const CACHE = 'kabadi-offline-shell-v1';
+/* BUILD_CONFIG */
+// Build embeds actual URLs and a content-derived release identifier.
+const CACHE = 'kabadi-offline-' + RELEASE;
+const valid = (path, response) => response.ok && !response.redirected &&
+  (path === '/' ? response.headers.get('content-type')?.includes('text/html') :
+    !response.headers.get('content-type')?.includes('text/html'));
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
-    const manifest = await fetch('/offline-assets.json', { cache: 'no-store' });
-    if (!manifest.ok) throw new Error('Offline shell manifest unavailable');
     const cache = await caches.open(CACHE);
-    await cache.addAll(await manifest.json());
-    // Do not skipWaiting: an open tab keeps its current app version until reload.
+    for (const path of ASSETS) {
+      const response = await fetch(path, { cache: 'reload' });
+      if (!valid(path, response)) throw new Error('Offline download failed: ' + path);
+      await cache.put(path, response);
+    }
+    // No skipWaiting: preserve open forms and sessions.
   })());
 });
-self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+// Retain old releases, never delete files needed by an open session.
+self.addEventListener('message', event => {
+  if (event.data?.type !== 'OFFLINE_STATUS') return;
+  event.waitUntil((async () => {
+    try {
+      const cache = await caches.open(CACHE);
+      const present = await Promise.all(ASSETS.map(async path => !!(await cache.match(path))));
+      event.ports[0]?.postMessage({ ready: present.every(Boolean), release: RELEASE });
+    } catch { event.ports[0]?.postMessage({ ready: false }); }
+  })());
 });
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
-  // API/auth/uploads are never cached, including on the same origin.
   if (/^\/(api|uploads|fast2sms-api)(\/|$)/.test(url.pathname)) return;
-  if (event.request.mode === 'navigate') {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      try {
-        const response = await fetch(event.request);
-        if (response.ok && response.headers.get('content-type')?.includes('text/html')) await cache.put('/', response.clone());
-        return response;
-      } catch {
-        return (await cache.match('/')) || Response.error();
-      }
-    })());
-  } else if (/^\/(assets|models)\//.test(url.pathname) || /^\/ort-.*\.wasm$/.test(url.pathname)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const hit = await cache.match(event.request);
-      if (hit) return hit;
-      const response = await fetch(event.request);
-      if (response.ok) await cache.put(event.request, response.clone());
-      return response;
-    })());
-  }
+  const path = event.request.mode === 'navigate' ? '/' : url.pathname;
+  if (!ASSETS.includes(path)) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    // Pin HTML and dependencies to one release. No mixed-release navigation.
+    return (await cache.match(path)) || fetch(event.request);
+  })());
 });

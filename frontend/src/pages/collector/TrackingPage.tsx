@@ -351,7 +351,7 @@ export const TrackingPage: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm dark:shadow-xl space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
               <div>
-                <span className="font-mono text-xs font-black text-emerald-700 dark:text-emerald-400 tracking-wider block">{lot.id}</span>
+                <span className="font-mono text-xs font-black text-emerald-700 dark:text-emerald-400 tracking-wider block">{lot.referenceCode || lot.id}</span>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white leading-tight mt-0.5">{getCategoryLabel(lot.materialCategory, language)}</h2>
               </div>
               

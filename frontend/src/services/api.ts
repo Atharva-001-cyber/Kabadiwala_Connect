@@ -1,4 +1,5 @@
 import { offlineDb } from './db';
+import { createLotId, lotReference } from '../utils/lotIdentity';
 import { readAllPages } from './readAllPages';
 import { activeCollectorId, saveLotDraft, uploadLotDraft } from './offlineLotQueue';
 import { supabase } from './supabase';
@@ -65,6 +66,7 @@ function mapDbLotToLot(row: any): Lot {
   return {
     id: row.id,
     clientLotId: row.id,
+    referenceCode: lotReference(row.id),
     collectorId: row.collector_id,
     collectorName: row.collector_name || 'Authorized Collector',
     collectorPhone: row.collector_phone || '',
@@ -77,7 +79,7 @@ function mapDbLotToLot(row: any): Lot {
     actualWeight: row.actual_weight != null ? Number(row.actual_weight) : undefined,
     condition: (row.condition as LotCondition) || 'INTACT',
     sourceType: (row.source_type as SourceType) || 'HOUSEHOLD',
-    locationDistrict: row.location_district || 'Lucknow',
+    locationDistrict: row.location_district || '',
     locationState: row.location_state || 'Uttar Pradesh',
     estimatedValueMin: Number(row.estimated_value_min) || 0,
     estimatedValueMax: Number(row.estimated_value_max) || 0,
@@ -1388,17 +1390,7 @@ export const api = {
   persistQueuedLot: async (lotData: any): Promise<{ success: boolean; lot: Lot; message: string; valuation: any }> => {
     try {
       if (activeCollectorId() !== lotData.collectorId) throw new Error('Collector session changed.');
-      const getDistrictPrefix = (dStr?: string): string => {
-        const d = (dStr || '').trim().toLowerCase();
-        if (d.includes('lucknow')) return 'LKO';
-        if (d.includes('bengaluru') || d.includes('bangalore')) return 'BLR';
-        if (d.includes('delhi')) return 'DEL';
-        if (d.includes('pune')) return 'PUN';
-        if (d.includes('nagpur')) return 'NGP';
-        if (d.includes('mumbai')) return 'MUM';
-        return (dStr || 'LKO').substring(0, 3).toUpperCase();
-      };
-      const lotId = lotData.clientLotId || `EW-${getDistrictPrefix(lotData.locationDistrict)}-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+      const lotId = lotData.clientLotId || createLotId(lotData.locationDistrict);
       const weight = parseFloat(lotData.approxWeight || '0');
 
       let colId = lotData.collectorId;
@@ -1454,7 +1446,7 @@ export const api = {
         approx_weight: weight,
         condition: lotData.condition || 'INTACT',
         source_type: lotData.sourceType || 'HOUSEHOLD',
-        location_district: lotData.locationDistrict || 'Lucknow',
+        location_district: lotData.locationDistrict || '',
         location_state: lotData.locationState || 'Uttar Pradesh',
         estimated_value_min: minVal,
         estimated_value_max: maxVal,
