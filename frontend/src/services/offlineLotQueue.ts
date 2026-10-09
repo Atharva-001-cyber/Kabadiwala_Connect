@@ -1,4 +1,5 @@
 import { offlineDb } from './db';
+import { createLotId, lotReference } from '../utils/lotIdentity';
 import { Lot, OfflineLotItem } from '../types';
 
 export function activeCollectorId(): string | undefined {
@@ -11,6 +12,9 @@ export function activeCollectorId(): string | undefined {
 
 export function retryableSyncError(error: any): boolean {
   if (error?.name === 'AbortError' || error?.name === 'TimeoutError') return true;
+  const status = Number(error?.status || error?.statusCode || error?.code);
+  if (status === 408 || status === 429 || status >= 500 && status <= 599) return true;
+  if (['PGRST000', 'PGRST001', 'PGRST002', '53300', '57P01'].includes(error?.code)) return true;
   if (error?.code) return false;
   return !navigator.onLine || /fetch|network|timeout|timed out|aborted/i.test(error?.message || '');
 }
@@ -23,16 +27,17 @@ export async function saveLotDraft(input: any): Promise<OfflineLotItem> {
   if (!collectorId || (input.collectorId && input.collectorId !== collectorId)) throw new Error('Sign in as the collector before saving a lot.');
   const weight = Number(input.approxWeight);
   if (!Number.isFinite(weight) || weight <= 0) throw new Error('Enter a valid positive weight.');
-  const clientLotId = input.clientLotId || `EW-${crypto.randomUUID()}`;
+  const profile = JSON.parse(localStorage.getItem('collectorProfile') || '{}');
+  const locationDistrict = input.locationDistrict?.trim() || profile.district?.trim() || '';
+  const clientLotId = input.clientLotId || createLotId(locationDistrict);
   const existing = await offlineDb.offlineLots.get(clientLotId);
   if (existing) {
     if (existing.collectorId !== collectorId) throw new Error('Draft belongs to a different account.');
     return existing;
   }
-  const profile = JSON.parse(localStorage.getItem('collectorProfile') || '{}');
   const min = Math.round(weight * 20 * 0.85);
   const max = Math.round(weight * 80 * 1.15);
-  const payload = { ...input, clientLotId, collectorId, collectorName: profile.name, collectorPhone: profile.phone };
+  const payload = { ...input, locationDistrict, clientLotId, referenceCode: lotReference(clientLotId), collectorId, collectorName: profile.name, collectorPhone: profile.phone };
   const draft: OfflineLotItem = {
     ...payload, approxWeight: weight, createdAt: new Date().toISOString(),
     estimatedValueMin: min, estimatedValueMax: max, estimatedValueAvg: Math.round((min + max) / 2),
@@ -46,6 +51,8 @@ export async function saveLotDraft(input: any): Promise<OfflineLotItem> {
     throw error;
   }
   queueChanged();
+  // Best effort only: permission denial must never prevent saving a draft.
+  void navigator.storage?.persist?.().catch(() => false);
   return draft;
 }
 

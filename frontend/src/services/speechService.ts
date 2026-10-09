@@ -18,7 +18,7 @@ export interface VoiceResolution {
 export interface SpeechRecognitionOptions {
   lang: Language;
   onResult?: (transcript: string, isFinal: boolean) => void;
-  onError?: (error: string) => void;
+  onError?: (error: string, code?: string) => void;
   onStart?: () => void;
   onEnd?: () => void;
 }
@@ -898,7 +898,7 @@ class SpeechService {
         console.warn(`[VOICE DEBUG] recognition error: ${event.error}`);
 
         if (event.error === 'no-speech' || event.error === 'aborted') {
-          options.onError?.(options.lang === 'hi' ? 'आवाज़ नहीं मिली। माइक दबाकर फिर बोलें या टाइप करें।' : options.lang === 'mr' ? 'आवाज ऐकू आला नाही. पुन्हा बोला किंवा टाइप करा.' : 'No speech captured. Tap the mic to retry or type your question.');
+          options.onError?.(options.lang === 'hi' ? 'आवाज़ नहीं मिली। माइक दबाकर फिर बोलें या टाइप करें।' : options.lang === 'mr' ? 'आवाज ऐकू आला नाही. पुन्हा बोला किंवा टाइप करा.' : 'No speech captured. Tap the mic to retry or type your question.', event.error);
           recognition.onend();
           try { recognition.abort(); } catch {}
           return;
@@ -937,7 +937,7 @@ class SpeechService {
             ? 'व्हॉइस सेवेची परवानगी नाही. कृपया ब्राउझर सेटिंग्ज तपासा.'
             : 'Speech service not allowed. Please check browser settings.';
         }
-        if (options.onError) options.onError(errorMsg);
+        if (options.onError) options.onError(errorMsg, event.error);
         recognition.onend();
         try { recognition.abort(); } catch {}
       };
@@ -952,7 +952,7 @@ class SpeechService {
       };
 
       this.isListeningActive = true;
-      this.notifyListening(true);
+      // Permission/start is pending; listening becomes true only on onstart.
       recognition.start();
       return true;
     } catch (e: any) {

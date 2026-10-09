@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { SplashScreen } from './components/common/SplashScreen';
+import { RouteScrollReset } from './components/common/RouteScrollReset';
 
 // Auth
 import { LoginPage } from './pages/auth/LoginPage';
@@ -104,6 +105,7 @@ export const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <RouteScrollReset />
       <GlobalVoiceRouteCleaner />
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       <Routes>

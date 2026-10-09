@@ -20,3 +20,5 @@ frontend/check_db*.mjs
 # Datasets and PyTorch weights
 *.pt
 dataset_*/
+__pycache__/
+*.pyc

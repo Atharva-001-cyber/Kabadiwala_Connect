@@ -3,12 +3,14 @@ import { Wifi, WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useSync } from '../../context/SyncContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { OfflineDraftList } from './OfflineDraftList';
+import { useOfflineReadiness } from '../../services/offlineReadiness';
 
 export const SyncStatusBanner: React.FC = () => {
   const { isOnline, pendingCount, failedCount, legacyCount, isSyncing, syncNow } = useSync();
   const { t, language } = useLanguage();
+  const { ready, storageWarning } = useOfflineReadiness();
 
-  if (isOnline && pendingCount === 0 && legacyCount === 0) {
+  if (!import.meta.env.PROD && isOnline && pendingCount === 0 && legacyCount === 0 && !storageWarning) {
     return null; // Clean UI when everything is synced
   }
 
@@ -24,6 +26,8 @@ export const SyncStatusBanner: React.FC = () => {
     >
       <div className="flex flex-wrap items-center gap-2 max-w-xl" role="status" aria-live="polite">
         <OfflineDraftList />
+        <span>{ready ? (language === 'hi' ? 'ऑफलाइन ऐप और AI फ़ाइलें उपलब्ध हैं।' : language === 'mr' ? 'ऑफलाइन अ‍ॅप आणि AI फाइल्स उपलब्ध आहेत.' : 'Offline app and AI files available.') : (language === 'hi' ? 'ऑफलाइन डाउनलोड बाकी/अनुपलब्ध — AI न चले तो श्रेणी स्वयं चुनें।' : language === 'mr' ? 'ऑफलाइन डाउनलोड बाकी/अनुपलब्ध — AI न चालल्यास श्रेणी निवडा.' : 'Offline setup pending/unavailable. If AI is unavailable, select category manually.')}</span>
+        {storageWarning && <span>Device storage nearly full. Keep pending drafts; free other storage before adding photos.</span>}
         {failedCount > 0 && <span>{failedCount} {language === 'hi' ? 'अपलोड असफल — ड्राफ्ट सुरक्षित है। दोबारा कोशिश करें।' : language === 'mr' ? 'अपलोड अयशस्वी — मसुदे सुरक्षित आहेत.' : 'uploads need attention. Drafts retained; retry or contact support.'}</span>}
         {legacyCount > 0 && <span>{legacyCount} {language === 'hi' ? 'पुराने ड्राफ्ट का खाता अज्ञात है; सहायता से रिकवर करें।' : language === 'mr' ? 'जुन्या मसुद्यांचे खाते अज्ञात आहे; मदत घ्या.' : 'legacy drafts have no owner; contact support for recovery. Not deleted.'}</span>}
         {!isOnline ? (

@@ -71,7 +71,7 @@ export const GreenCertificateModal: React.FC<GreenCertificateModalProps> = ({ lo
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <span className="text-slate-500 text-xs block">{t.certDigitalLotId}</span>
-              <span className="font-bold text-slate-900 font-mono">{lot.id}</span>
+              <span className="font-bold text-slate-900 font-mono break-all">{lot.referenceCode || lot.id}</span>
             </div>
             <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
               <span className="text-slate-500 text-xs block">{t.certMaterialCategory}</span>

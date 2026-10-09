@@ -18,10 +18,10 @@ const server = createServer(async (req, res) => {
   if (req.url === '/test.js') { res.setHeader('Content-Type','application/javascript'); res.end(bundle.outputFiles[0].text); return; }
   try {
     const pathname = new URL(req.url, 'http://localhost').pathname;
-    const root = resolve('dist');
+    const root = resolve(process.argv[3] || 'dist');
     const file = resolve(root, '.' + (extname(pathname) ? pathname : '/index.html'));
     if (!file.startsWith(root + '\\') && !file.startsWith(root + '/')) throw Error('Invalid path');
-    res.setHeader('Content-Type', ({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[extname(file)] || 'application/octet-stream');
+    res.setHeader('Content-Type', ({'.html':'text/html','.js':'application/javascript','.mjs':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[extname(file)] || 'application/octet-stream');
     res.end(await readFile(file));
   } catch { res.statusCode = 404; res.end(); }
 });
@@ -33,11 +33,32 @@ try {
   await context.route('**/*', route => route.request().url().startsWith(origin) ? route.continue() : route.abort());
   const page = await context.newPage();
   await page.goto(origin + '/test');
+  assert.deepEqual(await page.evaluate(() => [
+    testOffline.retryableSyncError({status:503,code:'SERVICE_UNAVAILABLE'}),
+    testOffline.retryableSyncError({status:429}),
+    testOffline.retryableSyncError({code:'PGRST002'}),
+    testOffline.retryableSyncError({code:'42501'})
+  ]), [true,true,true,false]);
   await page.evaluate(() => {
     localStorage.setItem('user', JSON.stringify({role:'COLLECTOR'}));
     localStorage.setItem('collectorProfile', JSON.stringify({id:'test_col_a',name:'Offline test'}));
   });
   await context.setOffline(true);
+  const identity = await page.evaluate(async () => {
+    const profile=localStorage.getItem('collectorProfile');
+    localStorage.setItem('collectorProfile',JSON.stringify({id:'test_col_a',name:'Test',district:'पुणे'}));
+    const input={materialCategory:'CABLE',approxWeight:1,condition:'INTACT',sourceType:'HOUSEHOLD'};
+    const first=await testOffline.saveLotDraft(input);
+    localStorage.setItem('collectorProfile',JSON.stringify({id:'test_col_a',name:'Test',district:'मुंबई'}));
+    const retry=await testOffline.saveLotDraft({...input,clientLotId:first.clientLotId});
+    const result={id:first.clientLotId,ref:first.payload.referenceCode,retryRef:retry.payload.referenceCode,district:retry.payload.locationDistrict};
+    await testOffline.offlineDb.offlineLots.delete(first.clientLotId); // Isolated test IndexedDB only.
+    localStorage.setItem('collectorProfile',profile);
+    return result;
+  });
+  assert.ok(identity.id.startsWith('EW-PUN-'));
+  assert.equal(identity.ref,identity.retryRef);
+  assert.equal(identity.district,'पुणे');
   const saved = await page.evaluate(async () => {
     window.inputLot = { clientLotId:'EW-offline-test', materialCategory:'CABLE', approxWeight:10, condition:'INTACT', sourceType:'HOUSEHOLD', imageUrl:'data:image/png;base64,test-photo', latitude:12.3, longitude:45.6 };
     const result = await testOffline.api.createLot(window.inputLot);
@@ -107,7 +128,21 @@ try {
   await shellPage.goto(origin + '/login');
   await shellPage.evaluate(async () => { await navigator.serviceWorker.ready; });
   await shellPage.waitForFunction(() => !!navigator.serviceWorker.controller);
+  const assets = await shellPage.evaluate(async () => (await fetch('/offline-assets.json')).json());
+  assert.ok(assets.some(path => path.endsWith('.wasm')));
+  assert.ok(assets.some(path => path.endsWith('.mjs')));
+  assert.ok(assets.includes('/models/best.onnx'));
+  assert.ok(assets.includes('/models/device-candidate-v1.onnx'));
+  const status = () => shellPage.evaluate(() => new Promise(resolve => {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = e => { channel.port1.close(); resolve(e.data.ready); };
+    navigator.serviceWorker.controller.postMessage({type:'OFFLINE_STATUS'}, [channel.port2]);
+  }));
+  assert.equal(await status(), true);
   await shell.setOffline(true);
+  for (const path of assets.filter(path => /\.(onnx|wasm|mjs)$/.test(path))) {
+    assert.ok(await shellPage.evaluate(async path => { const r = await fetch(path); return r.ok && (await r.arrayBuffer()).byteLength > 1000; }, path));
+  }
   await shellPage.reload();
   await shellPage.waitForFunction(() => document.getElementById('root')?.childElementCount > 0);
   assert.ok((await shellPage.locator('body').innerText()).length > 50);
@@ -119,6 +154,41 @@ try {
   await shellPage.goto(origin + '/collector/add');
   await shellPage.waitForSelector('input[type=file]', {state:'attached'});
   assert.equal(new URL(shellPage.url()).pathname, '/collector/add');
+  const inference = await shellPage.evaluate(async path => {
+    const { analyzeDevice } = await import(path);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 640;
+    canvas.getContext('2d').fillRect(0, 0, 640, 640);
+    return (await analyzeDevice(canvas)).status;
+  }, assets.find(path => /\/deviceOnnx-.*\.js$/.test(path)));
+  assert.notEqual(inference, 'UNAVAILABLE', 'Actual offline WASM inference must run; this is not an accuracy test');
+  // Missing model must revoke readiness, even if the browser reports online.
+  await shellPage.evaluate(async () => {
+    for (const name of await caches.keys()) if (name.startsWith('kabadi-offline-')) await (await caches.open(name)).delete('/models/best.onnx');
+  });
+  assert.equal(await status(), false);
+  console.log('PASS: complete model/WASM/module offline downloads, actual offline device inference, and revoked readiness after missing cache entry.');
   console.log('PASS: real-browser IndexedDB save/reload, photo/metadata preservation, account isolation, network retry, rejection retention, concurrent sync, storage-full rejection, lost-response idempotence, single trace, and offline app-shell reload. All remote requests blocked; no live database writes.');
   await shell.close();
+  const incomplete = await browser.newContext();
+  await incomplete.route('**/*', route => {
+    const url = route.request().url();
+    return !url.startsWith(origin) || url.endsWith('/models/best.onnx') ? route.abort() : route.continue();
+  });
+  const failedPage = await incomplete.newPage();
+  await failedPage.goto(origin + '/login');
+  // Failed precache must not activate a partial release.
+  const failedInstall = await failedPage.evaluate(async () => {
+    const registration = await navigator.serviceWorker.register('/offline-sw.js');
+    const worker = registration.installing;
+    if (!worker) return !registration.active;
+    return await new Promise(resolve => {
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'redundant') resolve(true);
+        if (worker.state === 'activated') resolve(false);
+      });
+    });
+  });
+  assert.equal(failedInstall, true);
+  await incomplete.close();
 } finally { await browser.close(); server.close(); }

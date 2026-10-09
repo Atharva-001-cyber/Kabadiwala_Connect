@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Mic,
@@ -69,6 +69,11 @@ export const KabaadSaathiAssistant: React.FC = () => {
   const isListening = nativeListening || recordingActive;
   const recorderFallbackRef = useRef(false);
   const micSessionRef = useRef(0);
+  const micBusyRef = useRef(false);
+  const [micPending, setMicPending] = useState(false);
+  const [audioConsent, setAudioConsent] = useState(false);
+  const [showAudioAlternative, setShowAudioAlternative] = useState(false);
+  const setMicBusy = (value: boolean) => { micBusyRef.current = value; setMicPending(value); };
   const recordingLimitRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isOpen, setIsOpen] = useState<boolean>(() => {
@@ -111,7 +116,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
   const [micErrorMsg, setMicErrorMsg] = useState<string | null>(null);
 
   const processingRef = useRef(false);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   // Derive real user verification status
   const rawUser: any = user || {};
@@ -319,9 +324,16 @@ export const KabaadSaathiAssistant: React.FC = () => {
     }
   }, [isOpen, language, role, rawCol.name, user?.name, speak]);
 
-  useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isProcessing]);
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const scrollLatest = () => {
+      const container = chatScrollRef.current;
+      if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'instant' });
+    };
+    scrollLatest();
+    const frame = requestAnimationFrame(scrollLatest);
+    return () => cancelAnimationFrame(frame);
+  }, [messages, isProcessing, isOpen]);
 
   const [activeDraftState, setActiveDraftState] = useState<{ category?: string; weightKg?: number } | null>(null);
   const [showKeyDrawer, setShowKeyDrawer] = useState<boolean>(false);
@@ -340,6 +352,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
    */
   const processQuery = useCallback(async (queryText: string) => {
     if (!queryText.trim() || processingRef.current) return;
+    const session = micSessionRef.current;
     stop();
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -367,6 +380,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         effectiveQuery,
         { ...copilotCtx, language, history: messages.slice(-8) }
       );
+      if (session !== micSessionRef.current) return;
 
       if (response.pendingSlot && response.draftState) {
         setActiveDraftState(response.draftState);
@@ -426,6 +440,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         response.action.route
       ) {
         setTimeout(() => {
+          if (session !== micSessionRef.current) return;
           if (typeof window !== 'undefined') {
             (window as any).__isVoiceNavigating = true;
           }
@@ -434,6 +449,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         }, 1100);
       }
     } catch (err) {
+      if (session !== micSessionRef.current) return;
       console.error('[KabaadSaathi] Engine error:', err);
       const errorMsg: Message = {
         id: `err_${Date.now()}`,
@@ -446,8 +462,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
       };
       setMessages(prev => [...prev, userMessage, errorMsg]);
     } finally {
-      processingRef.current = false;
-      setIsProcessing(false);
+      if (session === micSessionRef.current) { processingRef.current = false; setIsProcessing(false); }
     }
   }, [copilotCtx, language, setTheme, setLanguage, navigate, speak, messages]);
 
@@ -455,6 +470,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
   const processAudioBlob = useCallback(async (base64Audio: string, mimeType: string) => {
     if (processingRef.current) return;
+    const session = micSessionRef.current;
     processingRef.current = true;
     setIsProcessing(true);
     setMicErrorMsg(null);
@@ -465,6 +481,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         mimeType,
         { ...copilotCtx, language, history: messages.slice(-8) }
       );
+      if (session !== micSessionRef.current) return;
 
       const userMessage: Message = {
         id: `usr_${Date.now()}`,
@@ -503,6 +520,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
         response.action.route
       ) {
         setTimeout(() => {
+          if (session !== micSessionRef.current) return;
           if (typeof window !== 'undefined') {
             (window as any).__isVoiceNavigating = true;
           }
@@ -511,10 +529,10 @@ export const KabaadSaathiAssistant: React.FC = () => {
         }, 1100);
       }
     } catch (err) {
+      if (session !== micSessionRef.current) return;
       setMicErrorMsg(language === 'hi' ? 'आवाज़ समझ नहीं आई। दोबारा कोशिश करें या टाइप करें।' : language === 'mr' ? 'आवाज समजला नाही. पुन्हा प्रयत्न करा किंवा टाइप करा.' : 'Audio could not be processed. Please retry or type your question.');
     } finally {
-      processingRef.current = false;
-      setIsProcessing(false);
+      if (session === micSessionRef.current) { processingRef.current = false; setIsProcessing(false); }
     }
   }, [copilotCtx, language, messages, speak, navigate]);
 
@@ -531,18 +549,27 @@ export const KabaadSaathiAssistant: React.FC = () => {
   // Cancel pending permission requests and sessions when hidden or language changes.
   useEffect(() => {
     setRecordingActive(false);
+    setMicBusy(false);
+    setAudioConsent(false);
+    setShowAudioAlternative(false);
+    recorderFallbackRef.current = false;
+    setMicVolume(0);
+    processingRef.current = false;
+    setIsProcessing(false);
     return () => {
       micSessionRef.current += 1;
+      micBusyRef.current = false;
       latestRecognizedTextRef.current = '';
       clearSilenceTimer();
       if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
       speechService.stopListening();
+      speechService.stop();
       audioRecorderService.stopRecordingSilent();
     };
-  }, [clearSilenceTimer, isOpen, language]);
+  }, [clearSilenceTimer, isOpen, language, user?.id, role]);
 
   const handleToggleListening = async () => {
-    if (processingRef.current) return;
+    if (processingRef.current || micBusyRef.current || !isOpen) return;
     stop();
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -552,6 +579,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
     clearSilenceTimer();
 
     if (isListening || audioRecorderService.isRecording()) {
+      setMicBusy(true);
       const session = ++micSessionRef.current;
       setRecordingActive(false);
       if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
@@ -574,6 +602,11 @@ export const KabaadSaathiAssistant: React.FC = () => {
           latestRecognizedTextRef.current = '';
           processQuery(txt);
         }
+      } finally {
+        if (session === micSessionRef.current) {
+          setMicBusy(false); setMicVolume(0);
+          if (!processingRef.current) setMicErrorMsg(language === 'hi' ? 'आवाज़ नहीं मिली। फिर बोलें या टाइप करें।' : language === 'mr' ? 'आवाज ऐकू आला नाही. पुन्हा बोला किंवा टाइप करा.' : 'Could not hear you. Retry or type.');
+        }
       }
     } else {
       micSessionRef.current += 1;
@@ -585,37 +618,55 @@ export const KabaadSaathiAssistant: React.FC = () => {
       setInputText('');
 
       // Use only one microphone consumer. A fresh tap opts into cloud audio fallback.
-      if (recorderFallbackRef.current || !speechService.isRecognitionSupported()) {
+      if (!speechService.isRecognitionSupported() && !recorderFallbackRef.current) {
+        setShowAudioAlternative(true);
+        setMicErrorMsg(language === 'hi' ? 'ब्राउज़र वॉयस उपलब्ध नहीं। नीचे वैकल्पिक रिकॉर्डिंग चुनें या टाइप करें।' : language === 'mr' ? 'ब्राउझर व्हॉइस उपलब्ध नाही. खाली रेकॉर्डिंग निवडा किंवा टाइप करा.' : 'Browser recognition unavailable. Choose optional recording below or type.');
+        return;
+      }
+      if (recorderFallbackRef.current) {
+        recorderFallbackRef.current = false;
+        if (!audioConsent) return;
         if (!getGeminiApiKey() || !navigator.onLine) {
           recorderFallbackRef.current = false;
           setMicErrorMsg(language === 'hi' ? 'वैकल्पिक वॉयस के लिए इंटरनेट और AI key चाहिए। सामान्य Chrome में माइक अनुमति देकर दोबारा कोशिश करें या टाइप करें।' : language === 'mr' ? 'पर्यायी व्हॉइससाठी इंटरनेट आणि AI key आवश्यक. सामान्य Chrome मध्ये परवानगी द्या किंवा टाइप करा.' : 'Audio fallback needs internet and an AI key. Retry with mic permission in normal Chrome, or type your question.');
           return;
         }
         const session = ++micSessionRef.current;
-        setRecordingActive(true);
+        setMicBusy(true);
         try {
           const started = await audioRecorderService.startRecording(setMicVolume);
-          if (!started || session !== micSessionRef.current) return;
+          if (session !== micSessionRef.current) return;
+          if (!started) throw new Error('Recording did not start');
+          setRecordingActive(true);
           setMicErrorMsg(language === 'hi' ? 'रिकॉर्डिंग चालू है। बोलकर माइक फिर दबाएँ। ऑडियो AI सेवा को भेजा जाएगा (अधिकतम 30 सेकंड)।' : language === 'mr' ? 'रेकॉर्डिंग सुरू. बोलून पुन्हा माइक दाबा. ऑडिओ AI सेवेला पाठवला जाईल (कमाल 30 सेकंद).' : 'Recording: speak, then tap mic to send audio to the AI service (maximum 30 seconds).');
           recordingLimitRef.current = setTimeout(async () => {
             if (session !== micSessionRef.current) return;
             setRecordingActive(false);
+            setMicBusy(true);
             try {
               const audio = await audioRecorderService.stopRecording();
               if (session === micSessionRef.current) void processAudioBlob(audio.base64Audio, audio.mimeType);
-            } catch { setMicErrorMsg('Recording failed. Please retry or type your question.'); }
+            } catch { if (session === micSessionRef.current) setMicErrorMsg(language === 'hi' ? 'रिकॉर्डिंग असफल। फिर कोशिश करें या टाइप करें।' : language === 'mr' ? 'रेकॉर्डिंग अयशस्वी. पुन्हा प्रयत्न करा किंवा टाइप करा.' : 'Recording failed. Retry or type.'); }
+            finally { if (session === micSessionRef.current) { setMicBusy(false); setMicVolume(0); } }
           }, 30000);
         } catch {
           if (session !== micSessionRef.current) return;
           setRecordingActive(false);
           setMicErrorMsg(language === 'hi' ? 'माइक नहीं खुला। HTTPS, Chrome साइट अनुमति और फोन की माइक अनुमति जाँचें।' : language === 'mr' ? 'माइक सुरू झाला नाही. HTTPS व Chrome आणि फोनची माइक परवानगी तपासा.' : 'Microphone unavailable. Check HTTPS, Chrome site permission and phone microphone permission.');
+        } finally {
+          if (session === micSessionRef.current) setMicBusy(false);
         }
         return;
       }
 
+      const session = micSessionRef.current;
+      setMicBusy(true);
       startListening({
         lang: language,
+        inlineErrors: true,
+        onStart: () => { if (session === micSessionRef.current) setMicBusy(false); },
         onResult: (text, isFinal) => {
+          if (session !== micSessionRef.current) return;
           setInputText(text);
           latestRecognizedTextRef.current = text;
           clearSilenceTimer();
@@ -623,6 +674,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
           if (text.trim() && !processingRef.current) {
             // Generous 2.5-second silence buffer so mobile user can comfortably complete full sentences
             silenceTimerRef.current = setTimeout(async () => {
+              if (session !== micSessionRef.current) return;
               if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
                 const txt = latestRecognizedTextRef.current.trim();
                 latestRecognizedTextRef.current = '';
@@ -634,6 +686,8 @@ export const KabaadSaathiAssistant: React.FC = () => {
           }
         },
         onEnd: async () => {
+          if (session !== micSessionRef.current) return;
+          setMicBusy(false);
           clearSilenceTimer();
           if (latestRecognizedTextRef.current.trim() && !processingRef.current) {
             const txt = latestRecognizedTextRef.current.trim();
@@ -653,15 +707,21 @@ export const KabaadSaathiAssistant: React.FC = () => {
             }
           } else {
             audioRecorderService.stopRecordingSilent();
+            setMicErrorMsg(previous => previous || (language === 'hi' ? 'आवाज़ नहीं मिली। फिर बोलें या टाइप करें।' : language === 'mr' ? 'आवाज ऐकू आला नाही. पुन्हा बोला किंवा टाइप करा.' : 'Could not hear you. Retry or type.'));
           }
         },
-        onError: (err) => {
+        onError: (err, code) => {
+          if (session !== micSessionRef.current) return;
+          setMicBusy(false);
           clearSilenceTimer();
           latestRecognizedTextRef.current = '';
-          recorderFallbackRef.current = true;
-          setMicErrorMsg(err + (language === 'hi' ? ' विकल्प: AI key और इंटरनेट हो तो माइक फिर दबाकर ऑडियो रिकॉर्ड करके भेजें, या टाइप करें।' : language === 'mr' ? ' पर्याय: AI key आणि इंटरनेट असल्यास पुन्हा माइक दाबून ऑडिओ पाठवा, किंवा टाइप करा.' : ' Alternative: with an AI key and internet, tap mic again to record and send audio, or type.'));
+          recorderFallbackRef.current = false;
+          setShowAudioAlternative(code === 'network' || code === 'service-not-allowed' || code === 'language-not-supported');
+          setMicErrorMsg(code === 'network'
+            ? (language === 'hi' ? 'ब्राउज़र की आवाज़ पहचान सेवा से कनेक्शन नहीं हुआ। यह माइक बंद होने का प्रमाण नहीं है। माइक से फिर कोशिश करें, नीचे वैकल्पिक रिकॉर्डिंग चुनें या टाइप करें।' : language === 'mr' ? 'ब्राउझरच्या आवाज ओळख सेवेशी संपर्क झाला नाही. माइक पुन्हा वापरा, खाली रेकॉर्डिंग निवडा किंवा टाइप करा.' : 'Browser speech service could not connect. This does not mean your microphone is off. Retry the mic, choose optional recording below, or type.')
+            : err);
           console.warn('[Speech] Microphone event/notice:', err);
-          if (err === 'not-allowed' || err === 'permission-denied') {
+          if (code === 'not-allowed' || code === 'permission-denied') {
             setMicErrorMsg(
               language === 'hi'
                 ? 'माइक्रोफ़ोन अनुमति बंद है — कृपया ब्राउज़र की सेटिंग में माइक्रोफ़ोन चालू करें।'
@@ -679,6 +739,8 @@ export const KabaadSaathiAssistant: React.FC = () => {
     e.preventDefault();
     if (!inputText.trim()) return;
     micSessionRef.current += 1;
+    setMicBusy(false);
+    setMicVolume(0);
     stopListening();
     clearSilenceTimer();
     if (recordingLimitRef.current) clearTimeout(recordingLimitRef.current);
@@ -690,6 +752,8 @@ export const KabaadSaathiAssistant: React.FC = () => {
 
   const handleClearChat = () => {
     micSessionRef.current += 1;
+    setMicBusy(false);
+    setMicVolume(0);
     stopListening();
     setRecordingActive(false);
     clearSilenceTimer();
@@ -947,7 +1011,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
             )}
 
             {/* Message Feed */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+            <div ref={chatScrollRef} data-testid="copilot-messages" className="flex-1 min-h-0 p-4 overflow-y-auto overscroll-contain space-y-3 text-xs">
               {messages.map((m) => (
                 <div
                   key={m.id}
@@ -1287,7 +1351,6 @@ export const KabaadSaathiAssistant: React.FC = () => {
                 </div>
               )}
 
-              <div ref={chatBottomRef} />
             </div>
 
             {/* Quick Action Suggestion Pills (1-Tap Voice AI Prompts) */}
@@ -1323,8 +1386,12 @@ export const KabaadSaathiAssistant: React.FC = () => {
                       ? 'bg-emerald-400 animate-pulse'
                       : 'bg-emerald-500/60'
                   }`} />
-                  <span className="text-[11px] font-extrabold text-slate-200">
-                    {isListening
+                  <span role="status" aria-live="polite" className="text-[11px] font-extrabold text-slate-200">
+                    {micPending
+                      ? (language === 'hi' ? 'माइक शुरू/बंद हो रहा है — अनुमति माँगे तो दें।' : language === 'mr' ? 'माइक सुरू/बंद होत आहे — विचारल्यास परवानगी द्या.' : 'Microphone starting/stopping — allow permission if prompted.')
+                      : isProcessing
+                      ? (language === 'hi' ? 'उत्तर तैयार हो रहा है…' : language === 'mr' ? 'उत्तर तयार होत आहे…' : 'Processing…')
+                      : isListening
                       ? (language === 'hi' ? '🎙️ माइक्रोफ़ोन एक्टिव • बोलिए...' : language === 'mr' ? '🎙️ मायक्रोफोन सुरू • बोला...' : '🎙️ Microphone Live • Speak now...')
                       : isSpeaking
                       ? (language === 'hi' ? '🔊 कबाड़ साथी उत्तर दे रहा है...' : language === 'mr' ? '🔊 कोपायलट उत्तर देत आहे...' : '🔊 Kabaad Saathi is speaking...')
@@ -1333,7 +1400,7 @@ export const KabaadSaathiAssistant: React.FC = () => {
                 </div>
 
                 {(isListening || isSpeaking || micVolume > 0) && (
-                  <div className="flex items-center gap-1 h-4">
+                  <div aria-hidden="true" title="Listening/playback indicator, not a verified audio spectrum" className="flex items-center gap-1 h-4 animate-pulse">
                     <span
                       className="w-1 bg-emerald-400 rounded-full transition-all duration-75"
                       style={{ height: `${Math.max(4, Math.min(16, (micVolume / 100) * 16))}px` }}
@@ -1351,16 +1418,27 @@ export const KabaadSaathiAssistant: React.FC = () => {
               </div>
 
               {/* Form Input Bar */}
+              {showAudioAlternative && <div className="text-xs text-slate-200 space-y-2 border border-slate-700 rounded p-2">
+                <label className="flex items-start gap-2"><input type="checkbox" checked={audioConsent} onChange={event => setAudioConsent(event.target.checked)} />
+                  {language === 'hi' ? 'मैं रिकॉर्ड की गई आवाज़ Google AI को भेजने की अनुमति देता हूँ। इंटरनेट और वैध AI key आवश्यक हैं।' : language === 'mr' ? 'रेकॉर्ड केलेला आवाज Google AI ला पाठवण्यास संमती. इंटरनेट आणि वैध AI key आवश्यक.' : 'I agree to send my recorded voice to Google AI. Internet and a valid AI key are required.'}
+                </label>
+                <button type="button" disabled={!audioConsent || micPending || isProcessing || isListening} className="rounded bg-emerald-700 px-3 py-2 disabled:opacity-50" onClick={() => { recorderFallbackRef.current = true; void handleToggleListening(); }}>
+                  {language === 'hi' ? 'वैकल्पिक आवाज़ रिकॉर्ड करें' : language === 'mr' ? 'पर्यायी आवाज रेकॉर्ड करा' : 'Record using alternative voice input'}
+                </button>
+              </div>}
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleToggleListening}
+                  disabled={micPending || isProcessing}
+                  aria-busy={micPending}
+                  aria-label={language === 'hi' ? (isListening ? 'सुनना बंद करें' : 'बोलने के लिए माइक शुरू करें') : language === 'mr' ? (isListening ? 'ऐकणे थांबवा' : 'बोलण्यासाठी माइक सुरू करा') : (isListening ? 'Stop listening' : 'Start microphone')}
                   className={`p-3 rounded-2xl flex items-center justify-center transition-all shadow-lg active:scale-95 shrink-0 ${
                     isListening
                       ? 'bg-red-600 text-white animate-pulse border-2 border-red-400 ring-2 ring-red-400/40'
                       : 'bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-400 shadow-emerald-950'
                   }`}
-                  title={isListening ? 'Stop Listening' : 'Tap to Speak'}
+                  title={language === 'hi' ? (isListening ? 'सुनना बंद करें' : 'बोलने के लिए दबाएँ') : language === 'mr' ? (isListening ? 'ऐकणे थांबवा' : 'बोलण्यासाठी दाबा') : (isListening ? 'Stop Listening' : 'Tap to Speak')}
                 >
                   {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5 stroke-[2.5]" />}
                 </button>

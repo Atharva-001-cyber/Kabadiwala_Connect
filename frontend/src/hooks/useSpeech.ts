@@ -12,9 +12,12 @@ export const SPEECH_LOCALES: Record<Language, string> = {
 };
 
 export interface UseSpeechListeningOptions {
+  /** Caller renders an accessible inline error; avoid duplicate toast overlays. */
+  inlineErrors?: boolean;
+  onStart?: () => void;
   lang?: Language;
   onResult?: (text: string, isFinal: boolean) => void;
-  onError?: (err: string) => void;
+  onError?: (err: string, code?: string) => void;
   onEnd?: () => void;
 }
 
@@ -80,7 +83,7 @@ export const useSpeech = () => {
   ) => {
     let targetLang: Language = currentAppLanguage;
     let onResultCb: ((text: string, isFinal: boolean) => void) | undefined = legacyOnResultCb;
-    let onErrorCb: ((err: string) => void) | undefined;
+    let onErrorCb: ((err: string, code?: string) => void) | undefined;
     let onEndCb: (() => void) | undefined;
 
     if (typeof optionsOrLang === 'object' && optionsOrLang !== null) {
@@ -95,15 +98,16 @@ export const useSpeech = () => {
     setTranscript('');
     return speechService.startListening({
       lang: targetLang,
+      onStart: typeof optionsOrLang === 'object' ? optionsOrLang.onStart : undefined,
       onResult: (text, isFinal) => {
         setTranscript(text);
         if (onResultCb) onResultCb(text, isFinal);
       },
-      onError: (err) => {
-        if (err && !err.toLowerCase().includes('no voice') && !err.includes('कोई आवाज़')) {
+      onError: (err, code) => {
+        if (!(typeof optionsOrLang === 'object' && optionsOrLang.inlineErrors) && err && !err.toLowerCase().includes('no voice') && !err.includes('कोई आवाज़')) {
           showToast(err, 'warning');
         }
-        if (onErrorCb) onErrorCb(err);
+        if (onErrorCb) onErrorCb(err, code);
       },
       onEnd: () => {
         if (onEndCb) onEndCb();

@@ -20,6 +20,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { collectorProfile, role } = useAuth();
   const owner = role === 'COLLECTOR' ? collectorProfile?.id : undefined;
   const busy = useRef(false);
+  const retry = useRef({ owner, failures: 0, after: 0 });
   const [failedCount, setFailedCount] = useState(0);
   const [legacyCount, setLegacyCount] = useState(0);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -41,6 +42,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [owner]);
 
   const syncNow = useCallback(async (manual = true): Promise<number> => {
+    if (retry.current.owner !== owner) retry.current = { owner, failures: 0, after: 0 };
+    if (!manual && Date.now() < retry.current.after) return 0;
     if (!owner || activeCollectorId() !== owner || !navigator.onLine || busy.current) return 0;
     busy.current = true;
 
@@ -56,6 +59,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log(`📡 Attempting to batch sync ${pendingLots.length} offline lots to server...`);
       const response = await api.syncOfflineBatch(pendingLots);
+      const remaining = await offlineDb.offlineLots.toArray();
+      if (retry.current.owner === owner) {
+        const unresolved = remaining.some(row => row.collectorId === owner && row.syncStatus === 'PENDING');
+        const failures = unresolved ? retry.current.failures + 1 : 0;
+        retry.current = { owner, failures, after: unresolved ? Date.now() + Math.min(300000, 15000 * 2 ** Math.min(failures - 1, 5)) : 0 };
+      }
 
       if (response.success) {
         // Only uploadLotDraft can mark an individually confirmed save SYNCED.
@@ -77,6 +86,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
+      retry.current.after = 0;
       syncNow(false);
     };
 

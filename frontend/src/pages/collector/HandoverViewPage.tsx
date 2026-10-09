@@ -131,7 +131,7 @@ export const HandoverViewPage: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">{lot.id}</span>
+          <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">{lot.referenceCode || lot.id}</span>
           <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
             isCompleted
               ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'

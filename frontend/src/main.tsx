@@ -15,6 +15,15 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('/offline-sw.js').catch(console.warn);
   });
 }
+// Remove only this app's stale worker in development; preserve drafts/caches.
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  void navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const registration of registrations) {
+      const script = registration.active?.scriptURL || registration.waiting?.scriptURL;
+      if (script && new URL(script).pathname === '/offline-sw.js') void registration.unregister();
+    }
+  }).catch(console.warn);
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
