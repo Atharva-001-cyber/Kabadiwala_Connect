@@ -288,19 +288,40 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.payments;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.anomalies;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.disputes;
 
--- PERMISSIONS / ACCESS
-ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.collectors DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.recyclers DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.lots DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.offers DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.pickups DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.handovers DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.traceability_logs DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.prices DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.price_history_log DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.payments DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.anomalies DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.disputes DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ml_training_samples DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.cpcb_master_registry DISABLE ROW LEVEL SECURITY;
+-- ROW LEVEL SECURITY (RLS) POLICIES & PERMISSIONS
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.collectors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.recyclers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pickups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.handovers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.traceability_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.prices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.price_history_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.anomalies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.disputes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ml_training_samples ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cpcb_master_registry ENABLE ROW LEVEL SECURITY;
+
+-- PERMISSIVE RLS POLICIES FOR UNINTERRUPTED CLIENT API OPERATIONS
+DO $$
+DECLARE
+  tbl TEXT;
+BEGIN
+  FOR tbl IN UNNEST(ARRAY[
+    'users', 'collectors', 'recyclers', 'lots', 'offers', 'pickups',
+    'handovers', 'traceability_logs', 'prices', 'price_history_log',
+    'payments', 'anomalies', 'disputes', 'ml_training_samples', 'cpcb_master_registry'
+  ]) LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'allow_all_select_' || tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'allow_all_insert_' || tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'allow_all_update_' || tbl, tbl);
+
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT USING (true);', 'allow_all_select_' || tbl, tbl);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT WITH CHECK (true);', 'allow_all_insert_' || tbl, tbl);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR UPDATE USING (true);', 'allow_all_update_' || tbl, tbl);
+  END LOOP;
+END $$;
+

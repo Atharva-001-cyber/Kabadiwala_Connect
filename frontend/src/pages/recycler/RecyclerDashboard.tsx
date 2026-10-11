@@ -4,7 +4,7 @@ import { Factory, Truck, CheckCircle2, Clock, Scale, ArrowRight, ShieldCheck, Sh
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { SafeImage } from '../../components/common/SafeImage';
-import { api } from '../../services/api';
+import { api, onCachedDataUpdated } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Pickup } from '../../types';
 import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatAddressLocation } from '../../i18n/translations';
@@ -20,20 +20,26 @@ export const RecyclerDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
+    const updateLots = (res: any) => { if (active && res.success) { setLots(res.lots); setLoading(false); } };
+    const updatePickups = (res: any) => { if (active && res.success) setPickups(res.pickups); };
+    const unsubscribeCache = onCachedDataUpdated((key, data) => {
+      if (key === 'lots_all_all_all') updateLots(data);
+      if (key === 'pickups_all_all_all') updatePickups(data);
+    });
     const fetchData = async (silent = false) => {
       // If we already have lots data, perform background refresh without locking UI
       if (!silent && lots.length === 0) setLoading(true);
       try {
-        const [lotsRes, pickupsRes] = await Promise.all([
-          api.getLots(),
-          api.getPickups()
+        const results = await Promise.allSettled([
+          api.getLots().then(updateLots),
+          api.getPickups().then(updatePickups)
         ]);
-        if (lotsRes.success) setLots(lotsRes.lots);
-        if (pickupsRes.success) setPickups(pickupsRes.pickups);
+        results.forEach(result => { if (result.status === 'rejected') console.warn('Recycler section fetch error:', result.reason); });
       } catch (err) {
         console.warn('Recycler fetch error:', err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchData();
@@ -49,6 +55,8 @@ export const RecyclerDashboard: React.FC = () => {
     }, 8000);
 
     return () => {
+      active = false;
+      unsubscribeCache();
       unsubscribeSync();
       clearInterval(interval);
     };

@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {transform, build} from 'esbuild';
+globalThis.window = new EventTarget();
+window.sessionStorage = {getItem:()=>null,setItem:()=>{},removeItem:()=>{},length:0};
+globalThis.sessionStorage = window.sessionStorage;
+globalThis.CustomEvent = class extends Event { constructor(type, options) {super(type);this.detail=options?.detail;} };
+const source=await readFile('src/services/api.ts','utf8');
+const section=source.slice(source.indexOf('interface CacheEntry'),source.indexOf('// In-memory cache for static CPCB'));
+const {code}=await transform(section+'\nexport {withSwrCache};',{loader:'ts',format:'esm'});
+const {withSwrCache,onCachedDataUpdated,invalidateCache}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+let now=10000; const realNow=Date.now; Date.now=()=>now;
+try {
+ let calls=0, complete;
+ const loader=()=>{calls++;return new Promise(resolve=>{complete=resolve;});};
+ const a=withSwrCache('lots_test',loader), b=withSwrCache('lots_test',loader);
+ assert.equal(calls,1); complete({lots:[1]});
+ assert.deepEqual(await a,await b);
+ const updates=[]; const unsubscribe=onCachedDataUpdated((key,data)=>updates.push({key,data}));
+ now+=61000;
+ assert.deepEqual(await withSwrCache('lots_test',loader),{lots:[1]});
+ assert.equal(calls,2); complete({lots:[1,2]});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(updates,[{key:'lots_test',data:{lots:[1,2]}}]);
+ assert.deepEqual(await withSwrCache('lots_test',loader),{lots:[1,2]});
+ now+=61000;
+ await withSwrCache('lots_test',loader);
+ invalidateCache('lots_test'); complete({lots:['obsolete']});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(updates.length,1,'Invalidated background responses must not publish');
+ unsubscribe();
+ const result=await build({entryPoints:['src/services/realtime.ts'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'isolated',setup(b){
+ b.onResolve({filter:/\/supabase$|^\.\/supabase$/},()=>({path:'db',namespace:'stub'}));
+ b.onResolve({filter:/^\.\/api$/},()=>({path:'api',namespace:'stub'}));
+ b.onLoad({filter:/.*/,namespace:'stub'},args=>({contents:args.path==='api'?'export const invalidateCache=()=>{};':'export const supabase={channel:()=>({on(){return this},subscribe(){return this}})};'}));
+ }}]});
+ const {onPlatformSync}=await import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64'));
+ let refreshes=0;const stop=onPlatformSync(()=>refreshes++);
+ window.dispatchEvent(new Event('kb:sync'));window.dispatchEvent(new Event('kb:sync'));
+ await Promise.resolve();assert.equal(refreshes,1);
+ window.dispatchEvent(new Event('kb:sync'));stop();await Promise.resolve();assert.equal(refreshes,1);
+ console.log('PASS: request deduplication, immediate cached reads, fresh-data notification, invalidated response suppression, realtime burst coalescing and unsubscribe cleanup. No network/database writes.');
+} finally {Date.now=realNow;}

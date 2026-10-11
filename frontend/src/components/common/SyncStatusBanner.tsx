@@ -8,7 +8,19 @@ import { useOfflineReadiness } from '../../services/offlineReadiness';
 export const SyncStatusBanner: React.FC = () => {
   const { isOnline, pendingCount, failedCount, legacyCount, isSyncing, syncNow } = useSync();
   const { t, language } = useLanguage();
-  const { ready, storageWarning } = useOfflineReadiness();
+  const setup = useOfflineReadiness();
+  const { ready, storageWarning } = setup;
+  const label = (en: string, hi: string, mr: string) => language === 'hi' ? hi : language === 'mr' ? mr : en;
+  const offlineText = ready ? label('Offline app and AI files available.', 'ऑफलाइन ऐप और AI फ़ाइलें उपलब्ध हैं।', 'ऑफलाइन अ‍ॅप आणि AI फाइल्स उपलब्ध आहेत.') :
+    setup.state === 'development' ? label('Offline caching is disabled in development; use production preview.', 'डेवलपमेंट में ऑफलाइन कैश बंद है; प्रोडक्शन प्रीव्यू इस्तेमाल करें।', 'डेव्हलपमेंटमध्ये ऑफलाइन कॅश बंद आहे; प्रॉडक्शन प्रीव्ह्यू वापरा.') :
+    setup.state === 'unsupported' ? label('Offline setup needs a supported browser and HTTPS.', 'ऑफलाइन सेटअप के लिए समर्थित ब्राउज़र और HTTPS चाहिए।', 'ऑफलाइन सेटअपसाठी समर्थित ब्राउझर आणि HTTPS आवश्यक आहे.') :
+    setup.state === 'registration_failed' ? label('Offline setup could not start. Retry when online.', 'ऑफलाइन सेटअप शुरू नहीं हुआ। ऑनलाइन फिर कोशिश करें।', 'ऑफलाइन सेटअप सुरू झाला नाही. ऑनलाइन पुन्हा प्रयत्न करा.') :
+    setup.state === 'worker_timeout' ? label('Offline status check timed out. Retry setup.', 'ऑफलाइन स्थिति की जाँच का समय समाप्त हुआ। फिर कोशिश करें।', 'ऑफलाइन स्थिती तपासणीची वेळ संपली. पुन्हा प्रयत्न करा.') :
+    setup.state === 'legacy' ? label('Older offline setup detected. Retry to check for an update; save work before reopening all app tabs.', 'पुराना ऑफलाइन सेटअप है। अपडेट जाँचने के लिए फिर कोशिश करें; टैब दोबारा खोलने से पहले काम सेव करें।', 'जुना ऑफलाइन सेटअप आहे. अपडेट तपासा; टॅब पुन्हा उघडण्यापूर्वी काम सेव्ह करा.') :
+    setup.state === 'downloading' ? label('Downloading offline files', 'ऑफलाइन फ़ाइलें डाउनलोड हो रही हैं', 'ऑफलाइन फाइल्स डाउनलोड होत आहेत') :
+    setup.state === 'checking' || setup.state === 'starting' ? label('Checking offline setup…', 'ऑफलाइन सेटअप जाँच रहे हैं…', 'ऑफलाइन सेटअप तपासत आहे…') :
+    setup.appReady ? label('Offline app ready; AI files incomplete. Manual category selection is available.', 'ऑफलाइन ऐप तैयार है; AI फ़ाइलें अधूरी हैं। श्रेणी स्वयं चुन सकते हैं।', 'ऑफलाइन अ‍ॅप तयार; AI फाइल्स अपूर्ण. श्रेणी स्वतः निवडू शकता.') :
+    label('Offline app files incomplete. Connect to the internet and retry setup.', 'ऑफलाइन ऐप फ़ाइलें अधूरी हैं। इंटरनेट जोड़कर फिर कोशिश करें।', 'ऑफलाइन अ‍ॅप फाइल्स अपूर्ण. इंटरनेट जोडून पुन्हा प्रयत्न करा.');
 
   if (!import.meta.env.PROD && isOnline && pendingCount === 0 && legacyCount === 0 && !storageWarning) {
     return null; // Clean UI when everything is synced
@@ -19,14 +31,25 @@ export const SyncStatusBanner: React.FC = () => {
       className={`w-full py-2 px-4 text-xs sm:text-sm font-medium flex items-center justify-between transition-colors ${
         !isOnline
           ? 'bg-red-900/90 text-red-100 border-b border-red-700'
-          : pendingCount > 0
+          : pendingCount > 0 || failedCount > 0 || !ready || storageWarning
           ? 'bg-amber-900/90 text-amber-100 border-b border-amber-700'
           : 'bg-emerald-900/90 text-emerald-100 border-b border-emerald-700'
       }`}
     >
       <div className="flex flex-wrap items-center gap-2 max-w-xl" role="status" aria-live="polite">
         <OfflineDraftList />
-        <span>{ready ? (language === 'hi' ? 'ऑफलाइन ऐप और AI फ़ाइलें उपलब्ध हैं।' : language === 'mr' ? 'ऑफलाइन अ‍ॅप आणि AI फाइल्स उपलब्ध आहेत.' : 'Offline app and AI files available.') : (language === 'hi' ? 'ऑफलाइन डाउनलोड बाकी/अनुपलब्ध — AI न चले तो श्रेणी स्वयं चुनें।' : language === 'mr' ? 'ऑफलाइन डाउनलोड बाकी/अनुपलब्ध — AI न चालल्यास श्रेणी निवडा.' : 'Offline setup pending/unavailable. If AI is unavailable, select category manually.')}</span>
+        <span>{offlineText} {!ready && setup.total > 0 && ` (${setup.completed}/${setup.total} ${label('files', 'फ़ाइलें', 'फाइल्स')})`}</span>
+        {(!ready && (setup.missing.length > 0 || Object.keys(setup.failures).length > 0)) && <details className="w-full text-xs">
+          <summary className="cursor-pointer">{label('Offline setup details', 'ऑफलाइन सेटअप विवरण', 'ऑफलाइन सेटअप तपशील')}</summary>
+          {Object.entries(setup.failures).map(([path, reason]) => <div className="break-all" key={path}>{path}: {reason}</div>)}
+          {setup.missing.map(path => <div className="break-all" key={path}>{label('Not downloaded', 'डाउनलोड नहीं हुआ', 'डाउनलोड झाले नाही')}: {path}</div>)}
+        </details>}
+        {setup.updateWaiting && <span>{label('Update waiting. Save your work, then close all app tabs and reopen to apply safely.', 'अपडेट बाकी है। काम सेव करके सभी ऐप टैब बंद करें और फिर खोलें।', 'अपडेट प्रतीक्षेत. काम सेव्ह करून सर्व अ‍ॅप टॅब बंद करा आणि पुन्हा उघडा.')}</span>}
+        {!ready && import.meta.env.PROD && !['unsupported', 'checking', 'downloading'].includes(setup.state) && <button type="button"
+          onClick={() => void setup.retry()} disabled={!isOnline || setup.retrying}
+          className="px-3 py-1 rounded border border-current disabled:opacity-50">
+          {setup.retrying ? label('Retrying…', 'फिर कोशिश हो रही है…', 'पुन्हा प्रयत्न सुरू…') : label('Retry offline setup', 'ऑफलाइन सेटअप फिर करें', 'ऑफलाइन सेटअप पुन्हा करा')}
+        </button>}
         {storageWarning && <span>Device storage nearly full. Keep pending drafts; free other storage before adding photos.</span>}
         {failedCount > 0 && <span>{failedCount} {language === 'hi' ? 'अपलोड असफल — ड्राफ्ट सुरक्षित है। दोबारा कोशिश करें।' : language === 'mr' ? 'अपलोड अयशस्वी — मसुदे सुरक्षित आहेत.' : 'uploads need attention. Drafts retained; retry or contact support.'}</span>}
         {legacyCount > 0 && <span>{legacyCount} {language === 'hi' ? 'पुराने ड्राफ्ट का खाता अज्ञात है; सहायता से रिकवर करें।' : language === 'mr' ? 'जुन्या मसुद्यांचे खाते अज्ञात आहे; मदत घ्या.' : 'legacy drafts have no owner; contact support for recovery. Not deleted.'}</span>}
@@ -43,7 +66,7 @@ export const SyncStatusBanner: React.FC = () => {
         ) : (
           <>
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{t.syncedStatus}</span>
+            <span>{failedCount > 0 || legacyCount > 0 ? label('Cloud uploads need attention.', 'क्लाउड अपलोड की जाँच करें।', 'क्लाउड अपलोड तपासा.') : label('Cloud sync: no pending lot uploads.', 'क्लाउड सिंक: कोई लॉट अपलोड बाकी नहीं।', 'क्लाउड सिंक: लॉट अपलोड बाकी नाहीत.')}</span>
           </>
         )}
       </div>

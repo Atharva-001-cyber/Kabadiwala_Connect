@@ -69,7 +69,7 @@ export function getGeminiApiKey(): string {
 
   try {
     const procKey = typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY;
-    if (isValidKey(procKey)) return (procKey as string).trim();
+    if (typeof procKey === 'string' && isValidKey(procKey)) return procKey.trim();
   } catch {}
 
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {

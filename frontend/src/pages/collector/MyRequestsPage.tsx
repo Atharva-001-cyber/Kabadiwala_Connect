@@ -49,11 +49,8 @@ export const MyRequestsPage: React.FC = () => {
         if (!collectorId && u) collectorId = JSON.parse(u)?.id;
       } catch {}
 
-      // Parallelize fetching lots and active offers to eliminate waterfall delay
-      const [res, offersRes] = await Promise.all([
-        api.getLots(collectorId ? { collectorId } : {}),
-        api.getOffersForLots()
-      ]);
+      const res = await api.getLots(collectorId ? { collectorId } : {});
+      const offersRes = await api.getOffersForLots(res.lots.map(lot => lot.id));
 
       if (res.success) {
         const lotIdsSet = new Set(res.lots.map(l => l.id));

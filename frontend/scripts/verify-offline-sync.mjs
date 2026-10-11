@@ -13,7 +13,14 @@ const bundle = await build({
     b.onLoad({ filter: /.*/, namespace: 'test' }, () => ({ contents: 'export const supabase = {from: (...args) => window.fakeFrom(...args)};' }));
   } }]
 });
+let failModelDownload = false;
+let modelRequests = 0;
+let updateRevision = false;
 const server = createServer(async (req, res) => {
+  if (req.url === '/models/best.onnx') {
+    modelRequests++;
+    if (failModelDownload) { res.writeHead(503, {'Content-Type':'text/plain'}); res.end('Temporary model download failure'); return; }
+  }
   if (req.url === '/test') { res.setHeader('Content-Type','text/html'); res.end('<script src="/test.js"></script>'); return; }
   if (req.url === '/test.js') { res.setHeader('Content-Type','application/javascript'); res.end(bundle.outputFiles[0].text); return; }
   try {
@@ -22,7 +29,9 @@ const server = createServer(async (req, res) => {
     const file = resolve(root, '.' + (extname(pathname) ? pathname : '/index.html'));
     if (!file.startsWith(root + '\\') && !file.startsWith(root + '/')) throw Error('Invalid path');
     res.setHeader('Content-Type', ({'.html':'text/html','.js':'application/javascript','.mjs':'application/javascript','.css':'text/css','.json':'application/json','.wasm':'application/wasm'})[extname(file)] || 'application/octet-stream');
-    res.end(await readFile(file));
+    const bytes = await readFile(file);
+    res.end(updateRevision && pathname === '/offline-sw.js'
+      ? bytes.toString().replace(/const RELEASE = "[^"]+"/, 'const RELEASE = "isolated-update-test"') : bytes);
   } catch { res.statusCode = 404; res.end(); }
 });
 await new Promise(done => server.listen(0, '127.0.0.1', done));
@@ -170,25 +179,66 @@ try {
   console.log('PASS: complete model/WASM/module offline downloads, actual offline device inference, and revoked readiness after missing cache entry.');
   console.log('PASS: real-browser IndexedDB save/reload, photo/metadata preservation, account isolation, network retry, rejection retention, concurrent sync, storage-full rejection, lost-response idempotence, single trace, and offline app-shell reload. All remote requests blocked; no live database writes.');
   await shell.close();
-  const incomplete = await browser.newContext();
+  failModelDownload = true;
+  const incomplete = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   await incomplete.route('**/*', route => {
     const url = route.request().url();
-    return !url.startsWith(origin) || url.endsWith('/models/best.onnx') ? route.abort() : route.continue();
+    return !url.startsWith(origin) ? route.abort() : route.continue();
   });
   const failedPage = await incomplete.newPage();
   await failedPage.goto(origin + '/login');
-  // Failed precache must not activate a partial release.
-  const failedInstall = await failedPage.evaluate(async () => {
-    const registration = await navigator.serviceWorker.register('/offline-sw.js');
+  await failedPage.waitForFunction(() => !!navigator.serviceWorker.controller);
+  const readSetup = () => failedPage.evaluate(() => new Promise(resolve => {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = e => { channel.port1.close(); resolve(e.data); };
+    navigator.serviceWorker.controller.postMessage({type:'OFFLINE_STATUS'},[channel.port2]);
+  }));
+  const partial = await readSetup();
+  assert.equal(partial.ready,false);
+  assert.equal(partial.appReady,true);
+  assert.equal(partial.aiReady,false);
+  assert.deepEqual(partial.missing,['/models/best.onnx']);
+  assert.match(partial.failures['/models/best.onnx'],/503/);
+  await failedPage.evaluate(() => {
+    localStorage.setItem('user',JSON.stringify({id:'repair-test',role:'COLLECTOR',name:'Repair test'}));
+    localStorage.setItem('sih_kabadi_token','isolated-test');
+    localStorage.setItem('sih_kabadi_lang','en');
+    localStorage.setItem('collectorProfile',JSON.stringify({id:'repair-test',userId:'repair-test',district:'Lucknow'}));
+    localStorage.setItem('offline-preservation-sentinel','keep');
+  });
+  await incomplete.setOffline(true);
+  await failedPage.goto(origin + '/collector/add');
+  await failedPage.waitForSelector('input[type=file]',{state:'attached'});
+  await failedPage.getByText('Offline app ready; AI files incomplete.',{exact:false}).waitFor();
+  assert.equal(await failedPage.getByRole('button',{name:'Retry offline setup',exact:true}).isDisabled(),true);
+  await incomplete.setOffline(false);
+  failModelDownload = false;
+  const beforeRetry = modelRequests;
+  await failedPage.getByRole('button',{name:'Retry offline setup',exact:true}).click();
+  await failedPage.getByText('Offline app and AI files available.',{exact:false}).waitFor({timeout:30000});
+  assert.equal((await readSetup()).ready,true);
+  assert.equal(modelRequests,beforeRetry+1,'Retry downloads missing model once');
+  assert.equal(await failedPage.evaluate(() => localStorage.getItem('offline-preservation-sentinel')),'keep');
+  // A failed update must not take over an already working offline release.
+  updateRevision = true;
+  failModelDownload = true;
+  const retained = await failedPage.evaluate(async () => {
+    const registration = await navigator.serviceWorker.getRegistration();
+    const oldController = navigator.serviceWorker.controller;
+    await registration.update();
     const worker = registration.installing;
-    if (!worker) return !registration.active;
-    return await new Promise(resolve => {
+    if (worker) await new Promise(resolve => {
+      if (['redundant','installed'].includes(worker.state)) return resolve();
       worker.addEventListener('statechange', () => {
-        if (worker.state === 'redundant') resolve(true);
-        if (worker.state === 'activated') resolve(false);
+        if (['redundant','installed'].includes(worker.state)) resolve();
       });
     });
+    return navigator.serviceWorker.controller === oldController;
   });
-  assert.equal(failedInstall, true);
+  assert.equal(retained,true);
+  assert.equal((await readSetup()).ready,true);
+  assert.ok((await failedPage.evaluate(() => caches.keys())).length >= 2, 'Old release cache is retained');
+  console.log('PASS: mobile viewport partial download diagnostics (HTTP 503), offline manual page, disabled retry without network, UI retry, ready after repair, storage preserved.');
+  console.log('PASS: incomplete update does not replace the active release or remove old caches.');
   await incomplete.close();
 } finally { await browser.close(); server.close(); }

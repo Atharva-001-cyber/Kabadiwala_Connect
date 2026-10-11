@@ -422,7 +422,7 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
                 <span>{language === 'hi' ? 'शहरी खनन एवं रणनीतिक खनिज रिकवरी' : language === 'mr' ? 'शहरी खाणकाम व खनिज पुनर्प्राप्ती' : 'Urban Mining & Critical Mineral Yield'}</span>
               </h4>
               <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
-                JNARDDC & CPCB
+                {language === 'hi' ? 'अनुमानित रिकवरी' : language === 'mr' ? 'अंदाजित पुनर्प्राप्ती' : 'Indicative recovery'}
               </span>
               <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
                 Yield Value: ~₹{totalMineralValue.toLocaleString('en-IN')}
@@ -430,11 +430,12 @@ export const UrbanMiningVisualizer: React.FC<UrbanMiningVisualizerProps> = ({
             </div>
             <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 truncate">
               {language === 'hi'
-                ? `${validWeight} किग्रा ${getCategoryLabel(category, language)} से निकलने वाले प्रमाणित मूल्यवान धातु`
+                ? `${validWeight} किग्रा ${getCategoryLabel(category, language)} से अनुमानित रिकवरी — प्रयोगशाला परीक्षण नहीं।`
                 : language === 'mr'
-                ? `${validWeight} किलो ${getCategoryLabel(category, language)} मधील पुनर्प्राप्त होणारी खनिजे`
-                : `Certified strategic mineral yield from ${validWeight} kg of formal ${getCategoryLabel(category, 'en')}`}
+                ? `${validWeight} किलो ${getCategoryLabel(category, language)} मधून अंदाजित पुनर्प्राप्ती — प्रयोगशाळेतील चाचणी नाही.`
+                : `Indicative recovery estimate from ${validWeight} kg of ${getCategoryLabel(category, 'en')} — not a laboratory assay.`}
             </p>
+
           </div>
         </div>
 

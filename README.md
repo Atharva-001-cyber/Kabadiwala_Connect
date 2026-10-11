@@ -41,8 +41,11 @@
 | **Voice & Speech** | Native Web Speech API | Native | Bilingual SpeechSynthesis (TTS) and SpeechRecognition (STT) |
 | **Media & Canvas** | HTML5 Canvas 2D API | Native | Client-side image luminance/blur quality validation and JPEG compression |
 | **Computer Vision AI** | [ONNX Runtime Web](https://onnxruntime.ai/) (WASM) | `^1.30.0` | On-device 100% offline YOLOv8-Nano inference engine (`best.onnx`) for e-waste category & metal yield detection |
+| **Lot Verification QR** | [qrcode](https://www.npmjs.com/package/qrcode) | `^1.5.4` | Dynamic scannable QR code generation for digital green certificates & custody tracking |
+| **Data Synchronization** | SWR In-Memory Engine | Native | Stale-While-Revalidate background hydration & burst coalescing for zero-flicker UI |
 | **Cryptography** | Web Crypto API (`SubtleCrypto`) | Native | SHA-256 cryptographic Merkle Chain linking for EPR compliance logs |
 | **Micro-Interactions** | [canvas-confetti](https://www.npmjs.com/package/canvas-confetti) | `^1.9.4` | Milestone celebration feedback upon completed digital transactions |
+
 
 ---
 

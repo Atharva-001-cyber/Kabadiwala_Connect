@@ -620,6 +620,16 @@ interface CacheEntry<T> {
 const swrCache = new Map<string, CacheEntry<any>>();
 const inFlightPromises = new Map<string, Promise<any>>();
 
+// Deliver completed background reads without making consumers poll/refetch again.
+export function onCachedDataUpdated(callback: (key: string, data: any) => void) {
+  const handler = (event: Event) => {
+    const { key, data } = (event as CustomEvent).detail;
+    callback(key, data);
+  };
+  window.addEventListener('kb:cache-updated', handler);
+  return () => window.removeEventListener('kb:cache-updated', handler);
+}
+
 function readSessionStorageCache<T>(key: string): CacheEntry<T> | null {
   if (typeof window === 'undefined' || !window.sessionStorage) return null;
   try {
@@ -700,12 +710,15 @@ async function withSwrCache<T>(
       if (!inFlightPromises.has(key)) {
         const bgPromise = fetcher()
           .then((fresh) => {
+            if (inFlightPromises.get(key) !== bgPromise) return fresh;
             const entry: CacheEntry<T> = { data: fresh, timestamp: Date.now(), expiresAt: Date.now() + ttlMs };
             swrCache.set(key, entry);
             writeSessionStorageCache(key, entry);
+            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('kb:cache-updated', { detail: { key, data: fresh } }));
+            return fresh;
           })
           .catch((e) => console.warn(`[SWR Background Sync] ${key}:`, e))
-          .finally(() => inFlightPromises.delete(key));
+          .finally(() => { if (inFlightPromises.get(key) === bgPromise) inFlightPromises.delete(key); });
         inFlightPromises.set(key, bgPromise);
       }
     }
@@ -717,15 +730,17 @@ async function withSwrCache<T>(
     return inFlightPromises.get(key);
   }
 
-  const promise = (async () => {
+  let promise!: Promise<T>;
+  promise = (async () => {
     try {
       const freshData = await fetcher();
+      if (inFlightPromises.get(key) !== promise) return freshData;
       const entry: CacheEntry<T> = { data: freshData, timestamp: Date.now(), expiresAt: Date.now() + ttlMs };
       swrCache.set(key, entry);
       writeSessionStorageCache(key, entry);
       return freshData;
     } finally {
-      inFlightPromises.delete(key);
+      if (inFlightPromises.get(key) === promise) inFlightPromises.delete(key);
     }
   })();
 
@@ -1304,14 +1319,15 @@ export const api = {
   // ==========================================
   getLots: async (params: Record<string, string> = {}) => {
     // Normalized cache key independent of requested limit to allow cross-component cache sharing
-    const cacheKey = `lots_${params.collectorId || 'all'}_${params.status || 'all'}_${params.materialCategory || 'all'}`;
+    const cacheKey = `lots_${params.collectorId || 'all'}_${params.status || 'all'}_${params.materialCategory || 'all'}${params.omitImages === 'true' ? '_metadata' : ''}`;
 
     const result = await withSwrCache(cacheKey, async () => {
       // Optimized listing columns: omits redundant large 'image_urls' array which duplicates base64 data
       const listCols = 'id,collector_id,collector_name,collector_phone,material_category,sub_category,description,image_url,approx_weight,actual_weight,condition,source_type,location_district,location_state,estimated_value_min,estimated_value_max,estimated_value_avg,quoted_price,final_sale_value,selected_recycler_id,selected_offer_id,handover_otp,status,data_source,created_at,updated_at';
 
       const data = await readAllPages<any>(async (from, to) => {
-      let query = supabase.from('lots').select(listCols).order('created_at', { ascending: false }).order('id');
+      const columns = params.omitImages === 'true' ? listCols.split(',').filter(column => column !== 'image_url').join(',') : listCols;
+      let query = supabase.from('lots').select(columns).order('created_at', { ascending: false }).order('id');
 
       if (params.collectorId) query = query.eq('collector_id', params.collectorId);
       if (params.status) query = query.eq('status', params.status);
@@ -1340,13 +1356,17 @@ export const api = {
     const ids = lotIds ? [...new Set(lotIds)].sort() : undefined;
     const groups = ids ? Array.from({ length: Math.ceil(ids.length / 50) }, (_, i) => ids.slice(i * 50, i * 50 + 50)) : [undefined];
     const offers: Offer[] = [];
-    for (const group of groups) {
+    // Bound concurrency: independent ID groups need not form a long waterfall.
+    for (let start = 0; start < groups.length; start += 4) {
+      const batches = await Promise.all(groups.slice(start, start + 4).map(async group => {
       const rows = await readAllPages<any>(async (from, to) => {
         let query = supabase.from('offers').select('*').order('created_at', { ascending: false }).order('id');
         if (group) query = query.in('lot_id', group);
         return await query.range(from, to).abortSignal(AbortSignal.timeout(15000));
       });
-      offers.push(...rows.map(mapDbOfferToOffer));
+        return rows.map(mapDbOfferToOffer);
+      }));
+      batches.forEach(batch => offers.push(...batch));
     }
     return { success: true, offers };
   },
@@ -1726,7 +1746,8 @@ export const api = {
         }
 
         if (recyclers.length > 0) {
-          await offlineDb.cachedRecyclers.bulkPut(recyclers).catch(() => {});
+          // Optional cache persistence must not delay displaying the network result.
+          void offlineDb.cachedRecyclers.bulkPut(recyclers).catch(() => {});
         }
         return { success: true, count: recyclers.length, recyclers };
       } catch (err) {
@@ -2964,7 +2985,8 @@ export const api = {
           ? supabase.from('payments').select('*').eq('collector_id', collectorId).order('timestamp', { ascending: false })
           : Promise.resolve({ data: [], error: null });
 
-        let lotQuery = supabase.from('lots').select('*');
+        // Same ledger inputs; exclude photos and unrelated descriptive fields.
+        let lotQuery = supabase.from('lots').select('id,collector_id,selected_recycler_id,material_category,approx_weight,actual_weight,final_sale_value,quoted_price,status,updated_at,created_at');
         if (collectorId) lotQuery = lotQuery.eq('collector_id', collectorId);
 
         const [pmtRes, lotRes] = await Promise.all([paymentsQuery, lotQuery]);

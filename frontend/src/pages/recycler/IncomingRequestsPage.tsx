@@ -34,10 +34,9 @@ export const IncomingRequestsPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const [res, offersRes] = await Promise.all([
-        api.getLots(),
-        api.getOffersForLots()
-      ]);
+      const res = await api.getLots();
+      const offerLotIds = res.lots.filter(lot => ['CREATED', 'OFFER_RECEIVED', 'ACCEPTED'].includes(lot.status)).map(lot => lot.id);
+      const offersRes = await api.getOffersForLots(offerLotIds);
 
       if (res.success) {
         const fetchedLots = res.lots;

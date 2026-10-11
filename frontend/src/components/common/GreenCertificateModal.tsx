@@ -3,6 +3,7 @@ import { X, Award, ShieldCheck, Printer, CheckCircle2, AlertCircle } from 'lucid
 import { Lot, HandoverRecord } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
+import { CertificateQr } from './CertificateQr';
 
 interface GreenCertificateModalProps {
   lot: Lot;
@@ -116,9 +117,8 @@ export const GreenCertificateModal: React.FC<GreenCertificateModalProps> = ({ lo
           {/* Signatures & Seal */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-200 text-xs text-slate-600">
             <div className="flex items-center gap-2">
-              <div className="w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center font-mono text-[10px] text-center text-slate-600 border border-slate-300">
-                [QR VALID]
-              </div>
+              <CertificateQr lotId={lot.id} />
+
               <div>
                 <p className="font-semibold text-slate-800">{t.certVerifiedTimestamp}</p>
                 <p className="font-mono text-[10px]">{new Date(lot.updatedAt || lot.createdAt).toLocaleString('en-IN')}</p>

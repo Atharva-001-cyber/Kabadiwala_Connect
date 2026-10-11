@@ -7,13 +7,13 @@ import { LanguageProvider } from './context/LanguageContext';
 import { SyncProvider } from './context/SyncContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { registerOfflineWorker } from './services/offlineRegistration';
 
 // Cache only the built application shell, never API responses or user records.
 // Dev/HMR remains untouched; use the local production preview to test offline reload.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/offline-sw.js').catch(console.warn);
-  });
+  // Do not wait for third-party fonts/payment scripts to finish loading.
+  void registerOfflineWorker().catch(console.warn);
 }
 // Remove only this app's stale worker in development; preserve drafts/caches.
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {

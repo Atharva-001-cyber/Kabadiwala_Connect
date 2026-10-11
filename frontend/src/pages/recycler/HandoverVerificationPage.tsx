@@ -154,7 +154,7 @@ export const HandoverVerificationPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots();
+      const res = await api.getLots({ omitImages: 'true' });
       if (res.success) {
         // Filter lots in ACCEPTED, PICKUP_SCHEDULED, or PICKED_UP status, or matching queryLotId
         let pending = res.lots.filter((l: Lot) => 

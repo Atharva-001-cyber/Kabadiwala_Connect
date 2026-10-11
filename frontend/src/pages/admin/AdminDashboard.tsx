@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { getCategoryLabel } from '../../i18n/translations';
-import { api } from '../../services/api';
+import { api, onCachedDataUpdated } from '../../services/api';
 import { EmptyState } from '../../components/common/EmptyState';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 
@@ -65,10 +65,16 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const unsubscribeCache = onCachedDataUpdated((key, data) => {
+      if (key === 'admin_kpis' && data.success) {
+        setKpis(data.kpis);
+        setMaterialBreakdown(data.materialBreakdown || {});
+      }
+    });
     fetchKPIs(false);
     // Live polling every 15 seconds to keep admin national telemetry synchronized with field operations
     const interval = setInterval(() => fetchKPIs(true), 15000);
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); unsubscribeCache(); };
   }, [fetchKPIs]);
 
   return (

@@ -132,7 +132,7 @@ export const InventoryProcessingPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots();
+      const res = await api.getLots({ omitImages: 'true' });
       if (res.success) {
         let fetched = res.lots;
         if (queryLotId && !fetched.some(l => l.id === queryLotId)) {

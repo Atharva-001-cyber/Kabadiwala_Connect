@@ -130,8 +130,13 @@ export const realtimeSync = new RealtimeSyncService();
  * Custom React hook helper for auto-refresh on real-time database changes.
  */
 export function onPlatformSync(callback: () => void): () => void {
+  let queued = false;
+  let active = true;
   const handler = () => {
-    callback();
+    // Each database event arrives through both the subscription and kb:sync.
+    if (queued || !active) return;
+    queued = true;
+    queueMicrotask(() => { queued = false; if (active) callback(); });
   };
 
   const unsubscribe = realtimeSync.subscribe(() => {
@@ -141,6 +146,7 @@ export function onPlatformSync(callback: () => void): () => void {
   window.addEventListener('kb:sync', handler);
 
   return () => {
+    active = false;
     unsubscribe();
     window.removeEventListener('kb:sync', handler);
   };

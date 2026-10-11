@@ -32,7 +32,7 @@ import { useToast } from '../../context/ToastContext';
 import { useSync } from '../../context/SyncContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { AudioButton } from '../../components/common/AudioButton';
-import { api } from '../../services/api';
+import { api, onCachedDataUpdated } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, PriceRecord, CitizenBeacon } from '../../types';
 import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatLocationString, formatAddressLocation } from '../../i18n/translations';
@@ -110,26 +110,33 @@ export const CollectorDashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    let active = true;
+    const district = collectorProfile?.district || 'Lucknow';
+    const colId = collectorProfile?.id;
+    const updateLots = (res: any) => { if (active && res.success) setLots(res.lots); };
+    const updateLedger = (res: any) => { if (active && res.success) setLedgerSummary(res.summary); };
+    const updatePrices = (res: any) => { if (active && res.success) setPrices(res.prices); };
+    const unsubscribeCache = onCachedDataUpdated((key, data) => {
+      if (key === `lots_${colId || 'all'}_all_all`) updateLots(data);
+      if (key === `ledger_collector_${colId || 'default'}`) updateLedger(data);
+      if (key === `priceboard_${district.toLowerCase()}`) updatePrices(data);
+    });
     const fetchData = async (silent = false) => {
       try {
         if (!silent && lots.length === 0 && !ledgerSummary) setLoading(true);
-        const district = collectorProfile?.district || 'Lucknow';
-        const colId = collectorProfile?.id;
         const lotsQuery = colId ? api.getLots({ collectorId: colId }) : api.getLots({});
-        const [lotsRes, ledgerRes, pricesRes, beaconsRes] = await Promise.all([
-          lotsQuery,
-          api.getCollectorLedger(colId),
-          api.getPriceBoard(district),
-          api.getCitizenBeacons({ status: 'REQUESTED' })
+        // Independent sections render as soon as their own data is available.
+        const results = await Promise.allSettled([
+          lotsQuery.then(updateLots),
+          api.getCollectorLedger(colId).then(updateLedger),
+          api.getPriceBoard(district).then(updatePrices),
+          api.getCitizenBeacons({ status: 'REQUESTED' }).then(res => { if (active && res.success) setBeacons(res.beacons); })
         ]);
-        if (lotsRes.success) setLots(lotsRes.lots);
-        if (ledgerRes.success) setLedgerSummary(ledgerRes.summary);
-        if (pricesRes.success) setPrices(pricesRes.prices);
-        if (beaconsRes.success) setBeacons(beaconsRes.beacons);
+        results.forEach(result => { if (result.status === 'rejected') console.warn('Dashboard section fetch error:', result.reason); });
       } catch (err) {
         console.warn('Dashboard fetch error:', err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchData();
@@ -144,10 +151,12 @@ export const CollectorDashboard: React.FC = () => {
     }, 8000);
 
     return () => {
+      active = false;
+      unsubscribeCache();
       unsubscribeSync();
       clearInterval(interval);
     };
-  }, [collectorProfile]);
+  }, [collectorProfile?.id, collectorProfile?.district]);
 
   const lotsScrapWeight = lots.reduce((sum, l) => sum + (l.actualWeight || l.approxWeight || 0), 0);
   const totalCollectedWeight = Math.max(
