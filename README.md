@@ -479,6 +479,12 @@ graph TD
 * **Bundler & Minifier**: Vite (ESBuild / Rollup pipeline)
 * **Linter & Code Format**: Modern ESLint rules with standard TypeScript presets
 * **Deployment Readiness**: Pre-configured for edge hosting (Vercel `vercel.json` and static CDN deployment).
+* **Automated Regression & Verification Suite**:
+  * `verify-price-observation.mjs`: Enforces strict non-future dates and decouples historical log entries from current benchmarks.
+  * `verify-price-chart-fallback.mjs`: Verifies race-condition protection, accurate loading states, and chronological trend rendering.
+  * `verify-certificate-qr.mjs`: Validates dynamic scannable green certificate QR code resolution.
+  * `verify-fetch-performance.mjs`: Asserts SWR cache deduplication, burst event coalescing, and zero redundant re-fetches.
+
 
 ---
 

@@ -1638,26 +1638,52 @@ export const api = {
     };
   },
 
-  updateObservedPrice: async (data: { materialCategory: string; subCategory?: string; district: string; state?: string; ratePerKg: number; source?: string; sourceType?: string }) => {
+  updateObservedPrice: async (data: { materialCategory: string; subCategory?: string; district: string; state?: string; ratePerKg: number; source?: string; sourceType?: string; observationDate?: string }) => {
+    if (!Number.isFinite(data.ratePerKg) || data.ratePerKg <= 0) throw new Error('Enter a valid observed rate greater than zero.');
+    if (!data.district?.trim() || !data.materialCategory?.trim()) throw new Error('Select a district and material category.');
+    if (!data.source?.trim()) throw new Error('Enter the actual source of this price observation.');
+    const today = new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10);
+    const observationDate = data.observationDate ?? today;
+    const parsedDate = new Date(`${observationDate}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(observationDate) || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== observationDate || observationDate > today) {
+      throw new Error('Enter a valid observation date that is not in the future.');
+    }
     const entryId = `ph_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     const newEntry = {
       id: entryId,
-      district: data.district,
+      district: data.district.trim(),
       material_category: data.materialCategory,
       rate: data.ratePerKg,
-      date: new Date().toISOString().split('T')[0],
-      source: data.source || 'Aggregator Field Observation'
+      date: observationDate,
+      source: data.source.trim()
     };
 
-    await supabase.from('price_history_log').insert(newEntry);
-    await supabase.from('prices')
+    const { error: historyError } = await supabase.from('price_history_log').insert(newEntry);
+    if (historyError) throw new Error(`Price observation was not confirmed saved: ${historyError.message}. Refresh history before retrying.`);
+    invalidateCache('price_history_');
+    // Historical quotations must never replace today's benchmark.
+    if (observationDate < today) return {
+      success: true,
+      message: 'Historical price observation saved. Current benchmark unchanged.',
+      warning: undefined,
+      logEntry: newEntry
+    };
+    let benchmarkWarning = '';
+    try {
+      const { error: priceError } = await supabase.from('prices')
       .update({ prevailing_buy_price: data.ratePerKg, last_updated: new Date().toISOString() })
       .eq('material_category', data.materialCategory)
-      .eq('district', data.district);
+      .eq('district', data.district.trim());
+      if (priceError) benchmarkWarning = 'History saved, but current benchmark could not be refreshed. Do not submit the observation again.';
+    } catch {
+      benchmarkWarning = 'History saved, but current benchmark update was not confirmed. Do not submit the observation again.';
+    }
+    invalidateCache('priceboard_');
 
     return {
       success: true,
-      message: 'Observed price updated and recorded.',
+      message: benchmarkWarning || 'Price observation recorded in history. Existing benchmark update requested.',
+      warning: benchmarkWarning || undefined,
       logEntry: newEntry
     };
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -22,7 +22,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { useToast } from '../../context/ToastContext';
-import { api } from '../../services/api';
+import { api, invalidateCache, onCachedDataUpdated } from '../../services/api';
 import { PriceRecord, MaterialCategory, RecyclerProfile } from '../../types';
 import { categoryLabels, getCategoryLabel, formatLocationString, formatUserDisplayName, MANDI_LOCATIONS, DISTRICT_STATE_MAP } from '../../i18n/translations';
 
@@ -33,10 +33,16 @@ export const PriceBoardPage: React.FC = () => {
 
   const [selectedDistrict, setSelectedDistrict] = useState<string>('Lucknow');
   const [prices, setPrices] = useState<PriceRecord[]>([]);
+  const [pricesDistrict, setPricesDistrict] = useState('');
+  const priceRequest = useRef(0);
   const [priceProvenance, setPriceProvenance] = useState('Loading');
   const [recyclers, setRecyclers] = useState<RecyclerProfile[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<MaterialCategory>('PCB');
   const [historyData, setHistoryData] = useState<any>(null);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState(false);
+  const historyRequest = useRef(0);
+  const historyText = (en: string, hi: string, mr: string) => language === 'hi' ? hi : language === 'mr' ? mr : en;
   const [loading, setLoading] = useState<boolean>(true);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [gpsActive, setGpsActive] = useState<boolean>(false);
@@ -50,8 +56,9 @@ export const PriceBoardPage: React.FC = () => {
   // New Price Entry Modal (Admin/Authorized)
   const [showAddPriceModal, setShowAddPriceModal] = useState<boolean>(false);
   const [inputCategory, setInputCategory] = useState<MaterialCategory>('PCB');
-  const [inputRate, setInputRate] = useState<string>('98');
-  const [inputSource, setInputSource] = useState<string>('Local Mandi Survey');
+  const [inputRate, setInputRate] = useState<string>('');
+  const [inputSource, setInputSource] = useState<string>('');
+  const [inputDate, setInputDate] = useState(() => new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10));
   const [submittingPrice, setSubmittingPrice] = useState<boolean>(false);
 
   const currentLocation = MANDI_LOCATIONS.find(l => l.district.toLowerCase() === selectedDistrict.toLowerCase()) || {
@@ -72,6 +79,7 @@ export const PriceBoardPage: React.FC = () => {
   }, []);
 
   const fetchPricesAndRecyclers = async () => {
+    const request = ++priceRequest.current;
     setLoading(true);
     try {
       const [priceRes, recyclerRes] = await Promise.all([
@@ -79,31 +87,44 @@ export const PriceBoardPage: React.FC = () => {
         api.getRecyclers({ district: selectedDistrict })
       ]);
 
+      if (request !== priceRequest.current) return;
       if (priceRes.success) {
         setPrices(priceRes.prices);
+        setPricesDistrict(selectedDistrict);
         setPriceProvenance(priceRes.provenance);
       }
       if (recyclerRes.success) {
         setRecyclers(recyclerRes.recyclers || []);
       }
     } catch (e) {
+      if (request !== priceRequest.current) return;
       console.warn('Failed to load prices/recyclers:', e);
       showToast('Could not refresh price/recycler data. Previously displayed values may be stale.', 'warning');
     } finally {
-      setLoading(false);
+      if (request === priceRequest.current) setLoading(false);
     }
   };
 
+  const benchmarkBars = pricesDistrict === selectedDistrict
+    ? prices.filter(price => Number.isFinite(Number(price.prevailingBuyPrice)) && Number(price.prevailingBuyPrice) > 0)
+    : [];
+  const showBenchmarkChart = !historyLoading && !historyError && !!historyData && !historyData.hasSufficientData && benchmarkBars.length > 0;
+  const benchmarkMaximum = Math.max(1, ...benchmarkBars.map(price => Number(price.prevailingBuyPrice)));
+
   const fetchHistory = async (cat: MaterialCategory, dist: string) => {
+    const request = ++historyRequest.current;
+    setHistoryData(null);
+    setHistoryError(false);
+    setHistoryLoading(true);
     try {
       const res = await api.getPriceHistory(cat, 30, dist);
-      if (res.success) {
+      if (request === historyRequest.current && res.success) {
         setHistoryData(res);
       }
     } catch (e) {
       console.warn('Failed to load history:', e);
-      setHistoryData(null);
-    }
+      if (request === historyRequest.current) { setHistoryData(null); setHistoryError(true); }
+    } finally { if (request === historyRequest.current) setHistoryLoading(false); }
   };
 
   const updateValuationBreakdown = async (cat: MaterialCategory, weightStr: string, cond: string, dist: string) => {
@@ -130,6 +151,15 @@ export const PriceBoardPage: React.FC = () => {
 
   useEffect(() => {
     fetchHistory(selectedCategory, selectedDistrict);
+    const unsubscribe = onCachedDataUpdated((key, data) => {
+      if (key === `price_history_${selectedCategory}_30_${selectedDistrict.toLowerCase()}`) {
+        setHistoryData(data); setHistoryError(false); setHistoryLoading(false);
+      }
+    });
+    return () => { historyRequest.current++; unsubscribe(); };
+  }, [selectedCategory, selectedDistrict]);
+
+  useEffect(() => {
     updateValuationBreakdown(selectedCategory, calcWeight, calcCondition, selectedDistrict);
   }, [selectedCategory, selectedDistrict, calcWeight, calcCondition]);
 
@@ -177,10 +207,13 @@ export const PriceBoardPage: React.FC = () => {
         district: selectedDistrict,
         ratePerKg: parseFloat(inputRate),
         source: inputSource,
+        observationDate: inputDate,
         sourceType: 'ADMIN_BENCHMARK'
       });
       if (res.success) {
-        showToast(res.message, 'success');
+        showToast(res.message, res.warning ? 'warning' : 'success');
+        invalidateCache('price_history_');
+        invalidateCache('priceboard_');
         setShowAddPriceModal(false);
         fetchPricesAndRecyclers();
         fetchHistory(selectedCategory, selectedDistrict);
@@ -786,22 +819,22 @@ export const PriceBoardPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-                {language === 'hi' ? 'ऐतिहासिक भाव विश्लेषण' : language === 'mr' ? 'ऐतिहासिक दर विश्लेषण' : 'Historical Price Analysis'} ({categoryLabels[selectedCategory]?.[language] || selectedCategory})
+                {showBenchmarkChart ? historyText('Current benchmark comparison', 'वर्तमान बेंचमार्क तुलना', 'सध्याच्या बेंचमार्कची तुलना') : `${historyText('Historical Price Analysis', 'ऐतिहासिक भाव विश्लेषण', 'ऐतिहासिक दर विश्लेषण')} (${categoryLabels[selectedCategory]?.[language] || selectedCategory})`}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                 historyData?.hasSufficientData
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                   : 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
               }`}>
-                {historyData?.hasSufficientData ? (language === 'hi' ? 'दर्ज मूल्य इतिहास — स्रोत जाँचें' : language === 'mr' ? 'नोंदवलेले दर — स्रोत तपासा' : 'Recorded prices — check sources') : (language === 'hi' ? 'पर्याप्त डेटा नहीं' : language === 'mr' ? 'पुरेसा डेटा नाही' : 'Insufficient recorded data')}
+                {historyLoading ? historyText('Loading history…', 'इतिहास लोड हो रहा है…', 'इतिहास लोड होत आहे…') : historyError ? historyText('History unavailable', 'इतिहास उपलब्ध नहीं', 'इतिहास उपलब्ध नाही') : historyData?.hasSufficientData ? (language === 'hi' ? 'दर्ज मूल्य इतिहास — स्रोत जाँचें' : language === 'mr' ? 'नोंदवलेले दर — स्रोत तपासा' : 'Recorded prices — check sources') : (language === 'hi' ? 'पर्याप्त डेटा नहीं' : language === 'mr' ? 'पुरेसा डेटा नाही' : 'Insufficient recorded data')}
               </span>
             </div>
             <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">
-              {categoryLabels[selectedCategory]?.[language] || selectedCategory} • {formatLocationString(selectedDistrict, '', language)} {language === 'hi' ? 'मंडी' : language === 'mr' ? 'बाजार' : 'Mandi'}
+              {!showBenchmarkChart && `${categoryLabels[selectedCategory]?.[language] || selectedCategory} • `}{formatLocationString(selectedDistrict, '', language)} {language === 'hi' ? 'मंडी' : language === 'mr' ? 'बाजार' : 'Mandi'}
             </h3>
           </div>
 
-          {historyData?.observedTrend && historyData.observedTrend !== 'INSUFFICIENT_DATA' && (
+          {!historyLoading && !historyError && historyData?.hasSufficientData ? (
             <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
               <span className="text-slate-500 dark:text-slate-400 text-[11px]">{language === 'hi' ? 'देखा गया रुझान:' : language === 'mr' ? 'नोंदवलेला कल:' : 'Observed Trend:'}</span>
               <span className={`font-black flex items-center gap-1 ${
@@ -813,7 +846,7 @@ export const PriceBoardPage: React.FC = () => {
                 <span>{historyData.trendPercent > 0 ? `+${historyData.trendPercent}%` : `${historyData.trendPercent}%`}</span>
               </span>
             </div>
-          )}
+          ) : <span className="text-xs text-slate-500">{historyText('Observed Trend: N/A', 'देखा गया रुझान: उपलब्ध नहीं', 'नोंदवलेला कल: उपलब्ध नाही')}</span>}
         </div>
 
         {/* Clean Visual Bar Trend from Genuine Stored Records */}
@@ -821,7 +854,7 @@ export const PriceBoardPage: React.FC = () => {
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400">{language === 'hi' ? 'समयरेखा के अनुसार वास्तविक भाव लॉग (₹/किग्रा):' : language === 'mr' ? 'काळानुसार प्रत्यक्ष दर नोंदी (₹/किग्रा):' : 'Observed Price Log Timeline (₹/kg):'}</p>
             <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2">
-              {historyData.history.slice(-12).map((point: any, idx: number) => {
+              {historyData.history.slice(0, 12).reverse().map((point: any, idx: number) => {
                 const priceVal = Number(point.price ?? point.rate ?? 0);
                 const allPrices = historyData.history.map((h: any) => Number(h.price ?? h.rate ?? 0)).filter((p: number) => p > 0);
                 const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 100;
@@ -869,13 +902,35 @@ export const PriceBoardPage: React.FC = () => {
         ) : (
           /* Honest Empty State: ZERO mathematical sine wave synthesis */
           <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-2">
+            {showBenchmarkChart && <section aria-label="Current benchmark comparison" className="text-left space-y-3 pb-4">
+              <p className="text-xs text-slate-600 dark:text-slate-300">{historyText('Current benchmark rates (₹/kg), not historical trends or guaranteed purchase offers.', 'वर्तमान बेंचमार्क दरें (₹/किग्रा), ऐतिहासिक रुझान या पक्के खरीद ऑफर नहीं।', 'सध्याचे बेंचमार्क दर (₹/किग्रा), ऐतिहासिक कल किंवा हमी खरेदी ऑफर नाहीत.')}</p>
+              <p className="text-xs text-slate-500">{historyText('Data source', 'डेटा स्रोत', 'डेटा स्रोत')}: {priceProvenance}</p>
+              <ul className="space-y-3">
+                {benchmarkBars.map((price, index) => <li key={`${price.materialCategory}-${index}`}>
+                  <div className="flex justify-between gap-3 text-xs mb-1 text-slate-800 dark:text-slate-200">
+                    <span>{getCategoryLabel(price.materialCategory, language)}</span>
+                    <span className="font-bold whitespace-nowrap">₹{Number(price.prevailingBuyPrice).toLocaleString('en-IN')}/kg</span>
+                  </div>
+                  <div aria-hidden="true" className="h-5 rounded bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                    <div className="h-full rounded bg-emerald-500" style={{ width: `${Number(price.prevailingBuyPrice) / benchmarkMaximum * 100}%` }} />
+                  </div>
+                </li>)}
+              </ul>
+            </section>}
             <Info className="w-8 h-8 text-slate-400 mx-auto" />
             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-300">
-              {t.noHistory || (language === 'hi' ? 'अभी पर्याप्त भाव डेटा उपलब्ध नहीं है' : language === 'mr' ? 'अद्याप पुरेसा दर इतिहास उपलब्ध नाही' : 'Not enough price history yet')}
+              {historyLoading ? historyText('Loading recorded prices…', 'दर्ज भाव लोड हो रहे हैं…', 'नोंदवलेले दर लोड होत आहेत…') : historyError ? historyText('Could not load price history', 'भाव इतिहास लोड नहीं हुआ', 'दर इतिहास लोड झाला नाही') : historyText('Not enough recorded prices yet', 'अभी पर्याप्त दर्ज भाव नहीं हैं', 'अद्याप पुरेसे नोंदवलेले दर नाहीत')}
             </h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              {t.noHistoryDesc || 'जैसे-जैसे इस जिले में नई मंडियों के वास्तविक भाव दर्ज होंगे, ऐतिहासिक ट्रेंड यहाँ दिखाई देगा। हम कोई नकली या कृत्रिम ग्राफ़ नहीं बनाते।'}
+              {historyLoading ? historyText('Please wait.', 'कृपया प्रतीक्षा करें।', 'कृपया प्रतीक्षा करा.') : historyError ? historyText('Check your connection and retry. This is not confirmation that records are missing.', 'कनेक्शन जाँचकर फिर कोशिश करें। इसका अर्थ रिकॉर्ड गायब होना नहीं है।', 'कनेक्शन तपासून पुन्हा प्रयत्न करा. याचा अर्थ नोंदी नाहीत असा नाही.') : historyText(`${historyData?.dataPoints || 0} valid observations for this category and district. At least 2 are needed. Current benchmark rates are not historical records.`, `इस श्रेणी और जिले के ${historyData?.dataPoints || 0} मान्य रिकॉर्ड हैं। कम से कम 2 चाहिए। वर्तमान बेंचमार्क ऐतिहासिक रिकॉर्ड नहीं है।`, `या श्रेणी आणि जिल्ह्याच्या ${historyData?.dataPoints || 0} वैध नोंदी आहेत. किमान 2 आवश्यक. सध्याचे बेंचमार्क ऐतिहासिक नोंदी नाहीत.`)}
             </p>
+            {!historyLoading && <button type="button" className="text-xs font-semibold text-emerald-700 underline" onClick={() => {
+              invalidateCache(`price_history_${selectedCategory}_30_${selectedDistrict.toLowerCase()}`);
+              void fetchHistory(selectedCategory, selectedDistrict);
+            }}>{historyText('Retry / refresh history', 'इतिहास फिर लोड करें', 'इतिहास पुन्हा लोड करा')}</button>}
+            {!historyLoading && !historyError && <button type="button" disabled={!isOnline} className="block mx-auto text-xs font-semibold text-emerald-700 underline disabled:opacity-50" onClick={() => {
+              setInputCategory(selectedCategory); setInputRate(''); setInputSource(''); setShowAddPriceModal(true);
+            }}>{historyText('Record a genuine observed price', 'वास्तविक देखा गया भाव दर्ज करें', 'प्रत्यक्ष पाहिलेला दर नोंदवा')}</button>}
           </div>
         )}
       </div>
@@ -928,6 +983,15 @@ export const PriceBoardPage: React.FC = () => {
                   className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
                   required
                 />
+              </div>
+
+              <div>
+                <label htmlFor="observation-date" className="block font-bold text-slate-700 dark:text-slate-300 mb-1">{historyText('Observation date (India)', 'भाव की तारीख (भारत)', 'दराची तारीख (भारत)')}</label>
+                <input id="observation-date" type="date" required value={inputDate}
+                  max={new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10)}
+                  onChange={(e) => setInputDate(e.target.value)}
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white" />
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{historyText('Use the actual quotation date and source. Older observations do not change today’s benchmark.', 'असली भाव की तारीख और स्रोत दें। पुराने भाव आज का बेंचमार्क नहीं बदलेंगे।', 'प्रत्यक्ष दराची तारीख आणि स्रोत द्या. जुने दर आजचा बेंचमार्क बदलणार नाहीत.')}</p>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400">
