@@ -1,4 +1,40 @@
 # 🛠️ Tech Stack & Technical Architecture Specification
+
+## Current implementation and verification notes
+
+Live application: [Kabadiwala Connect](https://kabadiwala-connect2.vercel.app/).
+
+These implementation notes qualify the architecture and demo descriptions below; those descriptions are not independent certification or proof of production readiness.
+
+- **Price charts:** sufficient stored observations produce a historical chart. When history is missing, available city-specific benchmark rates appear as a category comparison, explicitly not a historical trend or guaranteed purchase offer. No historical prices are fabricated. Loading/error states do not masquerade as missing history; city switching is guarded against outdated responses.
+- **Observed prices:** enter the actual quotation date and source. Invalid/future dates are rejected. Past-dated observations do not overwrite today's benchmark. Submitting the form writes to the configured Supabase database, even when the frontend runs on localhost.
+- **Offline readiness:** app/model availability depends on successful asset caching. A first-ever offline visit is unsupported. “Update waiting” means a new service worker is awaiting activation; save work, close all app tabs/windows, and reopen. Do not clear site storage to force an update when unsynced drafts exist.
+- **AI and voice:** predictions require user confirmation; confidence is not measured accuracy. Manual category selection and typing remain fallbacks. Browser voice services can require connectivity, and real-device permissions/support vary. Asset caching does not establish classification accuracy or offline voice support.
+- **Certificate QR:** links to the application's lot-tracking route and may require login/authorization. It is not government verification or an official CPCB-issued EPR certificate. Recovery/yield estimates are not laboratory assays.
+- **Verification limits:** passing compilation and automated checks does not certify all live transactions, Android behavior, database policies, physical weighing hardware, or model accuracy. These need separate end-to-end verification.
+
+### Local development and focused checks
+
+```sh
+cd frontend
+npm ci
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+In a separate terminal, from `frontend/`:
+
+```sh
+node scripts/verify-price-observation.mjs
+node scripts/verify-price-chart-fallback.mjs
+npm run build
+```
+
+The two price checks use mocked/pure data and do not insert live database records. Test production offline behavior using `npm run preview`, after building and caching the app online first.
+
+### Release safety
+
+Keep private keys out of commits. A Git push updates the live site only when the connected Vercel production deployment succeeds; it does not apply database migrations or configure server secrets. Check deployment status and the live site after release. For a regression, restore a previously verified Vercel deployment rather than deleting browser data or rewriting Git history.
+
 ## Project: Kabadiwala Connect (कबाड़ीवाला कनेक्ट)
 **Smart India Hackathon 2026 — Problem Statement #229**  
 *Formalizing Informal Scrap Collectors through Vernacular Multimodal Interfaces, Offline-First Resilience, and Cryptographic Traceability.*
