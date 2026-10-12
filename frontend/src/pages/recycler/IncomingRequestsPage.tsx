@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLotThumbnails } from '../../hooks/useLotThumbnails';
 import { Link } from 'react-router-dom';
 import { Package, MapPin, IndianRupee, Truck, Send, CheckCircle2, XCircle, ArrowRight, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -18,6 +19,7 @@ export const IncomingRequestsPage: React.FC = () => {
   const { t, language } = useLanguage();
   const { showToast } = useToast();
   const [lots, setLots] = useState<Lot[]>([]);
+  const thumbnails = useLotThumbnails(lots.map(lot => lot.id));
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const [offeredRate, setOfferedRate] = useState<string>('95');
@@ -34,7 +36,7 @@ export const IncomingRequestsPage: React.FC = () => {
 
   const fetchLots = async () => {
     try {
-      const res = await api.getLots();
+      const res = await api.getLots({ omitImages: 'true' });
       const offerLotIds = res.lots.filter(lot => ['CREATED', 'OFFER_RECEIVED', 'ACCEPTED'].includes(lot.status)).map(lot => lot.id);
       const offersRes = await api.getOffersForLots(offerLotIds);
 
@@ -272,7 +274,7 @@ export const IncomingRequestsPage: React.FC = () => {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <SafeImage
-                    src={lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
+                    src={thumbnails[lot.id] || lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
                     alt={lot.materialCategory}
                     category={lot.materialCategory}
                     className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"

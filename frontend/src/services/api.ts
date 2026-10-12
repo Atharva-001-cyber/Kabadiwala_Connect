@@ -703,6 +703,10 @@ async function withSwrCache<T>(
   }
 
   // Instant Stale-While-Revalidate: Return cached data immediately (0ms latency)
+  if (cached && cached.expiresAt <= now && (typeof navigator === 'undefined' || navigator.onLine)) {
+    swrCache.delete(key);
+    cached = undefined;
+  }
   if (cached) {
     const age = now - cached.timestamp;
     // If cache is stale, trigger non-blocking background revalidation
@@ -774,6 +778,26 @@ interface ActiveOtpChallenge {
 
 const activeOtpChallenges = new Map<string, ActiveOtpChallenge>();
 
+// Share only an actively running lookup between typing and Send OTP.
+// Completed results are never cached: later attempts still check the current role.
+const pendingPhoneRoles = new Map<string, Promise<any>>();
+function lookupPhoneRole(phone: string): Promise<any> {
+  const pending = pendingPhoneRoles.get(phone);
+  if (pending) return pending;
+  const request = (async () => {
+    const { data, error } = await supabase.from('users')
+      .select('id, phone, role, name').eq('phone', phone)
+      .abortSignal(AbortSignal.timeout(8000)).maybeSingle();
+    if (error) throw new Error('Could not check the registered role. Please retry.');
+    return data;
+  })();
+  pendingPhoneRoles.set(phone, request);
+  void request.finally(() => {
+    if (pendingPhoneRoles.get(phone) === request) pendingPhoneRoles.delete(phone);
+  }).catch(() => {});
+  return request;
+}
+
 export const api = {
   // ==========================================
   // AUTHENTICATION & PROFILES
@@ -784,13 +808,9 @@ export const api = {
       return { exists: false };
     }
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, phone, role, name')
-        .eq('phone', cleanPhone)
-        .maybeSingle();
+      const data = await lookupPhoneRole(cleanPhone);
 
-      if (error || !data) {
+      if (!data) {
         return { exists: false };
       }
 
@@ -811,11 +831,7 @@ export const api = {
 
     // Verify role conflict before dispatching OTP
     try {
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id, phone, role, name')
-        .eq('phone', cleanPhone)
-        .maybeSingle();
+      const existingUser = await lookupPhoneRole(cleanPhone);
 
       if (existingUser && existingUser.role !== selectedRole) {
         return {
@@ -828,6 +844,7 @@ export const api = {
       }
     } catch (e) {
       console.warn('Error querying existing user in sendOtp:', e);
+      throw e;
     }
 
     // Check if this is a known Demo / Judge test number
@@ -1317,6 +1334,12 @@ export const api = {
   // ==========================================
   // LOTS & OFFLINE RESILIENCE
   // ==========================================
+  getLotThumbnail: async (id: string): Promise<string> => withSwrCache(`lot_thumbnail_${id}`, async () => {
+    const { data, error } = await supabase.from('lots').select('image_url').eq('id', id).abortSignal(AbortSignal.timeout(15000)).maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.image_url || '';
+  }),
+
   getLots: async (params: Record<string, string> = {}) => {
     // Normalized cache key independent of requested limit to allow cross-component cache sharing
     const cacheKey = `lots_${params.collectorId || 'all'}_${params.status || 'all'}_${params.materialCategory || 'all'}${params.omitImages === 'true' ? '_metadata' : ''}`;
@@ -2110,13 +2133,14 @@ export const api = {
     const cacheKey = `pickups_${params.collectorId || 'all'}_${params.recyclerId || 'all'}_${params.status || 'all'}`;
 
     return withSwrCache(cacheKey, async () => {
-      let query = supabase.from('pickups').select('*').order('created_at', { ascending: false });
+      const data = await readAllPages<any>(async (from, to) => {
+      let query = supabase.from('pickups').select('*').order('created_at', { ascending: false }).order('id');
       if (params.collectorId) query = query.eq('collector_id', params.collectorId);
       if (params.recyclerId) query = query.eq('recycler_id', params.recyclerId);
       if (params.status) query = query.eq('pickup_status', params.status);
 
-      const { data, error } = await query;
-      if (error) throw error;
+      return await query.range(from, to).abortSignal(AbortSignal.timeout(15000));
+      });
       const pickups = (data || []).map(mapDbPickupToPickup);
       return { success: true, count: pickups.length, pickups };
     }, { ttlMs: 60_000, staleMs: 20_000 });
@@ -2147,62 +2171,113 @@ export const api = {
       ? `${lot.location_district || 'Lucknow'}, ${lot.location_state || 'Uttar Pradesh'}`
       : 'Lucknow, Uttar Pradesh';
 
-    const pickupId = `pk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    const newPickup = {
-      id: pickupId,
-      lot_id: data.lotId,
-      offer_id: data.offerId || lot?.selected_offer_id || null,
-      collector_id: collectorId,
-      recycler_id: activeRecId,
-      scheduled_date: data.scheduledDate || new Date().toISOString().split('T')[0],
-      scheduled_time_slot: data.timeSlot || '10:00 AM - 01:00 PM',
-      driver_name: data.driverName || 'Ravi Sharma',
-      driver_phone: data.driverContact || '9876543212',
-      vehicle_number: data.vehicleNumber || 'UP-32-AB-5678',
-      pickup_status: 'SCHEDULED',
-      pickup_address: data.notes || `Collector Facility, ${collectorLocation}`,
-      collector_phone: collectorPhone,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    // Check if a pickup already exists for this lot to prevent duplicate assignment
+    const { data: existingPickup, error: lookupErr } = await supabase
+      .from('pickups')
+      .select('*')
+      .eq('lot_id', data.lotId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    const { data: inserted, error: pkErr } = await supabase.from('pickups').insert(newPickup).select().single();
-    if (pkErr) throw pkErr;
+    if (lookupErr) throw lookupErr;
 
-    const { data: lotRow } = await supabase.from('lots').update({ status: 'PICKUP_SCHEDULED' }).eq('id', data.lotId).select().single();
+    let pickupRecord: any;
+    const scheduledDateVal = data.scheduledDate || existingPickup?.scheduled_date || new Date().toISOString().split('T')[0];
+    const timeSlotVal = data.timeSlot || existingPickup?.scheduled_time_slot || '10:00 AM - 01:00 PM';
+    const driverNameVal = data.driverName || existingPickup?.driver_name || 'Ravi Sharma';
+    const driverContactVal = data.driverContact || existingPickup?.driver_phone || '9876543212';
+    const vehicleNumberVal = data.vehicleNumber || existingPickup?.vehicle_number || 'UP-32-AB-5678';
 
-    const lastTrace = await supabase.from('traceability_logs').select('event_hash').eq('lot_id', data.lotId).order('timestamp', { ascending: false }).limit(1).maybeSingle();
-    const prevHash = lastTrace.data?.event_hash || '0'.repeat(64);
+    if (existingPickup) {
+      // Idempotent update: update driver/vehicle/slot on existing pickup instead of creating duplicate row
+      const updatePayload = {
+        scheduled_date: scheduledDateVal,
+        scheduled_time_slot: timeSlotVal,
+        driver_name: driverNameVal,
+        driver_phone: driverContactVal,
+        vehicle_number: vehicleNumberVal,
+        pickup_status: existingPickup.pickup_status === 'COMPLETED' ? 'COMPLETED' : 'SCHEDULED',
+        updated_at: new Date().toISOString()
+      };
+      const { data: updated, error: updErr } = await supabase
+        .from('pickups')
+        .update(updatePayload)
+        .eq('id', existingPickup.id)
+        .select()
+        .single();
+      if (updErr) throw updErr;
+      pickupRecord = updated || { ...existingPickup, ...updatePayload };
+    } else {
+      const pickupId = `pk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      const newPickup = {
+        id: pickupId,
+        lot_id: data.lotId,
+        offer_id: data.offerId || lot?.selected_offer_id || null,
+        collector_id: collectorId,
+        recycler_id: activeRecId,
+        scheduled_date: scheduledDateVal,
+        scheduled_time_slot: timeSlotVal,
+        driver_name: driverNameVal,
+        driver_phone: driverContactVal,
+        vehicle_number: vehicleNumberVal,
+        pickup_status: 'SCHEDULED',
+        pickup_address: data.notes || `Collector Facility, ${collectorLocation}`,
+        collector_phone: collectorPhone,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-    const traceEvent = {
-      id: `tl_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      lot_id: data.lotId,
-      stage: 'PICKUP_DONE',
-      title: 'Doorstep Pickup Scheduled',
-      description: `Pickup confirmed for ${newPickup.scheduled_date} with vehicle ${newPickup.vehicle_number}.`,
-      facility_location: collectorLocation,
-      actor_role: 'RECYCLER',
-      actor_name: `${activeRecName} Logistics`,
-      timestamp: new Date().toISOString(),
-      data_source: 'LIVE'
-    };
+      const { data: inserted, error: pkErr } = await supabase.from('pickups').insert(newPickup).select().single();
+      if (pkErr) throw pkErr;
+      pickupRecord = inserted || newPickup;
+    }
 
-    const hashes = await computeTraceabilityHashes({
-      lotId: data.lotId,
-      stage: traceEvent.stage,
-      actorRole: traceEvent.actor_role,
-      actorName: traceEvent.actor_name,
-      facilityLocation: traceEvent.facility_location,
-      timestamp: traceEvent.timestamp,
-      title: traceEvent.title
-    }, prevHash);
+    let lotRow = lot;
+    const isAlreadyCompleted = existingPickup?.pickup_status === 'COMPLETED' ||
+      ['RECEIVED', 'RECYCLED', 'PROCESSING', 'COMPLETED'].includes(lot?.status);
 
-    await supabase.from('traceability_logs').insert({
-      ...traceEvent,
-      previous_event_hash: hashes.previousEventHash,
-      payload_hash: hashes.payloadHash,
-      event_hash: hashes.eventHash
-    });
+    if (!isAlreadyCompleted) {
+      const { data: updatedLot, error: lotUpdErr } = await supabase.from('lots').update({ status: 'PICKUP_SCHEDULED' }).eq('id', data.lotId).select().single();
+      if (!lotUpdErr && updatedLot) {
+        lotRow = updatedLot;
+      }
+    }
+
+    if (!existingPickup) {
+      const lastTrace = await supabase.from('traceability_logs').select('event_hash').eq('lot_id', data.lotId).order('timestamp', { ascending: false }).limit(1).maybeSingle();
+      const prevHash = lastTrace.data?.event_hash || '0'.repeat(64);
+
+      const traceEvent = {
+        id: `tl_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        lot_id: data.lotId,
+        stage: 'PICKUP_DONE',
+        title: 'Doorstep Pickup Scheduled',
+        description: `Pickup confirmed for ${scheduledDateVal} with vehicle ${vehicleNumberVal}.`,
+        facility_location: collectorLocation,
+        actor_role: 'RECYCLER',
+        actor_name: `${activeRecName} Logistics`,
+        timestamp: new Date().toISOString(),
+        data_source: 'LIVE'
+      };
+
+      const hashes = await computeTraceabilityHashes({
+        lotId: data.lotId,
+        stage: traceEvent.stage,
+        actorRole: traceEvent.actor_role,
+        actorName: traceEvent.actor_name,
+        facilityLocation: traceEvent.facility_location,
+        timestamp: traceEvent.timestamp,
+        title: traceEvent.title
+      }, prevHash);
+
+      await supabase.from('traceability_logs').insert({
+        ...traceEvent,
+        previous_event_hash: hashes.previousEventHash,
+        payload_hash: hashes.payloadHash,
+        event_hash: hashes.eventHash
+      });
+    }
 
     invalidateCache('pickups');
     invalidateCache('lots');
@@ -2211,7 +2286,7 @@ export const api = {
     return {
       success: true,
       message: 'Pickup scheduled successfully',
-      pickup: mapDbPickupToPickup(inserted),
+      pickup: mapDbPickupToPickup(pickupRecord),
       lot: mapDbLotToLot(lotRow)
     };
   },
@@ -3008,18 +3083,20 @@ export const api = {
       // Query payments table AND lots table in parallel for zero latency
       try {
         const paymentsQuery = collectorId
-          ? supabase.from('payments').select('*').eq('collector_id', collectorId).order('timestamp', { ascending: false })
-          : Promise.resolve({ data: [], error: null });
+          ? readAllPages<any>(async (from, to) => await supabase.from('payments').select('*').eq('collector_id', collectorId).order('timestamp', { ascending: false }).order('id').range(from, to).abortSignal(AbortSignal.timeout(15000)))
+          : Promise.resolve([]);
 
         // Same ledger inputs; exclude photos and unrelated descriptive fields.
-        let lotQuery = supabase.from('lots').select('id,collector_id,selected_recycler_id,material_category,approx_weight,actual_weight,final_sale_value,quoted_price,status,updated_at,created_at');
+        const lotsQuery = readAllPages<any>(async (from, to) => {
+        let lotQuery = supabase.from('lots').select('id,collector_id,selected_recycler_id,material_category,approx_weight,actual_weight,final_sale_value,quoted_price,status,updated_at,created_at').order('id');
         if (collectorId) lotQuery = lotQuery.eq('collector_id', collectorId);
+        return await lotQuery.range(from, to).abortSignal(AbortSignal.timeout(15000));
+        });
 
-        const [pmtRes, lotRes] = await Promise.all([paymentsQuery, lotQuery]);
-        if (!pmtRes.error && pmtRes.data) rows = pmtRes.data;
-        if (!lotRes.error && lotRes.data) lotsData = lotRes.data;
+        [rows, lotsData] = await Promise.all([paymentsQuery, lotsQuery]);
       } catch (e) {
         console.warn('Ledger parallel query error:', e);
+        throw e; // Never cache incomplete financial totals as a successful refresh.
       }
 
       // Merge authentic local transactions for this specific collector
@@ -3287,13 +3364,18 @@ export const api = {
   // ==========================================
   getAdminKPIs: async () => {
     return withSwrCache('admin_kpis', async () => {
+      const complete = async (table: string, columns: string) => {
+        const data = await readAllPages<any>(async (from, to) => await supabase.from(table).select(columns).order('id').range(from, to).abortSignal(AbortSignal.timeout(15000)));
+        return { data, count: data.length };
+      };
       const [lotsRes, collectorsRes, recyclersRes, anomaliesRes, payRes] = await Promise.all([
-        supabase.from('lots').select('material_category, approx_weight, status', { count: 'exact' }),
-        supabase.from('collectors').select('*', { count: 'exact', head: true }),
-        supabase.from('recyclers').select('authorization_status, total_processed_kg', { count: 'exact' }),
-        supabase.from('anomalies').select('status', { count: 'exact' }),
-        supabase.from('payments').select('amount')
+        complete('lots', 'material_category, approx_weight, status'),
+        supabase.from('collectors').select('*', { count: 'exact', head: true }).abortSignal(AbortSignal.timeout(15000)),
+        complete('recyclers', 'authorization_status, total_processed_kg'),
+        complete('anomalies', 'status'),
+        complete('payments', 'amount')
       ]);
+      if (collectorsRes.error) throw new Error(collectorsRes.error.message);
 
       const totalLots = lotsRes.count || 0;
       const totalCollectors = collectorsRes.count || 27;

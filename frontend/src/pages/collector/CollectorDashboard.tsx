@@ -33,6 +33,7 @@ import { useSync } from '../../context/SyncContext';
 import { useSpeech } from '../../hooks/useSpeech';
 import { AudioButton } from '../../components/common/AudioButton';
 import { api, onCachedDataUpdated } from '../../services/api';
+import { useLotThumbnails } from '../../hooks/useLotThumbnails';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, PriceRecord, CitizenBeacon } from '../../types';
 import { getStatusLabel, getCategoryLabel, formatUserDisplayName, formatLocationString, formatAddressLocation } from '../../i18n/translations';
@@ -113,18 +114,18 @@ export const CollectorDashboard: React.FC = () => {
     let active = true;
     const district = collectorProfile?.district || 'Lucknow';
     const colId = collectorProfile?.id;
-    const updateLots = (res: any) => { if (active && res.success) setLots(res.lots); };
+    const updateLots = (res: any) => { if (active && res.success) { setLots(res.lots); setLoading(false); } };
     const updateLedger = (res: any) => { if (active && res.success) setLedgerSummary(res.summary); };
     const updatePrices = (res: any) => { if (active && res.success) setPrices(res.prices); };
     const unsubscribeCache = onCachedDataUpdated((key, data) => {
-      if (key === `lots_${colId || 'all'}_all_all`) updateLots(data);
+      if (key === `lots_${colId || 'all'}_all_all_metadata`) updateLots(data);
       if (key === `ledger_collector_${colId || 'default'}`) updateLedger(data);
       if (key === `priceboard_${district.toLowerCase()}`) updatePrices(data);
     });
     const fetchData = async (silent = false) => {
       try {
         if (!silent && lots.length === 0 && !ledgerSummary) setLoading(true);
-        const lotsQuery = colId ? api.getLots({ collectorId: colId }) : api.getLots({});
+        const lotsQuery = api.getLots({ ...(colId ? { collectorId: colId } : {}), omitImages: 'true' });
         // Independent sections render as soon as their own data is available.
         const results = await Promise.allSettled([
           lotsQuery.then(updateLots),
@@ -178,6 +179,7 @@ export const CollectorDashboard: React.FC = () => {
 
   const activeLots = lots.filter(l => l.status !== 'RECYCLED');
   const latestActiveLot = lots.find(l => l.status !== 'RECYCLED');
+  const thumbnails = useLotThumbnails([...lots.slice(0, 3).map(lot => lot.id), ...(latestActiveLot ? [latestActiveLot.id] : [])]);
 
   // Benchmark calculation from stored real data
   const pcbPrice = prices.find(p => p.materialCategory === 'PCB')?.prevailingBuyPrice || 95;
@@ -594,7 +596,7 @@ export const CollectorDashboard: React.FC = () => {
         <div className="bg-white dark:bg-gradient-to-r dark:from-blue-950/80 dark:via-slate-900 dark:to-slate-950 border-2 border-blue-200 dark:border-blue-500/50 rounded-3xl p-4 sm:p-5 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <img
-              src={latestActiveLot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
+              src={thumbnails[latestActiveLot.id] || latestActiveLot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
               alt={latestActiveLot.materialCategory}
               className="w-14 h-14 rounded-2xl object-cover border border-blue-200 dark:border-blue-500/40 shrink-0 shadow-sm"
             />
@@ -943,7 +945,7 @@ export const CollectorDashboard: React.FC = () => {
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <img
-                        src={lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
+                        src={thumbnails[lot.id] || lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
                         alt={lot.materialCategory}
                         className="w-14 h-14 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                       />

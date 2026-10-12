@@ -17,7 +17,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { api } from '../../services/api';
+import { api, onCachedDataUpdated } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot } from '../../types';
 import { getStatusLabel, getCategoryLabel, formatUserDisplayName } from '../../i18n/translations';
@@ -175,6 +175,9 @@ export const InventoryProcessingPage: React.FC = () => {
     const unsubscribeSync = onPlatformSync(() => {
       fetchLots();
     });
+    const unsubscribeCache = onCachedDataUpdated((key) => {
+      if (key === 'lots_all_all_all_metadata') void fetchLots();
+    });
 
     const interval = setInterval(() => {
       fetchLots();
@@ -182,6 +185,7 @@ export const InventoryProcessingPage: React.FC = () => {
 
     return () => {
       unsubscribeSync();
+      unsubscribeCache();
       clearInterval(interval);
     };
   }, [queryLotId]);

@@ -18,7 +18,7 @@ import {
   Eye,
   ShieldCheck
 } from 'lucide-react';
-import { api } from '../../services/api';
+import { api, onCachedDataUpdated } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -226,6 +226,9 @@ export const HandoverVerificationPage: React.FC = () => {
     const unsubscribeSync = onPlatformSync(() => {
       fetchLots();
     });
+    const unsubscribeCache = onCachedDataUpdated((key) => {
+      if (key === 'lots_all_all_all_metadata') void fetchLots();
+    });
 
     const interval = setInterval(() => {
       fetchLots();
@@ -233,6 +236,7 @@ export const HandoverVerificationPage: React.FC = () => {
 
     return () => {
       unsubscribeSync();
+      unsubscribeCache();
       clearInterval(interval);
       stopCamera();
     };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Recycle,
@@ -73,6 +73,7 @@ export const LoginPage: React.FC = () => {
   const [otp, setOtp] = useState('');
   const [receivedOtp, setReceivedOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const otpRequestPending = useRef(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showJudgeDrawer, setShowJudgeDrawer] = useState(false);
@@ -189,6 +190,7 @@ export const LoginPage: React.FC = () => {
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (otpRequestPending.current) return;
     const activePhone = phone.trim();
     if (activePhone.length < 10) {
       showToast(t.phoneRequired || 'Please enter a valid 10-digit mobile number', 'warning');
@@ -220,6 +222,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
+    otpRequestPending.current = true;
     setIsSendingOtp(true);
 
     try {
@@ -272,6 +275,9 @@ export const LoginPage: React.FC = () => {
       
       console.log(`[AUTH] Dispatching Real SMS to +91 ${activePhone} via Fast2SMS API...`);
       const fast2smsRes = await sendFast2SmsOtp(activePhone, generatedCode);
+      if (fast2smsRes.deliveryUnknown) {
+        throw new Error(language === 'hi' ? 'SMS सेवा से पुष्टि नहीं मिली। थोड़ी देर रुककर फिर कोशिश करें; डुप्लिकेट SMS रोकने के लिए दूसरा प्रदाता नहीं चलाया गया।' : language === 'mr' ? 'SMS सेवेची पुष्टी मिळाली नाही. थोडा वेळ थांबून पुन्हा प्रयत्न करा.' : 'SMS delivery was not confirmed. Wait briefly before retrying; automatic fallback was stopped to avoid duplicate messages.');
+      }
 
       if (fast2smsRes.success) {
         setIsSendingOtp(false);
@@ -293,6 +299,7 @@ export const LoginPage: React.FC = () => {
 
       console.warn('Fast2SMS note:', fast2smsRes.error, '- Attempting Google Firebase SMS fallback...');
       const fbRes = await sendRealSmsOtp(activePhone, 'recaptcha-container');
+      if (fbRes.deliveryUnknown) throw new Error('SMS confirmation timed out. Please wait before retrying. Delivery could not be confirmed.');
       setIsSendingOtp(false);
 
       if (fbRes.success && fbRes.confirmationResult) {
@@ -329,6 +336,9 @@ export const LoginPage: React.FC = () => {
     } catch (err: any) {
       setIsSendingOtp(false);
       showToast(err.message || 'Failed to send OTP. Please try again.', 'error');
+    } finally {
+      otpRequestPending.current = false;
+      setIsSendingOtp(false);
     }
   };
 

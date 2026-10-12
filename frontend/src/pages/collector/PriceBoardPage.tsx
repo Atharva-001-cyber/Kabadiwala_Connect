@@ -82,20 +82,20 @@ export const PriceBoardPage: React.FC = () => {
     const request = ++priceRequest.current;
     setLoading(true);
     try {
-      const [priceRes, recyclerRes] = await Promise.all([
-        api.getPriceBoard(selectedDistrict),
-        api.getRecyclers({ district: selectedDistrict })
+      const results = await Promise.allSettled([
+        api.getPriceBoard(selectedDistrict).then(priceRes => {
+          if (request !== priceRequest.current || !priceRes.success) return;
+          setPrices(priceRes.prices);
+          setPricesDistrict(selectedDistrict);
+          setPriceProvenance(priceRes.provenance);
+          setLoading(false);
+        }),
+        api.getRecyclers({ district: selectedDistrict }).then(recyclerRes => {
+          if (request === priceRequest.current && recyclerRes.success) setRecyclers(recyclerRes.recyclers || []);
+        })
       ]);
-
-      if (request !== priceRequest.current) return;
-      if (priceRes.success) {
-        setPrices(priceRes.prices);
-        setPricesDistrict(selectedDistrict);
-        setPriceProvenance(priceRes.provenance);
-      }
-      if (recyclerRes.success) {
-        setRecyclers(recyclerRes.recyclers || []);
-      }
+      const failed = results.find(result => result.status === 'rejected');
+      if (failed?.status === 'rejected') throw failed.reason;
     } catch (e) {
       if (request !== priceRequest.current) return;
       console.warn('Failed to load prices/recyclers:', e);

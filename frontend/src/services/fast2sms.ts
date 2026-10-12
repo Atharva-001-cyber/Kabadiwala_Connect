@@ -7,6 +7,7 @@ export interface Fast2SmsResult {
   success: boolean;
   message?: string;
   error?: string;
+  deliveryUnknown?: boolean;
 }
 
 export const sendFast2SmsOtp = async (
@@ -30,7 +31,7 @@ export const sendFast2SmsOtp = async (
     };
   }
 
-  const targetUrl = typeof window !== 'undefined' && window.location.origin.includes('localhost')
+  const targetUrl = typeof window !== 'undefined' && import.meta.env.DEV && ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
     ? '/fast2sms-api/bulkV2'
     : 'https://www.fast2sms.com/dev/bulkV2';
 
@@ -41,6 +42,7 @@ export const sendFast2SmsOtp = async (
     const otpUrl = `${targetUrl}?authorization=${encodeURIComponent(apiKey.trim())}&route=otp&variables_values=${encodeURIComponent(otpCode)}&numbers=${encodeURIComponent(cleanPhone)}`;
 
     const response = await fetch(otpUrl, {
+      signal: AbortSignal.timeout(10000),
       method: 'GET',
       headers: { 'Accept': 'application/json' }
     });
@@ -63,6 +65,7 @@ export const sendFast2SmsOtp = async (
       const quickUrl = `${targetUrl}?authorization=${encodeURIComponent(apiKey.trim())}&route=q&message=${encodeURIComponent(qMsg)}&language=english&flash=0&numbers=${encodeURIComponent(cleanPhone)}`;
 
       const qResponse = await fetch(quickUrl, {
+        signal: AbortSignal.timeout(10000),
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -93,6 +96,7 @@ export const sendFast2SmsOtp = async (
     console.error('❌ [FAST2SMS ERROR]:', err);
     return {
       success: false,
+      deliveryUnknown: true,
       error: err.message || 'Network error connecting to Fast2SMS API'
     };
   }

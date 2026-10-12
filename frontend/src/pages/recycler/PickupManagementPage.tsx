@@ -14,7 +14,7 @@ import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 
 export const PickupManagementPage: React.FC = () => {
   const { user, recyclerProfile } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryLotId = searchParams.get('lotId');
   const activeRecId = recyclerProfile?.id || user?.id || 'rec_abc_1';
 
@@ -37,23 +37,30 @@ export const PickupManagementPage: React.FC = () => {
   const fetchData = async () => {
     try {
       const [lotsRes, pickupsRes] = await Promise.all([
-        api.getLots(),
+        api.getLots({ omitImages: 'true' }),
         api.getPickups({})
       ]);
-      if (lotsRes.success) {
+      if (lotsRes.success && pickupsRes.success) {
         setLots(lotsRes.lots);
+        setPickups(pickupsRes.pickups);
+
+        const scheduledLotSet = new Set(
+          pickupsRes.pickups.filter((p: Pickup) => p.status === 'SCHEDULED' || p.status === 'COMPLETED').map((p: Pickup) => p.lotId)
+        );
+
         const accepted = lotsRes.lots.filter(l => 
-          (l.id === queryLotId || l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId)) &&
+          !scheduledLotSet.has(l.id) &&
+          (l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId)) &&
           l.status !== 'PICKUP_SCHEDULED' && l.status !== 'RECEIVED' && l.status !== 'RECYCLED' && l.status !== 'PROCESSING'
         );
-        if (queryLotId && lotsRes.lots.some(l => l.id === queryLotId)) {
+        if (queryLotId && !scheduledLotSet.has(queryLotId) && lotsRes.lots.some(l => l.id === queryLotId)) {
           setSelectedLotId(queryLotId);
-        } else if (accepted.length > 0 && !selectedLotId) {
+        } else if (accepted.length > 0 && (!selectedLotId || scheduledLotSet.has(selectedLotId))) {
           setSelectedLotId(accepted[0].id);
         }
-      }
-      if (pickupsRes.success) {
-        setPickups(pickupsRes.pickups);
+      } else {
+        if (lotsRes.success) setLots(lotsRes.lots);
+        if (pickupsRes.success) setPickups(pickupsRes.pickups);
       }
     } catch (e) {
       console.warn('Pickup fetch failed:', e);
@@ -111,6 +118,9 @@ export const PickupManagementPage: React.FC = () => {
           'success'
         );
         setSelectedLotId('');
+        if (queryLotId) {
+          setSearchParams({}, { replace: true });
+        }
         fetchData();
       }
     } catch (err: any) {
@@ -120,16 +130,46 @@ export const PickupManagementPage: React.FC = () => {
     }
   };
 
+  const scheduledLotSet = React.useMemo(() => {
+    return new Set(pickups.filter(p => p.status === 'SCHEDULED' || p.status === 'COMPLETED').map(p => p.lotId));
+  }, [pickups]);
+
   const acceptedLots = lots.filter(l => 
-    (l.id === queryLotId || l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId)) &&
+    !scheduledLotSet.has(l.id) &&
+    (l.status === 'ACCEPTED' || (l.selectedRecyclerId === activeRecId && l.selectedOfferId)) &&
     l.status !== 'PICKUP_SCHEDULED' && l.status !== 'RECEIVED' && l.status !== 'RECYCLED' && l.status !== 'PROCESSING'
   );
 
-  const displayedPickups = pickups.filter(p => {
-    if (feedFilter === 'SCHEDULED') return p.status === 'SCHEDULED';
-    if (feedFilter === 'COMPLETED') return p.status === 'COMPLETED';
-    return true;
-  });
+  // Canonical deduplicated pickups (latest entry per lotId wins)
+  const canonicalPickups = React.useMemo(() => {
+    const seenLotIds = new Set<string>();
+    const unique: Pickup[] = [];
+    for (const p of pickups) {
+      if (!seenLotIds.has(p.lotId)) {
+        seenLotIds.add(p.lotId);
+        unique.push(p);
+      }
+    }
+    return unique;
+  }, [pickups]);
+
+  const displayedPickups = React.useMemo(() => {
+    if (feedFilter === 'SCHEDULED') return canonicalPickups.filter(p => p.status === 'SCHEDULED');
+    if (feedFilter === 'COMPLETED') return canonicalPickups.filter(p => p.status === 'COMPLETED');
+    return canonicalPickups;
+  }, [canonicalPickups, feedFilter]);
+
+  const uniqueScheduledCount = React.useMemo(() => {
+    return canonicalPickups.filter(p => p.status === 'SCHEDULED').length;
+  }, [canonicalPickups]);
+
+  const uniqueCompletedCount = React.useMemo(() => {
+    return canonicalPickups.filter(p => p.status === 'COMPLETED').length;
+  }, [canonicalPickups]);
+
+  const totalUniquePickupsCount = React.useMemo(() => {
+    return canonicalPickups.length;
+  }, [canonicalPickups]);
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
@@ -155,7 +195,7 @@ export const PickupManagementPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping" />
-              <span>{pickups.filter(p => p.status === 'SCHEDULED').length} {language === 'hi' || language === 'mr' ? 'सक्रिय पिकअप' : 'Active Pickups'}</span>
+              <span>{uniqueScheduledCount} {language === 'hi' || language === 'mr' ? 'सक्रिय पिकअप' : 'Active Pickups'}</span>
             </span>
           </div>
         </div>
@@ -347,21 +387,21 @@ export const PickupManagementPage: React.FC = () => {
                 onClick={() => setFeedFilter('ALL')}
                 className={`px-3 py-1 rounded-lg transition-all ${feedFilter === 'ALL' ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                {language === 'hi' ? 'सभी' : language === 'mr' ? 'सर्व' : 'All'} ({pickups.length})
+                {language === 'hi' ? 'सभी' : language === 'mr' ? 'सर्व' : 'All'} ({totalUniquePickupsCount})
               </button>
               <button
                 type="button"
                 onClick={() => setFeedFilter('SCHEDULED')}
                 className={`px-3 py-1 rounded-lg transition-all ${feedFilter === 'SCHEDULED' ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                {language === 'hi' ? 'शेड्यूल किए गए' : language === 'mr' ? 'नियोजित' : 'Scheduled'} ({pickups.filter(p => p.status === 'SCHEDULED').length})
+                {language === 'hi' ? 'शेड्यूल किए गए' : language === 'mr' ? 'नियोजित' : 'Scheduled'} ({uniqueScheduledCount})
               </button>
               <button
                 type="button"
                 onClick={() => setFeedFilter('COMPLETED')}
                 className={`px-3 py-1 rounded-lg transition-all ${feedFilter === 'COMPLETED' ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
-                {language === 'hi' || language === 'mr' ? 'पूर्ण' : 'Completed'} ({pickups.filter(p => p.status === 'COMPLETED').length})
+                {language === 'hi' || language === 'mr' ? 'पूर्ण' : 'Completed'} ({uniqueCompletedCount})
               </button>
             </div>
           </div>

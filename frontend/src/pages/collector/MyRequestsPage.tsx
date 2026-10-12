@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLotThumbnails } from '../../hooks/useLotThumbnails';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Package,
@@ -33,12 +34,14 @@ export const MyRequestsPage: React.FC = () => {
   const [offersMap, setOffersMap] = useState<Record<string, Offer[]>>({});
   const [filterTab, setFilterTab] = useState<'ALL' | 'ACTIVE' | 'ACCEPTED' | 'COMPLETED'>('ALL');
   const [loading, setLoading] = useState<boolean>(true);
+  const requestVersion = useRef(0);
 
   // Offer confirmation modal state
   const [selectedOfferForAcceptance, setSelectedOfferForAcceptance] = useState<{ offer: Offer; lot: Lot } | null>(null);
   const [acceptingInProgress, setAcceptingInProgress] = useState<boolean>(false);
 
   const fetchData = async (silent = false) => {
+    const request = ++requestVersion.current;
     if (!silent && lots.length === 0) setLoading(true);
     try {
       let collectorId = '';
@@ -49,8 +52,11 @@ export const MyRequestsPage: React.FC = () => {
         if (!collectorId && u) collectorId = JSON.parse(u)?.id;
       } catch {}
 
-      const res = await api.getLots(collectorId ? { collectorId } : {});
+      const res = await api.getLots({ ...(collectorId ? { collectorId } : {}), omitImages: 'true' });
+      if (request !== requestVersion.current) return;
+      if (res.success) { setLots(res.lots); setLoading(false); }
       const offersRes = await api.getOffersForLots(res.lots.map(lot => lot.id));
+      if (request !== requestVersion.current) return;
 
       if (res.success) {
         const lotIdsSet = new Set(res.lots.map(l => l.id));
@@ -72,7 +78,7 @@ export const MyRequestsPage: React.FC = () => {
     } catch (err) {
       console.warn('Failed to load requests:', err);
     } finally {
-      setLoading(false);
+      if (request === requestVersion.current) setLoading(false);
     }
   };
 
@@ -90,6 +96,7 @@ export const MyRequestsPage: React.FC = () => {
     }, 8000);
 
     return () => {
+      requestVersion.current++;
       unsubscribeSync();
       clearInterval(interval);
     };
@@ -127,6 +134,7 @@ export const MyRequestsPage: React.FC = () => {
     if (filterTab === 'COMPLETED') return lot.status === 'RECEIVED' || lot.status === 'PROCESSING' || lot.status === 'RECYCLED';
     return true;
   });
+  const thumbnails = useLotThumbnails(filteredLots.map(lot => lot.id));
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-24">
@@ -229,7 +237,7 @@ export const MyRequestsPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <img
-                      src={lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
+                      src={thumbnails[lot.id] || lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
                       alt={lot.materialCategory}
                       className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                     />

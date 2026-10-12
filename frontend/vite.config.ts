@@ -37,6 +37,8 @@ export default defineConfig({
       },
       '/fast2sms-api': {
         target: 'https://www.fast2sms.com/dev',
+        proxyTimeout: 10000,
+        timeout: 10000,
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/fast2sms-api/, '')

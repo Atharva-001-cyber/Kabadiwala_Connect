@@ -111,9 +111,9 @@ export const TrackingPage: React.FC = () => {
 
     const loadLots = async () => {
       const isRealCollector = collectorId && collectorId !== 'col_1';
-      let res = await api.getLots(collectorId ? { collectorId } : {});
+      let res = await api.getLots({ ...(collectorId ? { collectorId } : {}), omitImages: 'true' });
       if (!isRealCollector && res.success && res.lots.length === 0) {
-        res = await api.getLots({});
+        res = await api.getLots({ omitImages: 'true' });
       }
       if (res.success && res.lots) {
         setAllLots(res.lots);

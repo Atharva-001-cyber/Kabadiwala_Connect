@@ -4,6 +4,7 @@ import { Factory, Truck, CheckCircle2, Clock, Scale, ArrowRight, ShieldCheck, Sh
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { SafeImage } from '../../components/common/SafeImage';
+import { useLotThumbnails } from '../../hooks/useLotThumbnails';
 import { api, onCachedDataUpdated } from '../../services/api';
 import { onPlatformSync } from '../../services/realtime';
 import { Lot, Pickup } from '../../types';
@@ -18,13 +19,14 @@ export const RecyclerDashboard: React.FC = () => {
   const [lots, setLots] = useState<Lot[]>([]);
   const [pickups, setPickups] = useState<Pickup[]>([]);
   const [loading, setLoading] = useState(true);
+  const thumbnails = useLotThumbnails(lots.slice(0, 6).map(lot => lot.id));
 
   useEffect(() => {
     let active = true;
     const updateLots = (res: any) => { if (active && res.success) { setLots(res.lots); setLoading(false); } };
     const updatePickups = (res: any) => { if (active && res.success) setPickups(res.pickups); };
     const unsubscribeCache = onCachedDataUpdated((key, data) => {
-      if (key === 'lots_all_all_all') updateLots(data);
+      if (key === 'lots_all_all_all_metadata') updateLots(data);
       if (key === 'pickups_all_all_all') updatePickups(data);
     });
     const fetchData = async (silent = false) => {
@@ -32,7 +34,7 @@ export const RecyclerDashboard: React.FC = () => {
       if (!silent && lots.length === 0) setLoading(true);
       try {
         const results = await Promise.allSettled([
-          api.getLots().then(updateLots),
+          api.getLots({ omitImages: 'true' }).then(updateLots),
           api.getPickups().then(updatePickups)
         ]);
         results.forEach(result => { if (result.status === 'rejected') console.warn('Recycler section fetch error:', result.reason); });
@@ -350,7 +352,7 @@ export const RecyclerDashboard: React.FC = () => {
               >
                 <div className="flex items-center gap-3">
                   <SafeImage
-                    src={lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
+                    src={thumbnails[lot.id] || lot.imageUrl || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80'}
                     alt={lot.materialCategory}
                     category={lot.materialCategory}
                     className="w-14 h-14 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shrink-0"

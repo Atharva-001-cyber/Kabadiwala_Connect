@@ -110,7 +110,7 @@ export const CollectorProfilePage: React.FC = () => {
         const isDemoProfile = colId === 'col_1' || (!collectorProfile?.id && !user?.id);
 
         const [lotsRes, ledgerRes] = await Promise.all([
-          api.getLots({ collectorId: colId }).catch(() => ({ success: false, lots: [] })),
+          api.getLots({ collectorId: colId, omitImages: 'true' }).catch(() => ({ success: false, lots: [] })),
           api.getCollectorLedger(colId).catch(() => ({ success: false, summary: null }))
         ]);
 

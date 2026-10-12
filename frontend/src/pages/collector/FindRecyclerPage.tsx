@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -78,6 +78,7 @@ export const FindRecyclerPage: React.FC = () => {
 
   // 2. Fetch recyclers based on filters
   const fetchRecyclers = async (silent = false) => {
+    const request = ++recyclerRequest.current;
     if (!silent && recyclers.length === 0) setLoading(true);
     try {
       const params: Record<string, string> = {};
@@ -96,6 +97,7 @@ export const FindRecyclerPage: React.FC = () => {
       }
 
       const res = await api.getRecyclers(params);
+      if (request !== recyclerRequest.current) return;
       if (res.success) {
         // 1. Determine active material category for pricing & bidding
         const activeCat: MaterialCategory = (selectedCategory !== 'ALL'
@@ -214,12 +216,14 @@ export const FindRecyclerPage: React.FC = () => {
     } catch (err) {
       console.warn('Failed to load recyclers:', err);
     } finally {
-      setLoading(false);
+      if (request === recyclerRequest.current) setLoading(false);
     }
   };
 
+  const recyclerRequest = useRef(0);
   useEffect(() => {
     fetchRecyclers();
+    return () => { recyclerRequest.current++; };
   }, [selectedCategory, selectedDistrict, userGps, queryLotId]);
 
   // Real device GPS fetch

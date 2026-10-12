@@ -60,7 +60,8 @@ export const initRecaptcha = (containerId: string = 'recaptcha-container'): Reca
 export const sendRealSmsOtp = async (
   phone10Digit: string,
   containerId: string = 'recaptcha-container'
-): Promise<{ success: boolean; confirmationResult?: ConfirmationResult; error?: string }> => {
+): Promise<{ success: boolean; confirmationResult?: ConfirmationResult; error?: string; deliveryUnknown?: boolean }> => {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
     const cleanPhone = phone10Digit.trim().replace(/\D/g, '');
     const fullPhoneNumber = `+91${cleanPhone}`;
@@ -74,7 +75,10 @@ export const sendRealSmsOtp = async (
     }
 
     console.log(`📡 [FIREBASE AUTH] Sending real SMS OTP to ${fullPhoneNumber}...`);
-    const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
+    const confirmationResult = await Promise.race([
+      signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier),
+      new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('SMS_CONFIRMATION_TIMEOUT')), 30000); })
+    ]);
     console.log(`✅ [FIREBASE AUTH] SMS OTP dispatched successfully by Google to ${fullPhoneNumber}`);
 
     return {
@@ -99,8 +103,11 @@ export const sendRealSmsOtp = async (
     }
     return {
       success: false,
+      deliveryUnknown: error.message === 'SMS_CONFIRMATION_TIMEOUT',
       error: userMsg
     };
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 };
 
@@ -133,4 +140,3 @@ export const signInWithGoogle = async (): Promise<{
     };
   }
 };
-

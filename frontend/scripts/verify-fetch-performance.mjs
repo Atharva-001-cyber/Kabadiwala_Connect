@@ -29,6 +29,10 @@ try {
  await new Promise(resolve=>setTimeout(resolve,0));
  assert.equal(updates.length,1,'Invalidated background responses must not publish');
  unsubscribe();
+ let expiryLoads=0;
+ await withSwrCache('expiry_test',async()=>++expiryLoads,{ttlMs:100,staleMs:50});
+ now+=101;
+ assert.equal(await withSwrCache('expiry_test',async()=>++expiryLoads,{ttlMs:100,staleMs:50}),2,'Expired online cache must await fresh data');
  const result=await build({entryPoints:['src/services/realtime.ts'],bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'isolated',setup(b){
  b.onResolve({filter:/\/supabase$|^\.\/supabase$/},()=>({path:'db',namespace:'stub'}));
  b.onResolve({filter:/^\.\/api$/},()=>({path:'api',namespace:'stub'}));

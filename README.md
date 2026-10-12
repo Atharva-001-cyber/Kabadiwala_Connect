@@ -26,6 +26,10 @@ In a separate terminal, from `frontend/`:
 ```sh
 node scripts/verify-price-observation.mjs
 node scripts/verify-price-chart-fallback.mjs
+node scripts/verify-dashboard-fetch.mjs
+node scripts/verify-otp-transport.mjs
+node scripts/verify-phone-role-dedup.mjs
+node scripts/verify-fetch-performance.mjs
 npm run build
 ```
 
@@ -376,6 +380,9 @@ graph TD
   * `ToastContext.tsx`: Delivers non-blocking visual feedback for field actions.
 * **Role-Based Route Guarding (`App.tsx`)**:
   * `ProtectedRoute`: Inspects user session and token claims. Restricts unauthorized roles from accessing sensitive endpoints (e.g., collectors cannot access admin audit tools).
+* **Progressive UI Hydration & Lazy Thumbnail Engine (`useLotThumbnails.ts`)**:
+  * Uncouples heavy compressed JPEG binary payloads from dashboard listing queries.
+  * Instant initial render with lightweight metadata cards (`omitImages: true`), while full thumbnails are progressively hydrated in the background or on-demand, dramatically improving LCP and Core Web Vitals on low-end 4G mobile devices.
 
 ---
 
@@ -520,6 +527,9 @@ graph TD
   * `verify-price-chart-fallback.mjs`: Verifies race-condition protection, accurate loading states, and chronological trend rendering.
   * `verify-certificate-qr.mjs`: Validates dynamic scannable green certificate QR code resolution.
   * `verify-fetch-performance.mjs`: Asserts SWR cache deduplication, burst event coalescing, and zero redundant re-fetches.
+  * `verify-dashboard-fetch.mjs`: Verifies paginated batch reads (>1000 records) without truncation and ensures failed reads reject rather than cache partial financial totals.
+  * `verify-otp-transport.mjs`: Validates multi-channel OTP routing, loopback proxy safety, timeout-bounded HTTP transport, and uncertain-delivery fallback flags.
+  * `verify-phone-role-dedup.mjs`: Ensures in-flight login deduplication, zero stale role reuse, and resilient retry on failed lookup.
 
 
 ---
